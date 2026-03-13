@@ -1,13 +1,337 @@
 {
   "title": "Nginx 日志分析（QPS & 异常）",
   "schemaVersion": 39,
-  "version": 1,
+  "version": 2,
   "editable": true,
   "timezone": "browser",
-  "panels": [],
   "time": {
     "from": "now-1h",
     "to": "now"
-  }
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "env",
+        "label": "环境",
+        "type": "query",
+        "datasource": {
+          "type": "loki",
+          "uid": "Loki"
+        },
+        "query": "label_values({job=\"nginx\"}, env)",
+        "refresh": 2,
+        "includeAll": true,
+        "multi": true,
+        "options": [],
+        "current": {}
+      },
+      {
+        "name": "app",
+        "label": "应用",
+        "type": "query",
+        "datasource": {
+          "type": "loki",
+          "uid": "Loki"
+        },
+        "query": "label_values({job=\"nginx\", env=~\"$env\"}, app)",
+        "refresh": 2,
+        "includeAll": true,
+        "multi": true,
+        "options": [],
+        "current": {}
+      },
+      {
+        "name": "host",
+        "label": "主机",
+        "type": "query",
+        "datasource": {
+          "type": "loki",
+          "uid": "Loki"
+        },
+        "query": "label_values({job=\"nginx\", env=~\"$env\", app=~\"$app\"}, host)",
+        "refresh": 2,
+        "includeAll": true,
+        "multi": true,
+        "options": [],
+        "current": {}
+      },
+      {
+        "name": "os",
+        "label": "操作系统",
+        "type": "query",
+        "datasource": {
+          "type": "loki",
+          "uid": "Loki"
+        },
+        "query": "label_values({job=\"nginx\"}, os)",
+        "refresh": 2,
+        "includeAll": true,
+        "multi": true,
+        "options": [],
+        "current": {}
+      },
+      {
+        "name": "status_class",
+        "label": "状态码类",
+        "type": "custom",
+        "query": "All,2xx,3xx,4xx,5xx",
+        "includeAll": true,
+        "multi": true,
+        "options": [],
+        "current": {}
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "总请求数（最近5分钟）",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(count_over_time({job=\"nginx\", env=~\"$env\", app=~\"$app\", host=~\"$host\", os=~\"$os\"}[5m]))",
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          }
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "平均 QPS（最近5分钟）",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate({job=\"nginx\", env=~\"$env\", app=~\"$app\", host=~\"$host\", os=~\"$os\"}[5m]))",
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          }
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "4xx 错误率（最近5分钟）",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate({job=\"nginx\", env=~\"$env\", app=~\"$app\", host=~\"$host\", os=~\"$os\", status_class=\"4xx\"}[5m])) / sum(rate({job=\"nginx\", env=~\"$env\", app=~\"$app\", host=~\"$host\", os=~\"$os\"}[5m]))",
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          }
+        }
+      ],
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "orientation": "horizontal"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 2
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "5xx 错误率（最近5分钟）",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate({job=\"nginx\", env=~\"$env\", app=~\"$app\", host=~\"$host\", os=~\"$os\", status_class=\"5xx\"}[5m])) / sum(rate({job=\"nginx\", env=~\"$env\", app=~\"$app\", host=~\"$host\", os=~\"$os\"}[5m]))",
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          }
+        }
+      ],
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "orientation": "horizontal"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 2
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "请求速率（按状态码类）",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (status_class) (rate({job=\"nginx\", env=~\"$env\", app=~\"$app\", host=~\"$host\", os=~\"$os\", status_class=~\"$status_class\"}[1m]))",
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          }
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "piechart",
+      "title": "状态码分布（最近15分钟）",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (status_class) (count_over_time({job=\"nginx\", env=~\"$env\", app=~\"$app\", host=~\"$host\", os=~\"$os\"}[15m]))",
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          }
+        }
+      ],
+      "options": {
+        "legend": { "displayMode": "list", "placement": "right" }
+      }
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "响应时间分布（P50 / P95 / P99）",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "targets": [
+        {
+          "refId": "P50",
+          "expr": "quantile_over_time(0.50, {job=\"nginx\", env=~\"$env\", app=~\"$app\"} | unwrap request_time [5m])",
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          }
+        },
+        {
+          "refId": "P95",
+          "expr": "quantile_over_time(0.95, {job=\"nginx\", env=~\"$env\", app=~\"$app\"} | unwrap request_time [5m])",
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          }
+        },
+        {
+          "refId": "P99",
+          "expr": "quantile_over_time(0.99, {job=\"nginx\", env=~\"$env\", app=~\"$app\"} | unwrap request_time [5m])",
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          }
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "慢请求数量（request_time > 0.5s）",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate({job=\"nginx\", env=~\"$env\", app=~\"$app\"} | unwrap request_time | request_time > 0.5 [5m]))",
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          }
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "type": "table",
+      "title": "Top 10 URI（按请求量）",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 20 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "topk(10, sum by (request_uri) (count_over_time({job=\"nginx\", env=~\"$env\", app=~\"$app\"} | json | line_format \"{{.request_uri}}\" [15m])))",
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          }
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "type": "table",
+      "title": "Top 10 错误 URI（4xx/5xx）",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 20 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "topk(10, sum by (request_uri) (count_over_time({job=\"nginx\", env=~\"$env\", app=~\"$app\", status_class=~\"4xx|5xx\"} | json | line_format \"{{.request_uri}}\" [30m])))",
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          }
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "type": "table",
+      "title": "Top 10 IP（按请求量）",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 20 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "topk(10, sum by (remote_addr) (count_over_time({job=\"nginx\", env=~\"$env\", app=~\"$app\"} | json | line_format \"{{.remote_addr}}\" [15m])))",
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          }
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "type": "logs",
+      "title": "实时日志流",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 28 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{job=\"nginx\", env=~\"$env\", app=~\"$app\", host=~\"$host\", os=~\"$os\"}",
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          }
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "type": "logs",
+      "title": "异常请求日志（4xx / 5xx）",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 28 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{job=\"nginx\", env=~\"$env\", app=~\"$app\", host=~\"$host\", os=~\"$os\", status_class=~\"4xx|5xx\"}",
+          "datasource": {
+            "type": "loki",
+            "uid": "Loki"
+          }
+        }
+      ]
+    }
+  ]
 }
 
