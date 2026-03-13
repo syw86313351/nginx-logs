@@ -1,0 +1,61 @@
+auth_enabled: false
+
+server:
+  http_listen_port: 3100
+  log_level: info
+
+common:
+  path_prefix: /data
+  storage:
+    filesystem:
+      chunks_directory: /data/chunks
+      rules_directory: /data/rules
+  replication_factor: 1
+  ring:
+    kvstore:
+      store: inmemory
+
+schema_config:
+  configs:
+    - from: 2024-01-01
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+ingester:
+  lifecycler:
+    address: 127.0.0.1
+    ring:
+      kvstore:
+        store: inmemory
+      replication_factor: 1
+    final_sleep: 0s
+  chunk_idle_period: 30m
+  chunk_retain_period: 1m
+  max_transfer_retries: 0
+
+limits_config:
+  retention_period: 168h  # 7 days
+  max_query_length: 720h
+  max_query_parallelism: 32
+
+frontend:
+  log_queries_longer_than: 5s
+  max_outstanding_per_tenant: 2048
+
+query_range:
+  parallelise_shardable_queries: true
+
+storage_config:
+  filesystem:
+    directory: /data/chunks
+
+compactor:
+  working_directory: /data/compactor
+  compactor_ring:
+    kvstore:
+      store: inmemory
+

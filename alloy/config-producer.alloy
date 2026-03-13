@@ -1,0 +1,63 @@
+// Discover nginx log files
+local.file_match "nginx_logs" {
+  path_targets = [
+    {
+      __path__ = "/var/log/nginx/access.log"
+    },
+  ]
+}
+
+loki.source.file "nginx" {
+  targets    = local.file_match.nginx_logs.targets
+  forward_to = [loki.process.nginx.receiver]
+  tail_from_end = true
+}
+
+loki.process "nginx" {
+  stage.json {
+    expressions = {
+      remote_addr          = "remote_addr",
+      time_iso8601         = "time_iso8601",
+      request_method       = "request_method",
+      request_uri          = "request_uri",
+      status               = "status",
+      body_bytes_sent      = "body_bytes_sent",
+      http_referer         = "http_referer",
+      http_user_agent      = "http_user_agent",
+      request_time         = "request_time",
+      upstream_response_time = "upstream_response_time",
+      request_id           = "request_id",
+    }
+  }
+
+  stage.labels {
+    values = {
+      job          = "nginx",
+      app          = "gateway",
+      host         = env("HOSTNAME"),
+      status       = "{{ .status }}",
+      method       = "{{ .request_method }}",
+    }
+  }
+
+  stage.template {
+    source = "status"
+    template = "{{ if ge .Value 500.0 }}5xx{{ else if ge .Value 400.0 }}4xx{{ else }}other{{ end }}"
+    output = "status_class"
+  }
+
+  stage.labels {
+    values = {
+      status_class = "{{ .status_class }}",
+    }
+  }
+
+  forward_to = [loki.write.kafka.receiver]
+}
+
+loki.write "kafka" {
+  endpoint {
+    url = "http://kafka:9092"
+  }
+}
+
