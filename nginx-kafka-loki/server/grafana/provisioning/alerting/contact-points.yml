@@ -1,0 +1,53 @@
+# ============================================================
+#  Grafana 告警通知渠道 — Provisioning
+#  文件路径: grafana/provisioning/alerting/contact-points.yml
+#  按需取消注释并填入真实 Webhook 地址
+# ============================================================
+
+apiVersion: 1
+
+contactPoints:
+  - orgId: 1
+    name: nginx-ops
+    receivers:
+
+      # ── 钉钉机器人 ───────────────────────────────────────
+      - uid: dingtalk-webhook
+        type: webhook
+        settings:
+          url: "https://oapi.dingtalk.com/robot/send?access_token=YOUR_TOKEN"
+          httpMethod: POST
+          # 钉钉要求 Content-Type: application/json
+          # Grafana webhook body 默认兼容钉钉 text 格式
+        disableResolveMessage: false
+
+      # ── 企业微信机器人 ────────────────────────────────────
+      # - uid: wecom-webhook
+      #   type: wecom
+      #   settings:
+      #     url: "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=YOUR_KEY"
+
+      # ── 通用 Webhook（对接飞书/自研系统）─────────────────
+      # - uid: custom-webhook
+      #   type: webhook
+      #   settings:
+      #     url: "http://your-alertmanager/webhook"
+      #     httpMethod: POST
+
+      # ── Email ─────────────────────────────────────────────
+      # - uid: email-ops
+      #   type: email
+      #   settings:
+      #     addresses: "ops@example.com;oncall@example.com"
+      #     subject: "[Nginx告警] {{ .GroupLabels.alertname }}"
+
+# ── 告警路由策略 ─────────────────────────────────────────────
+policies:
+  - orgId: 1
+    receiver: nginx-ops      # 默认发送到 nginx-ops
+    group_by: [alertname, node]
+    group_wait: 30s          # 同组告警聚合等待
+    group_interval: 5m       # 同组重复发送间隔
+    repeat_interval: 4h      # 持续告警重复通知间隔
+    matchers:
+      - alertname =~ "Nginx.*"

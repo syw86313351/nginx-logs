@@ -1,0 +1,46 @@
+# ============================================================
+# Linux 客户端：Filebeat 采集 Nginx JSON 日志 → Kafka
+# ============================================================
+# 使用前请修改：
+#   1. paths   — 改成你的 Nginx access.log 实际路径
+#   2. hosts   — 改成你的日志服务器 IP + Kafka 端口（现在用 9092）
+# ============================================================
+
+filebeat.inputs:
+  - type: log
+    enabled: true
+    paths:
+      - /data/nginx-1.24.0/logs/access.json   # 默认 Nginx JSON 日志路径
+
+    # Nginx 输出的是 JSON 格式，下面三行让 Filebeat 按 JSON 解析
+    json.keys_under_root: true          # JSON 字段提到顶层
+    json.add_error_key: true            # 解析失败时加 error 字段
+    json.overwrite_keys: true           # 覆盖同名字段
+
+    # 可选：给日志打上额外的字段标识（会随消息一起发到 Kafka）
+    fields:
+      log_source: nginx
+      node: ws01                        # 改成当前主机标识，如 ws01、ws02
+      os: linux
+    fields_under_root: true
+
+# 禁用默认的 Elasticsearch 输出
+output.elasticsearch:
+  enabled: false
+
+# 输出到服务端 Kafka
+output.kafka:
+  hosts: ["192.168.1.100:9092"]         # 改成你的日志服务器 IP:端口
+  topic: "nginx-logs"                   # 和服务端 alloy-consumer 里的 topic 一致
+  partition.round_robin:
+    reachable_only: true
+  required_acks: 1                      # 至少一个 broker 确认
+  compression: gzip                     # 压缩传输，节省带宽
+
+# 日志级别
+logging.level: info
+logging.to_files: true
+logging.files:
+  path: /var/log/filebeat
+  name: filebeat.log
+  keepfiles: 3

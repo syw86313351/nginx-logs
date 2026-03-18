@@ -1,0 +1,81 @@
+
+services:
+  kafka:
+    image: apache/kafka:3.7.0
+    container_name: kafka
+    environment:
+      # 单节点 KRaft 模式
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+
+      # 监听配置：对内对外都用 9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+
+      # 数据目录
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    networks:
+      - observability
+    restart: unless-stopped
+
+  loki:
+    image: ${LOKI_IMAGE}
+    container_name: loki
+    command: -config.file=/etc/loki/loki-config.yml
+    ports:
+      - "${LOKI_PORT}:3100"
+    volumes:
+      - ./loki/loki-config.yml:/etc/loki/loki-config.yml:ro
+      - loki-data:/data
+    networks:
+      - observability
+    restart: unless-stopped
+
+  alloy-consumer:
+    image: ${ALLOY_IMAGE}
+    container_name: alloy-consumer
+    command: >
+      run --stability.level=experimental
+          /etc/alloy/config-consumer.alloy
+    volumes:
+      - ./alloy/config-consumer.alloy:/etc/alloy/config-consumer.alloy:ro
+    depends_on:
+      - kafka
+      - loki
+    networks:
+      - observability
+    restart: unless-stopped
+
+  grafana:
+    image: ${GRAFANA_IMAGE}
+    container_name: grafana
+    ports:
+      - "${GRAFANA_PORT}:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - loki
+    networks:
+      - observability
+    restart: unless-stopped
+
+volumes:
+  kafka-data:
+  loki-data:
+  grafana-data:
+
+networks:
+  observability:
+    name: observability
+

@@ -1,0 +1,54 @@
+# ============================================================
+# Vector Agent v0.39.0
+# 功能: Tail Nginx JSON logs → Kafka
+# 日志路径: /data/nginx-1.24.0/logs/access.json
+# ============================================================
+
+# ── Source：Tail Nginx JSON log ────────────────────────────
+[sources.nginx_log]
+type = "file"
+include = ["/data/nginx-1.24.0/logs/access.json"]
+read_from = "end"            # 只读新增行，首次启动不重放历史
+ignore_older_secs = 86400    # 忽略超过 1 天的旧文件
+data_dir = "/var/lib/vector" # 保存读取位点
+
+# ── Transform：添加元信息 ────────────────────────────────
+[transforms.add_meta]
+type = "remap"
+inputs = ["nginx_log"]
+
+source = '''
+# 读取必填 HOSTNAME
+.agent_host = get_env_var!("HOSTNAME")
+
+# 可选覆盖 HOSTNAME_LABEL
+.lbl, err = get_env_var("HOSTNAME_LABEL")
+if err == null && .lbl != "" {
+    .agent_host = .lbl
+}
+
+# 注入采集时间
+.collected_at = now()
+'''
+
+# ── Sink：Kafka 输出 ───────────────────────────────────────
+[sinks.kafka_out]
+type = "kafka"
+inputs = ["add_meta"]
+bootstrap_servers = "${KAFKA_BROKERS}" # e.g. "kafka:9092"
+topic = "nginx-logs"
+key_field = "agent_host"
+compression = "lz4"
+
+[sinks.kafka_out.encoding]
+codec = "json"
+
+[sinks.kafka_out.batch]
+max_bytes    = 1048576   # 每批最大 1MB
+timeout_secs = 2          # 最多等待 2 秒
+max_events   = 5000       # 每批最多 5000 条消息
+
+[sinks.kafka_out.buffer]
+type = "memory"
+max_events = 100000       # 内存缓冲最多 10 万条事件
+when_full = "block"       # 缓冲满了就阻塞

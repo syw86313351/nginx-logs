@@ -1,0 +1,53 @@
+# 从 Kafka 消费 Nginx 日志并写入 Loki 的示例配置
+
+loki.source.kafka "nginx_kafka" {
+  brokers    = ["kafka:9092"]     # docker-compose 内部地址
+  topics     = ["nginx-logs"]     # 采集端推送的 topic 名
+  forward_to = [loki.process.nginx_kafka.receiver]
+}
+
+loki.process "nginx_kafka" {
+  # 假设 Kafka 中的消息是 Nginx JSON 日志
+  stage.json {
+    expressions = {
+      remote_addr    = "remote_addr",
+      time_iso8601   = "time_iso8601",
+      request_method = "request_method",
+      request_uri    = "request_uri",
+      status         = "status",
+      request_time   = "request_time",
+      node           = "node",
+    }
+  }
+
+  stage.labels {
+    values = {
+      job    = "nginx",
+      app    = "gateway",
+      host   = "{{ .node }}",
+      status = "{{ .status }}",
+      method = "{{ .request_method }}",
+    }
+  }
+
+  stage.template {
+    source   = "status"
+    template = "{{ if ge .Value 500.0 }}5xx{{ else if ge .Value 400.0 }}4xx{{ else }}other{{ end }}"
+    output   = "status_class"
+  }
+
+  stage.labels {
+    values = {
+      status_class = "{{ .status_class }}",
+    }
+  }
+
+  forward_to = [loki.write.loki.receiver]
+}
+
+loki.write "loki" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}
+

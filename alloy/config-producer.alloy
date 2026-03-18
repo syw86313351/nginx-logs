@@ -52,12 +52,13 @@ loki.process "nginx" {
     }
   }
 
-  forward_to = [loki.write.kafka.receiver]
+  # 简单模式：直接写入 Loki；如需 Kafka 模式，可在客户端用 Filebeat/Fluent Bit 推送到 Kafka
+  forward_to = [loki.write.loki.receiver]
 }
 
-loki.write "kafka" {
+loki.write "loki" {
   endpoint {
-    url = "http://kafka:9092"
+    url = "http://loki:3100/loki/api/v1/push"
   }
 }
 

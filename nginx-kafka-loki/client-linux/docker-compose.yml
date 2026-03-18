@@ -1,0 +1,30 @@
+version: "3.9"
+
+# ============================================================
+#  Linux 客户端 — Vector Agent 采集 Nginx JSON 日志 → Kafka
+#  1. cp .env.example .env && vim .env  （填写 KAFKA_BROKERS）
+#  2. docker compose up -d
+# ============================================================
+
+services:
+  vector-agent:
+    image: timberio/vector:0.39.0-alpine
+    container_name: nla-vector-agent
+    command: --config /etc/vector/vector.toml
+    volumes:
+      - ./vector-agent.toml:/etc/vector/vector.toml:ro
+      - /var/log/nginx:/var/log/nginx:ro
+      - vector-data:/var/lib/vector       # 存储读取位点（断点续读）
+    environment:
+      - KAFKA_BROKERS=${KAFKA_BROKERS:-SERVER_IP:9093}
+      - HOSTNAME_LABEL=${HOSTNAME_LABEL:-}
+      - VECTOR_LOG=warn
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  vector-data:

@@ -1,0 +1,35 @@
+version: "2.4"
+
+# ============================================================
+# Linux 客户端（容器版采集端）
+# 使用 Filebeat 容器采集宿主机 Nginx JSON 日志 → 推送到服务端 Kafka
+#
+# 前置条件：
+# 1. 宿主机 Nginx 日志路径：/data/nginx-1.24.0/logs/access.json
+# 2. 已按 filebeat.yml 配置好 output.kafka.hosts（指向服务端 SERVER_IP:9094）
+# ============================================================
+
+services:
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.17.0
+    container_name: filebeat-nginx
+    user: root                       # 需要 root 才能读宿主机日志目录
+    volumes:
+      # Filebeat 配置（使用本目录的 filebeat.yml）
+      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      # 挂载宿主机 Nginx 日志目录
+      - /data/nginx-1.24.0/logs:/data/nginx-1.24.0/logs:ro
+      # Filebeat 自身状态与日志数据
+      - filebeat-data:/usr/share/filebeat/data
+    environment:
+      - ELASTIC_CONTAINER=true
+    command: [
+      "filebeat",
+      "-e",
+      "--strict.perms=false"
+    ]
+    restart: unless-stopped
+
+volumes:
+  filebeat-data:
+

@@ -1,0 +1,132 @@
+sources:
+  kafka_logs:
+    type: kafka
+    bootstrap_servers: "kafka:9092"
+    group_id: "vector-nginx"
+    topics: ["nginx-logs"]
+    auto_offset_reset: earliest
+    # 批量拉取，减少轮询 CPU
+    fetch_wait_max_ms: 500
+    session_timeout_ms: 30000
+    socket_timeout_ms: 60000
+    decoding:
+      codec: bytes
+
+transforms:
+  parse_message:
+    type: remap
+    inputs: ["kafka_logs"]
+    source: |-
+      # ── 双层 JSON 解析 ────────────────────────────────────────
+      # 外层：Vector Agent envelope  { "message": "<nginx json line>", ... }
+      # 内层：nginx 原始 JSON 日志行
+      envelope, err = parse_json(string!(.message))
+      if err != null {
+        .parse_error = "envelope: " + err
+      } else {
+        raw = envelope.message
+        nginx, err2 = parse_json(string!(raw))
+        if err2 != null {
+          .parse_error = "nginx: " + err2
+          .raw_message = string!(raw)
+        } else {
+          . = merge!(., nginx)
+        }
+      }
+
+      # 清理 Kafka / Vector 元数据字段
+      del(.message)
+      del(.source_type)
+      del(.topic)
+      del(.partition)
+      del(.offset)
+      del(.headers)
+
+      # ── 数值字段类型规范化（LogQL unwrap 需要数值）───────────
+      if exists(.status)          { .status          = to_int(.status)           ?? null }
+      if exists(.request_time)    { .request_time     = to_float(.request_time)   ?? null }
+      if exists(.body_bytes_sent) { .body_bytes_sent  = to_int(.body_bytes_sent)  ?? null }
+      if exists(.bytes_sent)      { .bytes_sent       = to_int(.bytes_sent)       ?? null }
+      if exists(.request_length)  { .request_length   = to_int(.request_length)   ?? null }
+
+      # ── upstream 字段："-"（无上游时）给安全默认值 ─────────
+      # 时间字段给 0.0：类型一致，LogQL unwrap 不报错
+      # 状态码字段给 0：便于过滤 upstream_status > 0 排除无上游请求
+      # Dashboard 中统计上游延迟时加条件 | upstream_response_time > 0 即可排除
+      if exists(.upstream_response_time) {
+        v, verr = to_float(.upstream_response_time)
+        .upstream_response_time = if verr == null { v } else { 0.0 }
+      }
+      if exists(.upstream_connect_time) {
+        v, verr = to_float(.upstream_connect_time)
+        .upstream_connect_time = if verr == null { v } else { 0.0 }
+      }
+      if exists(.upstream_header_time) {
+        v, verr = to_float(.upstream_header_time)
+        .upstream_header_time = if verr == null { v } else { 0.0 }
+      }
+      if exists(.upstream_status) {
+        v, verr = to_int(.upstream_status)
+        .upstream_status = if verr == null { v } else { 0 }
+      }
+
+      # ── 真实客户端 IP ────────────────────────────────────────
+      .client_ip = if exists(.x_real_ip) && .x_real_ip != "" && .x_real_ip != "-" {
+        .x_real_ip
+      } else if exists(.remote_addr) {
+        .remote_addr
+      } else {
+        "unknown"
+      }
+
+      # ── status_class（Loki 低基数标签）──────────────────────
+      if exists(.status) && .status != null {
+        s = to_int!(.status)
+        if s >= 500 {
+          .status_class = "5xx"
+        } else if s >= 400 {
+          .status_class = "4xx"
+        } else if s >= 300 {
+          .status_class = "3xx"
+        } else if s >= 200 {
+          .status_class = "2xx"
+        } else {
+          .status_class = "1xx"
+        }
+      } else {
+        .status_class = "unknown"
+      }
+
+      # ── 使用日志自带时间戳，避免采集延迟导致时间偏移 ─────────
+      if exists(.time_iso8601) && .time_iso8601 != "" {
+        ts, terr = parse_timestamp(string!(.time_iso8601), format: "%+")
+        if terr == null {
+          .timestamp = ts
+        }
+      }
+
+sinks:
+  loki:
+    type: loki
+    inputs: ["parse_message"]
+    endpoint: "http://loki:3100"
+    encoding:
+      codec: json
+    # ── Loki 标签：只放低基数字段 ────────────────────────────
+    # server_name / node / status_class 走索引，查询无需全扫日志体
+    # client_ip / uri / user_agent 基数过高，放日志体用 | json 过滤
+    labels:
+      job: nginx
+      node: "{{ node }}"
+      server_name: "{{ server_name }}"
+      scheme: "{{ scheme }}"
+      request_method: "{{ request_method }}"
+      status_class: "{{ status_class }}"
+    batch:
+      # 按字节攒批比按条数更稳定（日志行大小不均匀时）
+      max_bytes: 1048576    # 1 MB 攒满即发
+      timeout_secs: 3       # 最多等 3 秒
+    request:
+      concurrency: 4
+      retry_attempts: 5
+      timeout_secs: 30

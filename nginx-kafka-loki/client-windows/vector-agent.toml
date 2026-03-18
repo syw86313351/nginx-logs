@@ -1,0 +1,38 @@
+# vector-agent.toml — Windows 客户端
+# 路径: C:\vector\vector.toml
+# 修改 KAFKA_BROKERS 为服务器实际地址
+
+[sources.nginx_log]
+type = "file"
+include = ["C:\\nginx\\logs\\access.log"]
+# 多 vhost 示例:
+# include = ["C:\\nginx\\logs\\*access*.log"]
+read_from = "end"
+ignore_older_secs = 86400
+data_dir = "C:\\vector\\data"
+
+[transforms.add_meta]
+type = "remap"
+inputs = ["nginx_log"]
+source = '''
+.agent_host = "ws01"   # 修改为本机节点名
+.collected_at = now()
+'''
+
+[sinks.kafka_out]
+type = "kafka"
+inputs = ["add_meta"]
+bootstrap_servers = "SERVER_IP:9093"   # 修改为服务器实际 IP
+topic = "nginx-logs"
+key_field = "agent_host"
+compression = "lz4"
+
+[sinks.kafka_out.encoding]
+codec = "json"
+
+[sinks.kafka_out.batch]
+max_bytes    = 1048576
+timeout_secs = 2
+
+[sinks.kafka_out.request]
+concurrency = 2

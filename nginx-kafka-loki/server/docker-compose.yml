@@ -1,0 +1,163 @@
+version: "3.9"
+
+# ============================================================
+#  Nginx 日志分析平台 — 服务端
+#  Zookeeper · Kafka · Kafka-UI · Vector · Loki · Grafana
+#
+#  启动: cp .env.example .env && vim .env && docker compose up -d
+#  访问:
+#    Grafana   → http://SERVER_IP:3000  (admin/admin)
+#    Kafka UI  → http://SERVER_IP:8080
+# ============================================================
+
+services:
+
+  # ── Zookeeper ──────────────────────────────────────────────
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.1
+    container_name: nla-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_LOG4J_ROOT_LOGLEVEL: WARN
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data
+      - zookeeper-log:/var/lib/zookeeper/log
+    networks:
+      - nla-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo ruok | nc localhost 2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ── Kafka ───────────────────────────────────────────────────
+  kafka:
+    image: confluentinc/cp-kafka:7.6.1
+    container_name: nla-kafka
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      # PLAINTEXT     → 内部容器访问 (9092)
+      # PLAINTEXT_HOST → 外部 Promtail 客户端访问 (9093)
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://${SERVER_IP:-localhost}:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:9093
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      # 日志保留 48 小时（缓冲窗口），按大小兜底
+      KAFKA_LOG_RETENTION_HOURS: 48
+      KAFKA_LOG_RETENTION_BYTES: 5368709120   # 5GB
+      KAFKA_LOG_SEGMENT_BYTES: 268435456      # 256MB per segment
+      KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS: 300000
+      # 压缩：对 JSON 文本效果显著（减少 60-70%）
+      KAFKA_COMPRESSION_TYPE: lz4
+      KAFKA_LOG4J_ROOT_LOGLEVEL: WARN
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    ports:
+      - "9093:9093"       # 外部 Promtail 连接端口
+    networks:
+      - nla-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  # ── Kafka UI ────────────────────────────────────────────────
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: nla-kafka-ui
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_CLUSTERS_0_NAME: nginx-logs
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    ports:
+      - "18080:8080"
+    networks:
+      - nla-net
+    restart: unless-stopped
+
+  # ── Vector：Kafka 消费 → 转发 Loki ─────────────────────────
+  vector:
+    image: timberio/vector:0.39.0-alpine
+    container_name: nla-vector
+    depends_on:
+      kafka:
+        condition: service_healthy
+      loki:
+        condition: service_healthy
+    volumes:
+      - ./vector/vector.toml:/etc/vector/vector.toml:ro
+    environment:
+      VECTOR_LOG: warn
+    networks:
+      - nla-net
+    restart: unless-stopped
+    # Vector 资源占用极低，无需限制
+
+  # ── Loki：日志聚合存储 ─────────────────────────────────────
+  loki:
+    image: grafana/loki:3.1.0
+    container_name: nla-loki
+    user: "0"             # root 运行，避免 volume 目录权限问题
+    command: -config.file=/etc/loki/config.yml
+    volumes:
+      - ./loki/config.yml:/etc/loki/config.yml:ro
+      - loki-data:/loki
+    ports:
+      - "3100:3100"
+    networks:
+      - nla-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:3100/ready || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 15
+      start_period: 30s
+
+  # ── Grafana：可视化 ────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:11.1.0
+    container_name: nla-grafana
+    depends_on:
+      loki:
+        condition: service_healthy
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./grafana/provisioning/alerting:/etc/grafana/provisioning/alerting:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "3000:3000"
+    networks:
+      - nla-net
+    restart: unless-stopped
+
+volumes:
+  zookeeper-data:
+  zookeeper-log:
+  kafka-data:
+  loki-data:
+  grafana-data:
+
+networks:
+  nla-net:
+    driver: bridge

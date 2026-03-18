@@ -1,0 +1,65 @@
+# vector-agent.toml
+# ============================================================
+#  客户端 Vector Agent
+#  tail nginx JSON 日志 → 推送到 Kafka
+#  比 Promtail 更合适，因为 Vector 原生支持 Kafka output
+# ============================================================
+
+# ── Source：tail 日志文件 ────────────────────────────────────
+[sources.nginx_log]
+type = "file"
+include = ["/var/log/nginx/access.log"]
+# 支持 glob，多 vhost 场景：
+# include = ["/var/log/nginx/*access*.log"]
+
+read_from = "end"            # 只读新增行（首次启动不重放历史）
+ignore_older_secs = 86400    # 忽略超过 1 天的旧文件
+
+# 记录读取位点，重启后从断点续读
+data_dir = "/var/lib/vector"
+
+# ── Transform：添加来源元信息 ────────────────────────────────
+[transforms.add_meta]
+type = "remap"
+inputs = ["nginx_log"]
+
+source = '''
+# 注入节点标识（对应 nginx 日志里的 node 字段，做双重保障）
+.agent_host = get_env_var!("HOSTNAME")
+if exists(env_var("HOSTNAME_LABEL")) {
+  lbl = get_env_var!("HOSTNAME_LABEL")
+  if lbl != "" { .agent_host = lbl }
+}
+
+# 注入采集时间（和日志自带 time_iso8601 区分）
+.collected_at = now()
+
+# file source 将日志行放在 .message 字段
+# 保持 .message 不变，让服务端 Vector 解析
+'''
+
+# ── Sink：推送到 Kafka ────────────────────────────────────────
+[sinks.kafka_out]
+type = "kafka"
+inputs = ["add_meta"]
+bootstrap_servers = "${KAFKA_BROKERS}"
+topic = "nginx-logs"
+
+# 以日志中的 node 字段做 partition key，同一节点的日志落同一分区，保序
+key_field = "agent_host"
+
+# 压缩（JSON 文本压缩率高，强烈建议开启）
+compression = "lz4"
+
+# 编码：把整个 event 序列化为 JSON 字符串发到 Kafka
+[sinks.kafka_out.encoding]
+codec = "json"
+
+# 批量配置
+[sinks.kafka_out.batch]
+max_bytes    = 1048576    # 1MB
+timeout_secs = 2
+
+# 限流保护（防止客户端爆发流量打爆 Kafka）
+[sinks.kafka_out.request]
+concurrency = 2

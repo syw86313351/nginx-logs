@@ -1,0 +1,23 @@
+# ============================================================
+# Linux Nginx 日志归档配置（保留 7 天）
+# 放置路径：/etc/logrotate.d/nginx
+# 使用前请修改：
+#   1. 日志路径（如果不是 /var/log/nginx/*.log）
+#   2. nginx.pid 路径（用 nginx -T | grep pid 确认）
+#   3. create 行的用户/组（按你的 Nginx 运行用户调整）
+# ============================================================
+
+/data/nginx-1.24.0/logs/*.json {
+    daily
+    rotate 7
+    missingok
+    notifempty
+    compress
+    delaycompress
+    dateext
+    create 0640 www-data adm
+    sharedscripts
+    postrotate
+        [ -f /run/nginx.pid ] && kill -USR1 "$(cat /run/nginx.pid)" || true
+    endscript
+}
