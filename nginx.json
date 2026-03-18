@@ -1,0 +1,1420 @@
+{
+  "uid": "nginx-final",
+  "title": "Nginx 访问日志分析",
+  "tags": [
+    "nginx",
+    "loki"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "refresh": "",
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "30s",
+      "1m",
+      "5m",
+      "15m"
+    ],
+    "time_options": [
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "3h",
+      "6h",
+      "12h",
+      "24h"
+    ]
+  },
+  "annotations": {
+    "list": []
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "node",
+        "label": "🖥 服务器节点",
+        "type": "query",
+        "datasource": {
+          "type": "loki",
+          "uid": "loki-nginx"
+        },
+        "query": {
+          "label": "node",
+          "stream": "{job=\"nginx\"}",
+          "type": 1
+        },
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "refresh": 2,
+        "sort": 1
+      },
+      {
+        "name": "server_name",
+        "label": "🌐 域名过滤",
+        "type": "query",
+        "datasource": {
+          "type": "loki",
+          "uid": "loki-nginx"
+        },
+        "query": {
+          "label": "server_name",
+          "stream": "{job=\"nginx\",node=~\"$node\"}",
+          "type": 1
+        },
+        "multi": false,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "description": "选择单个域名后，IP排行/最新请求等面板查询量大幅减少"
+      },
+      {
+        "name": "interval",
+        "label": "⏱ 图表粒度",
+        "type": "interval",
+        "options": [
+          {
+            "text": "30s",
+            "value": "30s"
+          },
+          {
+            "text": "1m",
+            "value": "1m"
+          },
+          {
+            "text": "5m",
+            "value": "5m"
+          },
+          {
+            "text": "10m",
+            "value": "10m"
+          }
+        ],
+        "auto": false,
+        "current": {
+          "text": "1m",
+          "value": "1m"
+        }
+      },
+      {
+        "name": "__refresh",
+        "label": "🔄 手动刷新",
+        "type": "custom",
+        "description": "改变此值触发所有面板重新查询（相当于全局刷新按钮）",
+        "options": [
+          {
+            "text": "1",
+            "value": "1"
+          },
+          {
+            "text": "2",
+            "value": "2"
+          },
+          {
+            "text": "3",
+            "value": "3"
+          },
+          {
+            "text": "4",
+            "value": "4"
+          },
+          {
+            "text": "5",
+            "value": "5"
+          }
+        ],
+        "current": {
+          "text": "1",
+          "value": "1"
+        },
+        "query": "1,2,3,4,5",
+        "hide": 0,
+        "multi": false,
+        "includeAll": false
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "row",
+      "title": "📊 请求汇总",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "collapsed": false
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "总请求数",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 1
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-nginx"
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value_and_name"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "fixedColor": "blue",
+            "mode": "fixed"
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({job=\"nginx\",node=~\"$node\",server_name=~\"$server_name\"} [$__range]))",
+          "instant": true,
+          "legendFormat": "请求总数"
+        }
+      ],
+      "description": "⚡ 右上角菜单 → Explore 可单独刷新此面板查询"
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "1xx",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 1
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-nginx"
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "fixedColor": "text",
+            "mode": "fixed"
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({job=\"nginx\",node=~\"$node\",server_name=~\"$server_name\",status_class=\"1xx\"} [$__range]))",
+          "instant": true,
+          "legendFormat": "1xx"
+        }
+      ],
+      "description": "⚡ 右上角菜单 → Explore 可单独刷新此面板查询"
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "2xx 成功",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 1
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-nginx"
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "fixedColor": "green",
+            "mode": "fixed"
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({job=\"nginx\",node=~\"$node\",server_name=~\"$server_name\",status_class=\"2xx\"} [$__range]))",
+          "instant": true,
+          "legendFormat": "2xx"
+        }
+      ],
+      "description": "⚡ 右上角菜单 → Explore 可单独刷新此面板查询"
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "3xx 重定向",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 1
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-nginx"
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "fixedColor": "yellow",
+            "mode": "fixed"
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({job=\"nginx\",node=~\"$node\",server_name=~\"$server_name\",status_class=\"3xx\"} [$__range]))",
+          "instant": true,
+          "legendFormat": "3xx"
+        }
+      ],
+      "description": "⚡ 右上角菜单 → Explore 可单独刷新此面板查询"
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "4xx 客户端错误",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 1
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-nginx"
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({job=\"nginx\",node=~\"$node\",server_name=~\"$server_name\",status_class=\"4xx\"} [$__range]))",
+          "instant": true,
+          "legendFormat": "4xx"
+        }
+      ],
+      "description": "⚡ 右上角菜单 → Explore 可单独刷新此面板查询"
+    },
+    {
+      "id": 7,
+      "type": "stat",
+      "title": "5xx 服务端错误",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 1
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-nginx"
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ]
+        },
+        "colorMode": "background",
+        "graphMode": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({job=\"nginx\",node=~\"$node\",server_name=~\"$server_name\",status_class=\"5xx\"} [$__range]))",
+          "instant": true,
+          "legendFormat": "5xx"
+        }
+      ],
+      "description": "⚡ 右上角菜单 → Explore 可单独刷新此面板查询"
+    },
+    {
+      "id": 10,
+      "type": "row",
+      "title": "📈 QPS · 状态码 · 流量",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "collapsed": false
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "QPS — 按节点分组",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 6
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-nginx"
+      },
+      "description": "每条线代表一台节点的 QPS，纯标签查询，无需 | json ⚡ 右上角菜单 → Explore 可单独刷新此面板查询",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 5,
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max",
+            "last"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (node) (rate({job=\"nginx\",node=~\"$node\",server_name=~\"$server_name\"} [$interval]))",
+          "legendFormat": "{{node}}"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "状态码趋势（1xx / 2xx / 3xx / 4xx / 5xx）",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 6
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-nginx"
+      },
+      "description": "所有状态码同一图表，走 status_class 标签，不扫日志体 ⚡ 右上角菜单 → Explore 可单独刷新此面板查询",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 5
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "1xx"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "2xx"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "3xx"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "yellow",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "4xx"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "5xx"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "sum",
+            "max"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({job=\"nginx\",node=~\"$node\",server_name=~\"$server_name\",status_class=\"1xx\"} [$interval]))",
+          "legendFormat": "1xx"
+        },
+        {
+          "expr": "sum(count_over_time({job=\"nginx\",node=~\"$node\",server_name=~\"$server_name\",status_class=\"2xx\"} [$interval]))",
+          "legendFormat": "2xx"
+        },
+        {
+          "expr": "sum(count_over_time({job=\"nginx\",node=~\"$node\",server_name=~\"$server_name\",status_class=\"3xx\"} [$interval]))",
+          "legendFormat": "3xx"
+        },
+        {
+          "expr": "sum(count_over_time({job=\"nginx\",node=~\"$node\",server_name=~\"$server_name\",status_class=\"4xx\"} [$interval]))",
+          "legendFormat": "4xx"
+        },
+        {
+          "expr": "sum(count_over_time({job=\"nginx\",node=~\"$node\",server_name=~\"$server_name\",status_class=\"5xx\"} [$interval]))",
+          "legendFormat": "5xx"
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "type": "timeseries",
+      "title": "出入口带宽 — 按节点（实线=出口 / 虚线=入口）",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 6
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-nginx"
+      },
+      "description": "unwrap 查询，建议时间范围 ≤1h；出口=bytes_sent，入口=request_length ⚡ 右上角菜单 → Explore 可单独刷新此面板查询",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 4,
+            "spanNulls": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "入口.*"
+            },
+            "properties": [
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "fill": "dash",
+                  "dash": [
+                    6,
+                    4
+                  ]
+                }
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (node) (rate({job=\"nginx\",node=~\"$node\",server_name=~\"$server_name\"} | json | unwrap bytes_sent [$interval]))",
+          "legendFormat": "出口 · {{node}}",
+          "minStep": "1m"
+        },
+        {
+          "expr": "sum by (node) (rate({job=\"nginx\",node=~\"$node\",server_name=~\"$server_name\"} | json | unwrap request_length [$interval]))",
+          "legendFormat": "入口 · {{node}}",
+          "minStep": "1m"
+        }
+      ],
+      "interval": "1m"
+    },
+    {
+      "id": 30,
+      "type": "row",
+      "title": "🚨 异常错误码",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "collapsed": false
+    },
+    {
+      "id": 31,
+      "type": "timeseries",
+      "title": "4xx / 5xx 错误趋势（按节点）",
+      "gridPos": {
+        "h": 7,
+        "w": 14,
+        "x": 0,
+        "y": 15
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-nginx"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "4xx.*"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "5xx.*"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "sum",
+            "max"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (node) (count_over_time({job=\"nginx\",node=~\"$node\",server_name=~\"$server_name\",status_class=\"4xx\"} [$interval]))",
+          "legendFormat": "4xx · {{node}}"
+        },
+        {
+          "expr": "sum by (node) (count_over_time({job=\"nginx\",node=~\"$node\",server_name=~\"$server_name\",status_class=\"5xx\"} [$interval]))",
+          "legendFormat": "5xx · {{node}}"
+        }
+      ],
+      "description": "⚡ 右上角菜单 → Explore 可单独刷新此面板查询"
+    },
+    {
+      "id": 32,
+      "type": "piechart",
+      "title": "错误码占比（4xx vs 5xx）",
+      "gridPos": {
+        "h": 7,
+        "w": 10,
+        "x": 14,
+        "y": 15
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-nginx"
+      },
+      "options": {
+        "pieType": "donut",
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "values": [
+            "value",
+            "percent"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {
+            "mode": "palette-classic"
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({job=\"nginx\",node=~\"$node\",server_name=~\"$server_name\",status_class=\"4xx\"} [$__range]))",
+          "instant": true,
+          "legendFormat": "4xx"
+        },
+        {
+          "expr": "sum(count_over_time({job=\"nginx\",node=~\"$node\",server_name=~\"$server_name\",status_class=\"5xx\"} [$__range]))",
+          "instant": true,
+          "legendFormat": "5xx"
+        }
+      ],
+      "description": "⚡ 右上角菜单 → Explore 可单独刷新此面板查询"
+    },
+    {
+      "id": 33,
+      "type": "logs",
+      "title": "错误详情（4xx+5xx 最新 100 条）— 点击行展开所有字段",
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 0,
+        "y": 22
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-nginx"
+      },
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": false,
+        "prettifyLogMessage": true,
+        "enableLogDetails": true,
+        "sortOrder": "Descending",
+        "dedupStrategy": "none"
+      },
+      "targets": [
+        {
+          "expr": "{job=\"nginx\",node=~\"$node\",server_name=~\"$server_name\",status_class=~\"4xx|5xx\"} | json | line_format \"[{{.status}}] {{.request_method}} {{.server_name}}{{.uri}} ← {{.client_ip}} | {{.request_time}}s | node:{{.node}}\"",
+          "maxLines": 100
+        }
+      ]
+    },
+    {
+      "id": 61,
+      "type": "table",
+      "title": "IP 访问量 TOP 20 — 点击 🔍 查看该 IP 请求详情",
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 12,
+        "y": 22
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-nginx"
+      },
+      "description": "点击「客户端 IP」列的值可跳转 Explore 查看该 IP 的完整请求记录（含所有字段详情）。建议先选定域名，时间范围 ≤1h",
+      "options": {
+        "sortBy": [
+          {
+            "displayName": "请求数",
+            "desc": true
+          }
+        ],
+        "footer": {
+          "show": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "客户端 IP"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 180
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "🔍 Explore：查看该 IP 全部请求",
+                    "url": "/explore?orgId=1&left={\"datasource\":\"loki-nginx\",\"queries\":[{\"expr\":\"{job=\\\"nginx\\\",node=~\\\"$node\\\",server_name=~\\\"$server_name\\\"} | json | client_ip = \\\"${__value.text}\\\"\",\"maxLines\":200}],\"range\":{\"from\":\"${__from}\",\"to\":\"${__to}\"}}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "请求数"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 140
+              },
+              {
+                "id": "custom.displayMode",
+                "value": "gradient-gauge"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-GrYlRd"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "查看详情"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 100
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "在 Explore 中查看",
+                    "url": "/explore?orgId=1&left=%7B%22datasource%22:%22loki-nginx%22,%22queries%22:%5B%7B%22expr%22:%22%7Bjob%3D%5C%22nginx%5C%22%7D%20%7C%20json%20%7C%20client_ip%20%3D%20%5C%22${__data.fields[%22客户端 IP%22]}%5C%22%22,%22maxLines%22:200%7D%5D%7D",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "expr": "topk(20,sum by (client_ip)(count_over_time({job=\"nginx\",node=~\"$node\",server_name=~\"$server_name\"} | json | client_ip != \"\" [$__range])))",
+          "instant": true,
+          "legendFormat": "{{client_ip}}"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "Value": "请求数",
+              "client_ip": "客户端 IP"
+            },
+            "excludeByName": {
+              "Time": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 40,
+      "type": "row",
+      "title": "🐢 高延迟请求",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 34
+      },
+      "collapsed": false
+    },
+    {
+      "id": 41,
+      "type": "timeseries",
+      "title": "响应时间分位数（P50 / P90 / P99）— 建议时间范围 ≤30min",
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 35
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-nginx"
+      },
+      "description": "⚠️ 此查询需扫描日志体，时间范围越短越快。建议：先选定域名 + 时间范围 ≤30min。超时时请缩短时间范围后点击 🔄 手动刷新变量。 ⚡ 右上角菜单 → Explore 可单独刷新此面板查询",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 2
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "P99"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "P90"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "P50"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi"
+        },
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "expr": "quantile_over_time(0.99,{job=\"nginx\",node=~\"$node\",server_name=~\"$server_name\",status_class=~\"2xx|3xx|4xx|5xx\"} | json | unwrap request_time [$__interval])",
+          "legendFormat": "P99",
+          "minStep": "1m"
+        },
+        {
+          "expr": "quantile_over_time(0.90,{job=\"nginx\",node=~\"$node\",server_name=~\"$server_name\",status_class=~\"2xx|3xx|4xx|5xx\"} | json | unwrap request_time [$__interval])",
+          "legendFormat": "P90",
+          "minStep": "1m"
+        },
+        {
+          "expr": "quantile_over_time(0.50,{job=\"nginx\",node=~\"$node\",server_name=~\"$server_name\",status_class=~\"2xx|3xx|4xx|5xx\"} | json | unwrap request_time [$__interval])",
+          "legendFormat": "P50",
+          "minStep": "1m"
+        }
+      ],
+      "interval": "1m"
+    },
+    {
+      "id": 42,
+      "type": "logs",
+      "title": "高延迟请求 TOP 100（>1s）— 建议选定域名 + 时间范围 ≤15min",
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 35
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-nginx"
+      },
+      "description": "⚠️ 需扫描日志体，强烈建议先在顶部选定具体域名再查。时间范围控制在 15min 内响应最快",
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": false,
+        "prettifyLogMessage": true,
+        "enableLogDetails": true,
+        "sortOrder": "Descending",
+        "dedupStrategy": "none"
+      },
+      "targets": [
+        {
+          "expr": "{job=\"nginx\",node=~\"$node\",server_name=~\"$server_name\"} | json | request_time > 1 | line_format \"⏱ {{.request_time}}s  [{{.status}}] {{.request_method}} {{.server_name}}{{.uri}} ← {{.client_ip}} | upstream={{.upstream_response_time}}s | {{.node}}\"",
+          "maxLines": 100
+        }
+      ]
+    },
+    {
+      "id": 70,
+      "type": "row",
+      "title": "📋 最新请求 & IP 明细",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 45
+      },
+      "collapsed": false
+    },
+    {
+      "id": 71,
+      "type": "logs",
+      "title": "最新请求 100 条（含域名 / 状态码 / 延迟 / IP）— 点击行展开完整字段",
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 46
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-nginx"
+      },
+      "description": "maxLines=100 硬限制防止超时；建议选定域名缩小查询范围",
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": false,
+        "prettifyLogMessage": true,
+        "enableLogDetails": true,
+        "sortOrder": "Descending",
+        "dedupStrategy": "none"
+      },
+      "targets": [
+        {
+          "expr": "{job=\"nginx\",node=~\"$node\",server_name=~\"$server_name\"} | json | line_format \"[{{.status}}] {{.request_method}} {{.server_name}}{{.uri}} | {{.request_time}}s | {{.client_ip}} | {{.node}} | {{.http_user_agent}}\"",
+          "maxLines": 100
+        }
+      ]
+    },
+    {
+      "id": 62,
+      "type": "logs",
+      "title": "IP 请求明细（最新 50 条，含客户端 IP）",
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 46
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-nginx"
+      },
+      "description": "快速预览含 IP 的请求记录。如需按特定 IP 过滤，点击下方 IP 排行表格中的 IP 地址跳转 Explore 查看完整详情",
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": false,
+        "prettifyLogMessage": true,
+        "enableLogDetails": true,
+        "sortOrder": "Descending",
+        "dedupStrategy": "none"
+      },
+      "targets": [
+        {
+          "expr": "{job=\"nginx\",node=~\"$node\",server_name=~\"$server_name\"} | json | line_format \"🖥 {{.client_ip}} | [{{.status}}] {{.request_method}} {{.server_name}}{{.uri}} | {{.request_time}}s | {{.node}}\"",
+          "maxLines": 50
+        }
+      ]
+    },
+    {
+      "id": 50,
+      "type": "row",
+      "title": "🌍 域名访问分析",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 56
+      },
+      "collapsed": false
+    },
+    {
+      "id": 51,
+      "type": "table",
+      "title": "域名访问量 TOP 20（标签直接聚合，毫秒级响应）",
+      "gridPos": {
+        "h": 12,
+        "w": 8,
+        "x": 0,
+        "y": 57
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-nginx"
+      },
+      "description": "server_name 是 Loki 标签，走索引统计，无需扫描日志体 ⚡ 右上角菜单 → Explore 可单独刷新此面板查询",
+      "options": {
+        "sortBy": [
+          {
+            "displayName": "请求数",
+            "desc": true
+          }
+        ],
+        "footer": {
+          "show": true,
+          "reducer": [
+            "sum"
+          ],
+          "fields": [
+            "请求数"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "域名"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 260
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "点击过滤此域名",
+                    "url": "/d/nginx-final?orgId=1&from=${__from}&to=${__to}&var-node=${__data.fields.node}&var-server_name=${__data.fields[\"域名\"]}",
+                    "targetBlank": false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "请求数"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 130
+              },
+              {
+                "id": "custom.displayMode",
+                "value": "gradient-gauge"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-GrYlRd"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "expr": "topk(20,sum by (server_name)(count_over_time({job=\"nginx\",node=~\"$node\",server_name=~\"$server_name\"} [$__range])))",
+          "instant": true,
+          "legendFormat": "{{server_name}}"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "Value": "请求数",
+              "server_name": "域名"
+            },
+            "excludeByName": {
+              "Time": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 52,
+      "type": "timeseries",
+      "title": "域名 QPS 趋势 TOP 10（标签查询）",
+      "gridPos": {
+        "h": 12,
+        "w": 8,
+        "x": 8,
+        "y": 57
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-nginx"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "lineWidth": 2
+          }
+        }
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "expr": "topk(10,sum by (server_name)(rate({job=\"nginx\",node=~\"$node\",server_name=~\"$server_name\"} [$interval])))",
+          "legendFormat": "{{server_name}}",
+          "minStep": "1m"
+        }
+      ],
+      "description": "纯标签查询，速度快。如仍超时说明时间范围过大，缩短至 ≤1h 或调大粒度变量 ⚡ 右上角菜单 → Explore 可单独刷新此面板查询",
+      "interval": "1m"
+    },
+    {
+      "id": 53,
+      "type": "logs",
+      "title": "所选域名最新请求 100 条（含详情）— 顶部下拉选择域名后刷新",
+      "gridPos": {
+        "h": 12,
+        "w": 8,
+        "x": 16,
+        "y": 57
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki-nginx"
+      },
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "wrapLogMessage": false,
+        "prettifyLogMessage": true,
+        "enableLogDetails": true,
+        "sortOrder": "Descending"
+      },
+      "targets": [
+        {
+          "expr": "{job=\"nginx\",node=~\"$node\",server_name=~\"$server_name\"} | json | line_format \"🌐 {{.server_name}} | [{{.status}}] {{.request_method}} {{.uri}} | {{.request_time}}s | {{.client_ip}} | {{.node}}\"",
+          "maxLines": 100
+        }
+      ]
+    }
+  ]
+}
