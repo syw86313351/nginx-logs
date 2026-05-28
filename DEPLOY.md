@@ -43,11 +43,16 @@ nginx-logs/
 ├── loki/
 │   └── loki-config.yml                 # Loki 单机配置（filesystem 存储 + 7 天 retention）
 ├── grafana/
+│   ├── README.md                       # 仪表板说明
+│   ├── dashboards/import/              # ★ 手动导入用 JSON（4 个）
+│   │   ├── README.md                   # 导入步骤
+│   │   ├── nginx-node-domains.json
+│   │   ├── nginx-access-recent.json
+│   │   ├── nginx-ops-overview.json
+│   │   └── nginx-troubleshoot.json
 │   └── provisioning/
-│       ├── datasources/loki.yml        # 自动注册 Loki 数据源
-│       └── dashboards/
-│           ├── dashboard.yml           # 仪表板自动加载
-│           └── nginx-logs.json         # Nginx 日志分析仪表板
+│       ├── datasources/loki.yml        # 可选：自动注册 Loki 数据源
+│       └── dashboards/dashboard.yml    # 仪表板不自动加载（providers: []）
 ├── client-linux/                       # Linux 客户端配置模板
 │   ├── filebeat.yml                    # Filebeat：采集 Nginx 日志 → Kafka
 │   ├── nginx-json-log-format.conf      # Nginx JSON 日志格式片段
@@ -124,6 +129,16 @@ docker compose exec kafka kafka-topics.sh --bootstrap-server localhost:9092 --li
 3. 左侧选 **Explore** → 数据源选 **Loki**
 4. 输入 `{job="nginx"}`，等客户端接入后就能看到日志
 
+汇总表「冻结列」需 **Grafana ≥12.2**（仓库默认 `GRAFANA_IMAGE=grafana/grafana:12.2.1`）。若从 11.x 升级：
+
+```bash
+cd /path/to/nginx-logs/server
+docker compose pull grafana
+docker compose up -d grafana
+```
+
+升级后在 Grafana 左下角 **Grafana v12.x** 确认版本，并 **Overwrite Import** `nginx-host-domain-qps.json`。
+
 ### 6. 服务管理
 
 ```bash
@@ -187,7 +202,7 @@ docker compose logs -f     # 查看实时日志
 
 6. **验证**
 
-   在服务端 Grafana 的 Explore 中查询 `{job="nginx", host="<node值>"}`。
+   在服务端 Grafana 的 Explore 中查询 `{job="nginx", node="<node值>"}`。
 
 ---
 
@@ -235,36 +250,45 @@ docker compose logs -f     # 查看实时日志
 
 6. **验证**
 
-   在服务端 Grafana 的 Explore 中查询 `{job="nginx", host="<node值>"}`。
+   在服务端 Grafana 的 Explore 中查询 `{job="nginx", node="<node值>"}`。
 
 ---
 
 ## 第四部分：Grafana 分析功能
 
-启动后 Grafana 会自动加载预置仪表板，包含以下分析面板：
+Grafana **仪表板需手动导入**（详见 [`grafana/dashboards/import/README.md`](grafana/dashboards/import/README.md)）：
 
-| 面板 | 类型 | 说明 |
-|------|------|------|
-| 总请求数 | Stat | 最近 5 分钟请求量 |
-| 平均 QPS | Stat | 每秒请求数 |
-| 4xx / 5xx 错误率 | Stat | 错误占比 |
-| 请求速率（按状态码） | Time Series | 2xx/3xx/4xx/5xx 分时段趋势 |
-| 状态码分布 | Pie Chart | 最近 15 分钟占比 |
-| 响应时间 P50/P95/P99 | Time Series | 延迟分位数 |
-| 慢请求数量 | Time Series | request_time > 0.5s 的趋势 |
-| Top 10 URI | Table | 按请求量排行 |
-| Top 10 错误 URI | Table | 4xx/5xx 请求量排行 |
-| Top 10 IP | Table | 按访问量排行 |
-| 实时日志流 | Logs | 原始日志 |
-| 异常请求日志 | Logs | 仅 4xx/5xx |
+| 仪表板 | 面板数 | 说明 |
+|--------|--------|------|
+| Nginx 节点-域名统计 | 2 | 按中转节点 × 入口域名统计访问次数；点击域名跳转明细 |
+| Nginx 最近访问明细 | 1 | 全字段中文表格，最新访问在前，可调行数 |
+| Nginx 运营总览 | 2 | node×host 指标汇总表 + 状态码 QPS 趋势 |
+| Nginx 故障排查 | 2 | 慢请求/错误明细表 + 4xx/5xx QPS 趋势 |
 
 **仪表板变量**（顶部下拉框）：
 
-- `env`：按环境过滤
-- `app`：按应用过滤
-- `host`：按主机过滤（对应 Nginx log_format 中的 `node` 字段）
-- `os`：按操作系统过滤（linux / windows）
-- `status_class`：按状态码类过滤（2xx/3xx/4xx/5xx）
+- `node`：中转节点（对应 JSON 日志中的 `node`，如 `广州Nginx中转`）
+- `host`：入口域名（对应 JSON 中的 `host` / `server_name`）
+- `request_method` / `status_class`：请求方法与状态码类（最近访问明细）
+- `max_rows`：明细表显示行数（50 / 100 / 200 / 500）
+- `slow_threshold`：故障排查慢请求阈值（秒）
+
+**验证步骤**
+
+1. 浏览器打开 `http://<服务端IP>:3000`（admin / admin）
+2. **Dashboards → Import**，依次上传 `grafana/dashboards/import/` 下 4 个 JSON，并映射 Loki 数据源
+3. Explore 查询：
+
+   ```logql
+   {job="nginx", node="你的node值", host="你的域名"} | json
+   ```
+
+4. 修改 Alloy 或仪表板后重启：
+
+   ```bash
+   cd server
+   docker compose restart alloy-consumer grafana
+   ```
 
 ---
 

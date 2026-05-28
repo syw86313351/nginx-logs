@@ -1,0 +1,79 @@
+# ====================================================================
+# Redis + Sentinel — Docker Compose（app11 — Slave + Sentinel）
+# ====================================================================
+# 三机方案：主从关系由 Sentinel 管理，quorum=2
+
+services:
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis-ha
+    network_mode: host
+    restart: always
+    command: >
+      redis-server
+      --port 6379
+      --requirepass cns@2035
+      --masterauth cns@2035
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --save ""
+      --appendonly no
+      --loglevel notice
+      --replica-priority 50
+      --replica-announce-ip 192.168.131.11
+      --replica-announce-port 6379
+    volumes:
+      - /opt/redis-ha/redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "cns@2035", "--no-auth-warning", "PING"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  sentinel:
+    image: redis:7-alpine
+    container_name: sentinel-ha
+    network_mode: host
+    restart: always
+    command: redis-sentinel /etc/redis/sentinel.conf --port 26379
+    volumes:
+      - /opt/redis-ha/:/etc/redis/
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "26379", "PING"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # ── 启动守护：自动防脑裂 ──
+  # Redis + Sentinel 都就绪后执行一次，问 Sentinel "谁才是 Master"
+  # 如果 Master 是另一台机器 → 本机自动降级为 Slave
+  init-guard:
+    image: redis:7-alpine
+    network_mode: host
+    restart: "no"
+    entrypoint: >
+      /bin/sh -c '
+        LOCAL_IP="192.168.131.11";
+        echo "本机 IP: $$LOCAL_IP";
+        for i in $$(seq 1 20); do
+          MASTER_IP=$$(redis-cli -p 26379 SENTINEL MASTER redis-ha 2>/dev/null | grep -A1 "^ip$$" | tail -1);
+          if [ -n "$$MASTER_IP" ]; then break; fi;
+          sleep 1;
+        done;
+        echo "Sentinel 说 Master 是: $$MASTER_IP";
+        if [ -n "$$MASTER_IP" ] && [ "$$MASTER_IP" != "$$LOCAL_IP" ]; then
+          echo "Master 是别人 → 本机降级为 Slave";
+          redis-cli -a cns@2035 --no-auth-warning REPLICAOF $$MASTER_IP 6379;
+        else
+          echo "Master 就是本机 → 保持不变";
+        fi
+      '
+    depends_on:
+      redis:
+        condition: service_healthy
+      sentinel:
+        condition: service_healthy

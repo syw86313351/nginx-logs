@@ -1,0 +1,199 @@
+{  "__inputs": [
+    {
+      "name": "DS_LOKI",
+      "label": "Loki",
+      "description": "选择已配置的 Loki 数据源",
+      "type": "datasource",
+      "pluginId": "loki",
+      "pluginName": "Loki"
+    }
+  ],
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "10.0.0"
+    },
+    {
+      "type": "datasource",
+      "id": "loki",
+      "name": "Loki",
+      "version": "1.0.0"
+    }
+  ],
+  "uid": "nginx-troubleshoot",
+  "title": "Nginx 故障排查",
+  "tags": ["nginx", "loki"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "1m",
+  "time": { "from": "now-15m", "to": "now" },
+  "links": [
+    {
+      "title": "最近访问明细",
+      "type": "link",
+      "url": "/d/nginx-access-recent?orgId=${__org.id}&from=${__from}&to=${__to}",
+      "targetBlank": false
+    },
+    {
+      "title": "运营总览",
+      "type": "link",
+      "url": "/d/nginx-ops-overview?orgId=${__org.id}&from=${__from}&to=${__to}",
+      "targetBlank": false
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "node",
+        "label": "中转节点",
+        "type": "query",
+        "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+        "query": { "type": "label_values", "label": "node", "stream": "{job=\"nginx\"}" },
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "refresh": 2,
+        "sort": 1
+      },
+      {
+        "name": "host",
+        "label": "入口域名",
+        "type": "query",
+        "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+        "query": { "type": "label_values", "label": "host", "stream": "{job=\"nginx\",node=~\"$node\"}" },
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "refresh": 2,
+        "sort": 1
+      },
+      {
+        "name": "slow_threshold",
+        "label": "慢请求阈值(秒)",
+        "type": "textbox",
+        "current": { "text": "0.5", "value": "0.5" }
+      },
+      {
+        "name": "max_rows",
+        "label": "显示行数",
+        "type": "custom",
+        "query": "50,100,200",
+        "options": [
+          { "text": "50", "value": "50" },
+          { "text": "100", "value": "100", "selected": true },
+          { "text": "200", "value": "200" }
+        ],
+        "current": { "text": "100", "value": "100" }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "table",
+      "title": "慢请求 / 错误请求明细",
+      "description": "包含响应耗时超过阈值或状态码为 4xx/5xx 的请求。建议时间 ≤30m。按响应耗时降序。",
+      "gridPos": { "h": 14, "w": 24, "x": 0, "y": 0 },
+      "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "响应耗时(s)", "desc": true }]
+      },
+      "fieldConfig": {
+        "defaults": { "custom": { "inspect": true } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "请求时间" }, "properties": [{ "id": "custom.width", "value": 180 }] },
+          { "matcher": { "id": "byName", "options": "接口路径" }, "properties": [{ "id": "custom.width", "value": 280 }] }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{job=\"nginx\", node=~\"$node\", host=~\"$host\"} | json | request_time > $slow_threshold or status >= 400",
+          "queryType": "range",
+          "maxLines": 200,
+          "direction": "backward"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": { "format": "json", "source": "Line" }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "time_iso8601": "请求时间",
+              "node": "中转节点",
+              "host": "请求域名",
+              "uri_base": "接口路径",
+              "client_ip": "客户端IP",
+              "status": "状态码",
+              "status_class": "状态分类",
+              "request_time": "响应耗时(s)",
+              "upstream_response_time": "上游响应(s)",
+              "request_method": "请求方法",
+              "upstream_status": "上游状态码"
+            },
+            "indexByName": {
+              "请求时间": 0,
+              "中转节点": 1,
+              "请求域名": 2,
+              "接口路径": 3,
+              "客户端IP": 4,
+              "请求方法": 5,
+              "状态码": 6,
+              "状态分类": 7,
+              "响应耗时(s)": 8,
+              "上游响应(s)": 9,
+              "上游状态码": 10
+            },
+            "excludeByName": {
+              "Line": true,
+              "labels": true,
+              "id": true,
+              "tsNs": true,
+              "Time": true
+            }
+          }
+        },
+        { "id": "limit", "options": { "limitField": 100 } },
+        {
+          "id": "sortBy",
+          "options": { "sort": [{ "field": "响应耗时(s)", "desc": true }] }
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "4xx + 5xx 错误 QPS",
+      "description": "错误请求速率突增时排查对应 node/域名。",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 14 },
+      "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "color": { "fixedColor": "red", "mode": "fixed" },
+          "custom": { "lineWidth": 2, "fillOpacity": 15 }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "single" }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate({job=\"nginx\", node=~\"$node\", host=~\"$host\", status_class=~\"4xx|5xx\"}[5m]))",
+          "legendFormat": "4xx+5xx QPS"
+        }
+      ]
+    }
+  ]
+}
+

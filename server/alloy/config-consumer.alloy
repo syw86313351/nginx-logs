@@ -1,4 +1,5 @@
-# 从 Kafka 消费 Nginx 日志并写入 Loki 的示例配置
+// Kafka 消费 Nginx JSON 日志 → 解析 → 写入 Loki
+// 标签仅保留低基数字段；client_ip、uri_base 留在日志 JSON 体内
 
 loki.source.kafka "nginx_kafka" {
   brokers    = ["kafka:9092"]
@@ -9,35 +10,56 @@ loki.source.kafka "nginx_kafka" {
 loki.process "nginx_kafka" {
   stage.json {
     expressions = {
-      remote_addr    = "remote_addr",
-      time_iso8601   = "time_iso8601",
-      request_method = "request_method",
-      request_uri    = "request_uri",
-      status         = "status",
-      request_time   = "request_time",
-      node           = "node",
+      node                   = "node",
+      host                   = "host",
+      server_name            = "server_name",
+      request_method         = "request_method",
+      status                 = "status",
+      status_class           = "status_class",
+      scheme                 = "scheme",
+      uri                    = "uri",
+      remote_addr            = "remote_addr",
+      x_real_ip              = "x_real_ip",
+      client_ip              = "client_ip",
+      request_time           = "request_time",
+      bytes_sent             = "bytes_sent",
+      upstream_response_time = "upstream_response_time",
+      time_iso8601           = "time_iso8601",
     }
   }
 
-  stage.labels {
-    values = {
-      job    = "nginx",
-      app    = "gateway",
-      host   = "{{ .node }}",
-      status = "{{ .status }}",
-      method = "{{ .request_method }}",
-    }
+  // uri_base：去掉 ;jsessionid=...
+  stage.regex {
+    expression = "^(?P<uri_base>[^;]*)"
+    source     = "uri"
   }
 
+  // client_ip：优先日志已有字段，否则 x_real_ip，再否则 remote_addr
   stage.template {
-    source   = "status"
-    template = "{{ if ge .Value 500.0 }}5xx{{ else if ge .Value 400.0 }}4xx{{ else }}other{{ end }}"
-    output   = "status_class"
+    source   = "client_ip"
+    template = "{{ if .client_ip }}{{ .client_ip }}{{ else if and .x_real_ip (ne .x_real_ip \"\") (ne .x_real_ip \"-\") }}{{ .x_real_ip }}{{ else }}{{ .remote_addr }}{{ end }}"
+  }
+
+  // status_class 兜底（日志内通常已有）
+  stage.template {
+    source   = "status_class"
+    template = "{{ if .status_class }}{{ .status_class }}{{ else if ge .status 500.0 }}5xx{{ else if ge .status 400.0 }}4xx{{ else if ge .status 300.0 }}3xx{{ else if ge .status 200.0 }}2xx{{ else }}1xx{{ end }}"
+  }
+
+  // host 标签：优先 host，否则 server_name
+  stage.template {
+    source   = "host_label"
+    template = "{{ if .host }}{{ .host }}{{ else }}{{ .server_name }}{{ end }}"
   }
 
   stage.labels {
     values = {
-      status_class = "{{ .status_class }}",
+      job            = "nginx",
+      node           = "{{ .node }}",
+      host           = "{{ .host_label }}",
+      request_method = "{{ .request_method }}",
+      status_class   = "{{ .status_class }}",
+      scheme         = "{{ .scheme }}",
     }
   }
 
@@ -49,4 +71,3 @@ loki.write "loki" {
     url = "http://loki:3100/loki/api/v1/push"
   }
 }
-

@@ -1,0 +1,15 @@
+# ====================================================================
+# Redis Sentinel 仲裁机 — 独立主机，只跑 Sentinel
+# ====================================================================
+# 部署: 1vCPU + 256MB + 10GB 任意机器，能访问 app10/app11 即可
+# 端口: 26379（和 app10/app11 一样，因为是不同主机）
+
+services:
+  sentinel:
+    image: redis:7-alpine
+    container_name: redis-ha-sentinel
+    network_mode: host
+    restart: always
+    command: redis-sentinel /etc/redis/sentinel.conf --port 26379
+    volumes:
+      - /opt/redis-ha-sentinel/:/etc/redis/

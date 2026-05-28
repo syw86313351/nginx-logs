@@ -1,0 +1,326 @@
+{  "__inputs": [
+    {
+      "name": "DS_LOKI",
+      "label": "Loki",
+      "description": "选择已配置的 Loki 数据源",
+      "type": "datasource",
+      "pluginId": "loki",
+      "pluginName": "Loki"
+    }
+  ],
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "10.0.0"
+    },
+    {
+      "type": "datasource",
+      "id": "loki",
+      "name": "Loki",
+      "version": "1.0.0"
+    }
+  ],
+  "uid": "nginx-access-recent",
+  "title": "Nginx 最近访问明细",
+  "tags": ["nginx", "loki"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 7,
+  "refresh": false,
+  "liveNow": false,
+  "time": { "from": "now-15m", "to": "now" },
+  "links": [
+    {
+      "title": "节点-域名统计",
+      "type": "link",
+      "url": "/d/nginx-node-domains?orgId=${__org.id}&from=${__from}&to=${__to}",
+      "targetBlank": false
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "node",
+        "label": "中转节点",
+        "type": "query",
+        "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+        "query": { "type": "label_values", "label": "node", "stream": "{job=\"nginx\"}" },
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "refresh": 0,
+        "sort": 1
+      },
+      {
+        "name": "host",
+        "label": "入口域名",
+        "type": "query",
+        "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+        "query": { "type": "label_values", "label": "host", "stream": "{job=\"nginx\",node=~\"$node\"}" },
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "refresh": 0,
+        "sort": 1
+      },
+      {
+        "name": "method",
+        "label": "请求方法",
+        "type": "query",
+        "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+        "query": { "type": "label_values", "label": "request_method", "stream": "{job=\"nginx\",node=~\"$node\",host=~\"$host\"}" },
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "refresh": 0
+      },
+      {
+        "name": "status_class",
+        "label": "状态分类",
+        "type": "custom",
+        "query": "2xx,3xx,4xx,5xx",
+        "options": [
+          { "text": "2xx", "value": "2xx", "selected": false },
+          { "text": "3xx", "value": "3xx", "selected": false },
+          { "text": "4xx", "value": "4xx", "selected": false },
+          { "text": "5xx", "value": "5xx", "selected": false }
+        ],
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": { "text": "All", "value": "$__all" }
+      },
+      {
+        "name": "max_rows",
+        "label": "显示行数",
+        "type": "custom",
+        "query": "50,100,200,500",
+        "options": [
+          { "text": "50", "value": "50", "selected": false },
+          { "text": "100", "value": "100", "selected": false },
+          { "text": "200", "value": "200", "selected": false },
+          { "text": "500", "value": "500", "selected": true }
+        ],
+        "current": { "text": "500", "value": "500" }
+      },
+      {
+        "name": "uri_pattern",
+        "label": "URI 匹配",
+        "type": "textbox",
+        "hide": 2,
+        "query": "",
+        "current": { "text": ".*", "value": ".*" }
+      },
+      {
+        "name": "extra_pipeline",
+        "label": "附加过滤",
+        "type": "textbox",
+        "hide": 2,
+        "query": "",
+        "current": { "text": "", "value": "" }
+      },
+      {
+        "name": "server_name",
+        "label": "入口域名(server_name)",
+        "type": "textbox",
+        "hide": 2,
+        "query": "",
+        "current": { "text": ".*", "value": ".*" }
+      },
+      {
+        "name": "client_ip",
+        "label": "客户端 IP",
+        "type": "textbox",
+        "hide": 2,
+        "query": "",
+        "current": { "text": ".*", "value": ".*" }
+      },
+      {
+        "name": "remote_addr",
+        "label": "远程 IP",
+        "type": "textbox",
+        "hide": 2,
+        "query": "",
+        "current": { "text": ".*", "value": ".*" }
+      },
+      {
+        "name": "x_real_ip",
+        "label": "X-Real-IP",
+        "type": "textbox",
+        "hide": 2,
+        "query": "",
+        "current": { "text": ".*", "value": ".*" }
+      },
+      {
+        "name": "x_forwarded_for",
+        "label": "X-Forwarded-For",
+        "type": "textbox",
+        "hide": 2,
+        "query": "",
+        "current": { "text": ".*", "value": ".*" }
+      },
+      {
+        "name": "server_addr",
+        "label": "服务端 IP",
+        "type": "textbox",
+        "hide": 2,
+        "query": "",
+        "current": { "text": ".*", "value": ".*" }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "table",
+      "title": "最近访问记录（最新在前）",
+      "description": "由汇总表钻取时自动带入：中转节点、入口域名、各 IP 字段、仪表板时间范围及指标过滤。默认拉取 500 条；时间范围建议 ≤30m。",
+      "gridPos": { "h": 22, "w": 24, "x": 0, "y": 0 },
+      "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "请求时间", "desc": true }],
+        "cellHeight": "sm"
+      },
+      "fieldConfig": {
+        "defaults": { "custom": { "align": "auto", "inspect": true } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "请求时间" }, "properties": [{ "id": "custom.width", "value": 180 }] },
+          { "matcher": { "id": "byName", "options": "接口路径" }, "properties": [{ "id": "custom.width", "value": 260 }] },
+          { "matcher": { "id": "byName", "options": "完整URI" }, "properties": [{ "id": "custom.width", "value": 280 }] },
+          { "matcher": { "id": "byName", "options": "用户代理" }, "properties": [{ "id": "custom.width", "value": 300 }] },
+          { "matcher": { "id": "byName", "options": "来源页" }, "properties": [{ "id": "custom.width", "value": 200 }] }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{job=\"nginx\", node=~\"$node\", host=~\"$host\", request_method=~\"$method\", status_class=~\"$status_class\"} | json | host != \"\" and host != \"-\" and host=~\"$host\" | server_name=~\"$server_name\" | uri=~\"$uri_pattern\" | client_ip=~\"$client_ip\" | remote_addr=~\"$remote_addr\" | x_real_ip=~\"$x_real_ip\" | x_forwarded_for=~\"$x_forwarded_for\" | server_addr=~\"$server_addr\" $extra_pipeline",
+          "queryType": "range",
+          "maxLines": 500,
+          "direction": "backward",
+          "legendFormat": "",
+          "instant": false
+        }
+      ],
+      "transformations": [
+        {
+          "id": "extractFields",
+          "options": {
+            "format": "json",
+            "jsonPaths": [],
+            "source": "Line"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "time_iso8601": "请求时间",
+              "node": "中转节点",
+              "host": "请求域名",
+              "server_name": "服务名",
+              "uri_base": "接口路径",
+              "uri": "完整URI",
+              "request_uri": "原始请求URI",
+              "request_method": "请求方法",
+              "status": "状态码",
+              "status_class": "状态分类",
+              "client_ip": "客户端IP",
+              "remote_addr": "远程地址",
+              "remote_port": "远程端口",
+              "request_time": "响应耗时(s)",
+              "upstream_response_time": "上游响应(s)",
+              "upstream_connect_time": "上游连接(s)",
+              "upstream_header_time": "上游首包(s)",
+              "upstream_status": "上游状态码",
+              "bytes_sent": "发送字节",
+              "body_bytes_sent": "响应体字节",
+              "request_length": "请求长度",
+              "scheme": "协议",
+              "protocol": "HTTP版本",
+              "server_addr": "服务端IP",
+              "server_port": "服务端口",
+              "http_referer": "来源页",
+              "http_user_agent": "用户代理",
+              "request_id": "请求ID",
+              "http_x_request_id": "链路请求ID",
+              "connection": "连接序号",
+              "args": "查询参数",
+              "x_forwarded_for": "X-Forwarded-For",
+              "x_real_ip": "X-Real-IP",
+              "ssl_protocol": "SSL协议",
+              "ssl_cipher": "SSL加密套件",
+              "ssl_server_name": "SSL服务名",
+              "message_key": "消息键",
+              "msec": "毫秒时间戳"
+            },
+            "indexByName": {
+              "请求时间": 0,
+              "中转节点": 1,
+              "请求域名": 2,
+              "服务名": 3,
+              "接口路径": 4,
+              "完整URI": 5,
+              "原始请求URI": 6,
+              "请求方法": 7,
+              "状态码": 8,
+              "状态分类": 9,
+              "客户端IP": 10,
+              "远程地址": 11,
+              "远程端口": 12,
+              "响应耗时(s)": 13,
+              "上游响应(s)": 14,
+              "上游连接(s)": 15,
+              "上游首包(s)": 16,
+              "上游状态码": 17,
+              "发送字节": 18,
+              "响应体字节": 19,
+              "请求长度": 20,
+              "协议": 21,
+              "HTTP版本": 22,
+              "服务端IP": 23,
+              "服务端口": 24,
+              "来源页": 25,
+              "用户代理": 26,
+              "请求ID": 27,
+              "链路请求ID": 28,
+              "连接序号": 29,
+              "查询参数": 30,
+              "X-Forwarded-For": 31,
+              "X-Real-IP": 32,
+              "SSL协议": 33,
+              "SSL加密套件": 34,
+              "SSL服务名": 35,
+              "消息键": 36,
+              "毫秒时间戳": 37
+            },
+            "excludeByName": {
+              "Line": true,
+              "labels": true,
+              "labelTypes": true,
+              "id": true,
+              "tsNs": true,
+              "Time": true,
+              "traceID": true,
+              "spanID": true
+            }
+          }
+        },
+        {
+          "id": "limit",
+          "options": { "limitField": 500 }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [{ "field": "请求时间", "desc": true }]
+          }
+        }
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,8 @@
+TYPE=Ethernet
+BOOTPROTO=none
+NAME=enp132s0f0
+DEVICE=enp132s0f0
+ONBOOT=yes
+BRIDGE=enp132s0f0-br0
+NM_CONTROLLED=yes
+

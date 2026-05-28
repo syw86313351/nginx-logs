@@ -1,0 +1,1205 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_LOKI",
+      "label": "Loki",
+      "description": "选择已配置的 Loki 数据源",
+      "type": "datasource",
+      "pluginId": "loki",
+      "pluginName": "Loki"
+    }
+  ],
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "12.2.0"
+    },
+    {
+      "type": "datasource",
+      "id": "loki",
+      "name": "Loki",
+      "version": "1.0.0"
+    }
+  ],
+  "uid": "nginx-ecterpapi-analytics",
+  "title": "Nginx 开放平台 echterpapi 分析",
+  "tags": [
+    "nginx",
+    "loki",
+    "ecterpapi"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 10,
+  "refresh": false,
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "node",
+        "label": "中转节点",
+        "type": "query",
+        "datasource": {
+          "type": "loki",
+          "uid": "${DS_LOKI}"
+        },
+        "query": {
+          "label": "node",
+          "stream": "{job=\"nginx\"}",
+          "type": 1
+        },
+        "multi": false,
+        "includeAll": false,
+        "refresh": 2,
+        "sort": 1,
+        "description": "必选：先选中转节点，入口域名列表依赖此变量"
+      },
+      {
+        "name": "host",
+        "label": "入口域名",
+        "type": "query",
+        "datasource": {
+          "type": "loki",
+          "uid": "${DS_LOKI}"
+        },
+        "query": {
+          "label": "server_name",
+          "stream": "{job=\"nginx\",node=~\"$node\"}",
+          "type": 1
+        },
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "description": "Loki 标签 server_name（与 nginx-analytics 一致）；须先选中转节点"
+      },
+      {
+        "name": "method",
+        "label": "HTTP 方法",
+        "type": "query",
+        "datasource": {
+          "type": "loki",
+          "uid": "${DS_LOKI}"
+        },
+        "query": {
+          "label": "request_method",
+          "stream": "{job=\"nginx\",node=~\"$node\"}",
+          "type": 1
+        },
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "refresh": 2
+      },
+      {
+        "name": "api_method",
+        "label": "接口方法",
+        "type": "textbox",
+        "query": ".*",
+        "current": {
+          "text": ".*",
+          "value": ".*"
+        },
+        "description": "匹配 args/request_uri 中 method= 值，如 getProductInfo"
+      },
+      {
+        "name": "api_key",
+        "label": "AppKey",
+        "type": "textbox",
+        "query": ".*",
+        "current": {
+          "text": ".*",
+          "value": ".*"
+        },
+        "description": "匹配 args 中 apiKey= 值"
+      },
+      {
+        "name": "client_ip",
+        "label": "客户端 IP",
+        "type": "textbox",
+        "query": ".*",
+        "current": {
+          "text": ".*",
+          "value": ".*"
+        }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "table",
+      "title": "echterpapi 接口汇总（全字段）",
+      "description": "按中转节点、域名、客户端 IP、AppKey、服务端 IP、HTTP 方法、接口 method 聚合。点击「总请求数」或「接口方法」跳转 Explore 查看明细。时间范围建议 ≤30m；Top 100。",
+      "gridPos": {
+        "h": 18,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "frozenColumns": {
+          "left": 4
+        },
+        "sortBy": [
+          {
+            "displayName": "总请求数",
+            "desc": true
+          }
+        ],
+        "footer": {
+          "show": true,
+          "reducer": [
+            "sum"
+          ],
+          "fields": [
+            "总请求数",
+            "平均耗时(s)",
+            "入参总字节",
+            "出参总字节",
+            "状态码200",
+            "状态码3xx",
+            "状态码4xx",
+            "状态码404",
+            "状态码5xx",
+            "耗时≤1秒",
+            "耗时1~3秒",
+            "耗时3~10秒",
+            "耗时10~30秒",
+            "耗时>30秒"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "0",
+          "nullValueMode": "null as zero",
+          "mappings": [
+            {
+              "type": "special",
+              "options": {
+                "null": {
+                  "index": 0,
+                  "text": "0"
+                },
+                "empty": {
+                  "index": 1,
+                  "text": "0"
+                },
+                "NaN": {
+                  "index": 2,
+                  "text": "0"
+                }
+              }
+            }
+          ]
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "node"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "中转节点"
+              },
+              {
+                "id": "custom.width",
+                "value": 158
+              },
+              {
+                "id": "mappings",
+                "value": []
+              },
+              {
+                "id": "noValue",
+                "value": ""
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "server_name"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "入口域名"
+              },
+              {
+                "id": "custom.width",
+                "value": 228
+              },
+              {
+                "id": "mappings",
+                "value": []
+              },
+              {
+                "id": "noValue",
+                "value": ""
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "client_ip"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "客户端 IP"
+              },
+              {
+                "id": "custom.width",
+                "value": 138
+              },
+              {
+                "id": "mappings",
+                "value": []
+              },
+              {
+                "id": "noValue",
+                "value": ""
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "api_key"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "AppKey"
+              },
+              {
+                "id": "custom.width",
+                "value": 132
+              },
+              {
+                "id": "mappings",
+                "value": []
+              },
+              {
+                "id": "noValue",
+                "value": ""
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "server_addr"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "服务端 IP"
+              },
+              {
+                "id": "custom.width",
+                "value": 132
+              },
+              {
+                "id": "mappings",
+                "value": []
+              },
+              {
+                "id": "noValue",
+                "value": ""
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "request_method"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "HTTP 方法"
+              },
+              {
+                "id": "custom.width",
+                "value": 96
+              },
+              {
+                "id": "mappings",
+                "value": []
+              },
+              {
+                "id": "noValue",
+                "value": ""
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "api_method"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "接口方法"
+              },
+              {
+                "id": "custom.width",
+                "value": 176
+              },
+              {
+                "id": "mappings",
+                "value": []
+              },
+              {
+                "id": "noValue",
+                "value": ""
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Explore 查看明细",
+                    "url": "/explore?schemaVersion=1&panes=%7B%22p1%22%3A%7B%22datasource%22%3A%22loki-nginx%22%2C%22queries%22%3A%5B%7B%22expr%22%3A%22%7Bjob%3D%5C%22nginx%5C%22%2Cnode%3D~%5C%22%24%7Bnode%7D%5C%22%2Cserver_name%3D~%5C%22%24%7B__data.fields%5B%5C%22server_name%5C%22%5D%7D%5C%22%7D%20%7C%20json%20%7C%20uri%3D~%5C%22.%2Aecterpapi.%2A%5C%22%20%7C%20client_ip%3D%5C%22%24%7B__data.fields%5B%5C%22client_ip%5C%22%5D%7D%5C%22%20%7C%20client_ip%20%21%3D%20%5C%22%5C%22%20and%20client_ip%20%21%3D%20%5C%22-%5C%22%20%7C%20server_addr%20%21%3D%20%5C%22%5C%22%20and%20server_addr%20%21%3D%20%5C%22-%5C%22%20%7C%20line_format%20%5C%22%7B%7B.args%7D%7D%26%7B%7B.request_uri%7D%7D%5C%22%20%7C%20regexp%20%60%28%3Fi%29%28%3F%3A%5E%7C%5B%3F%26%5D%29method%3D%28%3FP%3Capi_method%3E%5BA-Za-z0-9_%5D%2B%29%60%20%7C%20regexp%20%60%28%3Fi%29%28%3F%3A%5E%7C%5B%3F%26%5D%29apiKey%3D%28%3FP%3Capi_key%3E%5B%5E%26%5C%22%5C%5Cs%5D%2B%29%60%20%7C%20api_method%3D%5C%22%24%7B__value.text%7D%5C%22%22%2C%22maxLines%22%3A500%2C%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22loki%22%2C%22uid%22%3A%22loki-nginx%22%7D%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22%24%7B__from%7D%22%2C%22to%22%3A%22%24%7B__to%7D%22%7D%7D%7D&orgId=${__org.id}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "总请求数"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "custom.width",
+                "value": 108
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Explore 查看明细",
+                    "url": "/explore?schemaVersion=1&panes=%7B%22p1%22%3A%7B%22datasource%22%3A%22loki-nginx%22%2C%22queries%22%3A%5B%7B%22expr%22%3A%22%7Bjob%3D%5C%22nginx%5C%22%2Cnode%3D~%5C%22%24%7Bnode%7D%5C%22%2Cserver_name%3D~%5C%22%24%7B__data.fields%5B%5C%22server_name%5C%22%5D%7D%5C%22%7D%20%7C%20json%20%7C%20uri%3D~%5C%22.%2Aecterpapi.%2A%5C%22%20%7C%20client_ip%3D%5C%22%24%7B__data.fields%5B%5C%22client_ip%5C%22%5D%7D%5C%22%20%7C%20client_ip%20%21%3D%20%5C%22%5C%22%20and%20client_ip%20%21%3D%20%5C%22-%5C%22%20%7C%20server_addr%20%21%3D%20%5C%22%5C%22%20and%20server_addr%20%21%3D%20%5C%22-%5C%22%20%7C%20line_format%20%5C%22%7B%7B.args%7D%7D%26%7B%7B.request_uri%7D%7D%5C%22%20%7C%20regexp%20%60%28%3Fi%29%28%3F%3A%5E%7C%5B%3F%26%5D%29method%3D%28%3FP%3Capi_method%3E%5BA-Za-z0-9_%5D%2B%29%60%20%7C%20regexp%20%60%28%3Fi%29%28%3F%3A%5E%7C%5B%3F%26%5D%29apiKey%3D%28%3FP%3Capi_key%3E%5B%5E%26%5C%22%5C%5Cs%5D%2B%29%60%20%7C%20api_method%3D%5C%22%24%7B__data.fields%5B%5C%22api_method%5C%22%5D%7D%5C%22%22%2C%22maxLines%22%3A500%2C%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22loki%22%2C%22uid%22%3A%22loki-nginx%22%7D%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22%24%7B__from%7D%22%2C%22to%22%3A%22%24%7B__to%7D%22%7D%7D%7D&orgId=${__org.id}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "平均耗时(s)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "decimals",
+                "value": 3
+              },
+              {
+                "id": "custom.width",
+                "value": 112
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "入参总字节"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "decbytes"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 118
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "出参总字节"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "decbytes"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 118
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^状态码"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "custom.width",
+                "value": 92
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^耗时"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "custom.width",
+                "value": 98
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "CNT",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, server_name, client_ip, api_key, server_addr, request_method, api_method) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\", request_method=~\"$method\"} | json | uri=~\".*ecterpapi.*\" | client_ip != \"\" and client_ip != \"-\" | server_addr != \"\" and server_addr != \"-\" | line_format \"{{.args}}&{{.request_uri}}\" | regexp `(?i)(?:^|[?&])method=(?P<api_method>[A-Za-z0-9_]+)` | regexp `(?i)(?:^|[?&])apiKey=(?P<api_key>[^&\"\\s]+)` | api_method != \"\" | api_method=~\"$api_method\" | api_key=~\"$api_key\" | client_ip=~\"$client_ip\" [$__range]))",
+          "legendFormat": "{{api_method}}"
+        },
+        {
+          "refId": "AVGRT",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "avg by (node, server_name, client_ip, api_key, server_addr, request_method, api_method) (avg_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\", request_method=~\"$method\"} | json | uri=~\".*ecterpapi.*\" | client_ip != \"\" and client_ip != \"-\" | server_addr != \"\" and server_addr != \"-\" | line_format \"{{.args}}&{{.request_uri}}\" | regexp `(?i)(?:^|[?&])method=(?P<api_method>[A-Za-z0-9_]+)` | regexp `(?i)(?:^|[?&])apiKey=(?P<api_key>[^&\"\\s]+)` | api_method != \"\" | api_method=~\"$api_method\" | api_key=~\"$api_key\" | client_ip=~\"$client_ip\" | unwrap request_time [$__range]))",
+          "legendFormat": "{{api_method}}"
+        },
+        {
+          "refId": "IN",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, server_name, client_ip, api_key, server_addr, request_method, api_method) (sum_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\", request_method=~\"$method\"} | json | uri=~\".*ecterpapi.*\" | client_ip != \"\" and client_ip != \"-\" | server_addr != \"\" and server_addr != \"-\" | line_format \"{{.args}}&{{.request_uri}}\" | regexp `(?i)(?:^|[?&])method=(?P<api_method>[A-Za-z0-9_]+)` | regexp `(?i)(?:^|[?&])apiKey=(?P<api_key>[^&\"\\s]+)` | api_method != \"\" | api_method=~\"$api_method\" | api_key=~\"$api_key\" | client_ip=~\"$client_ip\" | unwrap request_length [$__range]))",
+          "legendFormat": "{{api_method}}"
+        },
+        {
+          "refId": "OUT",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, server_name, client_ip, api_key, server_addr, request_method, api_method) (sum_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\", request_method=~\"$method\"} | json | uri=~\".*ecterpapi.*\" | client_ip != \"\" and client_ip != \"-\" | server_addr != \"\" and server_addr != \"-\" | line_format \"{{.args}}&{{.request_uri}}\" | regexp `(?i)(?:^|[?&])method=(?P<api_method>[A-Za-z0-9_]+)` | regexp `(?i)(?:^|[?&])apiKey=(?P<api_key>[^&\"\\s]+)` | api_method != \"\" | api_method=~\"$api_method\" | api_key=~\"$api_key\" | client_ip=~\"$client_ip\" | unwrap body_bytes_sent [$__range]))",
+          "legendFormat": "{{api_method}}"
+        },
+        {
+          "refId": "S200",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, server_name, client_ip, api_key, server_addr, request_method, api_method) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\", request_method=~\"$method\"} | json | uri=~\".*ecterpapi.*\" | client_ip != \"\" and client_ip != \"-\" | server_addr != \"\" and server_addr != \"-\" | line_format \"{{.args}}&{{.request_uri}}\" | regexp `(?i)(?:^|[?&])method=(?P<api_method>[A-Za-z0-9_]+)` | regexp `(?i)(?:^|[?&])apiKey=(?P<api_key>[^&\"\\s]+)` | api_method != \"\" | api_method=~\"$api_method\" | api_key=~\"$api_key\" | client_ip=~\"$client_ip\" | status=200 [$__range]))",
+          "legendFormat": "{{api_method}}"
+        },
+        {
+          "refId": "S3XX",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, server_name, client_ip, api_key, server_addr, request_method, api_method) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\", request_method=~\"$method\", status_class=\"3xx\"} | json | uri=~\".*ecterpapi.*\" | client_ip != \"\" and client_ip != \"-\" | server_addr != \"\" and server_addr != \"-\" | line_format \"{{.args}}&{{.request_uri}}\" | regexp `(?i)(?:^|[?&])method=(?P<api_method>[A-Za-z0-9_]+)` | regexp `(?i)(?:^|[?&])apiKey=(?P<api_key>[^&\"\\s]+)` | api_method != \"\" | api_method=~\"$api_method\" | api_key=~\"$api_key\" | client_ip=~\"$client_ip\" [$__range]))",
+          "legendFormat": "{{api_method}}"
+        },
+        {
+          "refId": "S4XX",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, server_name, client_ip, api_key, server_addr, request_method, api_method) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\", request_method=~\"$method\", status_class=\"4xx\"} | json | uri=~\".*ecterpapi.*\" | client_ip != \"\" and client_ip != \"-\" | server_addr != \"\" and server_addr != \"-\" | line_format \"{{.args}}&{{.request_uri}}\" | regexp `(?i)(?:^|[?&])method=(?P<api_method>[A-Za-z0-9_]+)` | regexp `(?i)(?:^|[?&])apiKey=(?P<api_key>[^&\"\\s]+)` | api_method != \"\" | api_method=~\"$api_method\" | api_key=~\"$api_key\" | client_ip=~\"$client_ip\" [$__range]))",
+          "legendFormat": "{{api_method}}"
+        },
+        {
+          "refId": "S404",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, server_name, client_ip, api_key, server_addr, request_method, api_method) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\", request_method=~\"$method\"} | json | uri=~\".*ecterpapi.*\" | client_ip != \"\" and client_ip != \"-\" | server_addr != \"\" and server_addr != \"-\" | line_format \"{{.args}}&{{.request_uri}}\" | regexp `(?i)(?:^|[?&])method=(?P<api_method>[A-Za-z0-9_]+)` | regexp `(?i)(?:^|[?&])apiKey=(?P<api_key>[^&\"\\s]+)` | api_method != \"\" | api_method=~\"$api_method\" | api_key=~\"$api_key\" | client_ip=~\"$client_ip\" | status=404 [$__range]))",
+          "legendFormat": "{{api_method}}"
+        },
+        {
+          "refId": "S5XX",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, server_name, client_ip, api_key, server_addr, request_method, api_method) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\", request_method=~\"$method\", status_class=\"5xx\"} | json | uri=~\".*ecterpapi.*\" | client_ip != \"\" and client_ip != \"-\" | server_addr != \"\" and server_addr != \"-\" | line_format \"{{.args}}&{{.request_uri}}\" | regexp `(?i)(?:^|[?&])method=(?P<api_method>[A-Za-z0-9_]+)` | regexp `(?i)(?:^|[?&])apiKey=(?P<api_key>[^&\"\\s]+)` | api_method != \"\" | api_method=~\"$api_method\" | api_key=~\"$api_key\" | client_ip=~\"$client_ip\" [$__range]))",
+          "legendFormat": "{{api_method}}"
+        },
+        {
+          "refId": "RT1",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, server_name, client_ip, api_key, server_addr, request_method, api_method) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\", request_method=~\"$method\"} | json | uri=~\".*ecterpapi.*\" | client_ip != \"\" and client_ip != \"-\" | server_addr != \"\" and server_addr != \"-\" | line_format \"{{.args}}&{{.request_uri}}\" | regexp `(?i)(?:^|[?&])method=(?P<api_method>[A-Za-z0-9_]+)` | regexp `(?i)(?:^|[?&])apiKey=(?P<api_key>[^&\"\\s]+)` | api_method != \"\" | api_method=~\"$api_method\" | api_key=~\"$api_key\" | client_ip=~\"$client_ip\" | request_time <= 1 [$__range]))",
+          "legendFormat": "{{api_method}}"
+        },
+        {
+          "refId": "RT3",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, server_name, client_ip, api_key, server_addr, request_method, api_method) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\", request_method=~\"$method\"} | json | uri=~\".*ecterpapi.*\" | client_ip != \"\" and client_ip != \"-\" | server_addr != \"\" and server_addr != \"-\" | line_format \"{{.args}}&{{.request_uri}}\" | regexp `(?i)(?:^|[?&])method=(?P<api_method>[A-Za-z0-9_]+)` | regexp `(?i)(?:^|[?&])apiKey=(?P<api_key>[^&\"\\s]+)` | api_method != \"\" | api_method=~\"$api_method\" | api_key=~\"$api_key\" | client_ip=~\"$client_ip\" | request_time > 1 and request_time <= 3 [$__range]))",
+          "legendFormat": "{{api_method}}"
+        },
+        {
+          "refId": "RT10",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, server_name, client_ip, api_key, server_addr, request_method, api_method) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\", request_method=~\"$method\"} | json | uri=~\".*ecterpapi.*\" | client_ip != \"\" and client_ip != \"-\" | server_addr != \"\" and server_addr != \"-\" | line_format \"{{.args}}&{{.request_uri}}\" | regexp `(?i)(?:^|[?&])method=(?P<api_method>[A-Za-z0-9_]+)` | regexp `(?i)(?:^|[?&])apiKey=(?P<api_key>[^&\"\\s]+)` | api_method != \"\" | api_method=~\"$api_method\" | api_key=~\"$api_key\" | client_ip=~\"$client_ip\" | request_time > 3 and request_time <= 10 [$__range]))",
+          "legendFormat": "{{api_method}}"
+        },
+        {
+          "refId": "RT30",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, server_name, client_ip, api_key, server_addr, request_method, api_method) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\", request_method=~\"$method\"} | json | uri=~\".*ecterpapi.*\" | client_ip != \"\" and client_ip != \"-\" | server_addr != \"\" and server_addr != \"-\" | line_format \"{{.args}}&{{.request_uri}}\" | regexp `(?i)(?:^|[?&])method=(?P<api_method>[A-Za-z0-9_]+)` | regexp `(?i)(?:^|[?&])apiKey=(?P<api_key>[^&\"\\s]+)` | api_method != \"\" | api_method=~\"$api_method\" | api_key=~\"$api_key\" | client_ip=~\"$client_ip\" | request_time > 10 and request_time <= 30 [$__range]))",
+          "legendFormat": "{{api_method}}"
+        },
+        {
+          "refId": "RT30P",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, server_name, client_ip, api_key, server_addr, request_method, api_method) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\", request_method=~\"$method\"} | json | uri=~\".*ecterpapi.*\" | client_ip != \"\" and client_ip != \"-\" | server_addr != \"\" and server_addr != \"-\" | line_format \"{{.args}}&{{.request_uri}}\" | regexp `(?i)(?:^|[?&])method=(?P<api_method>[A-Za-z0-9_]+)` | regexp `(?i)(?:^|[?&])apiKey=(?P<api_key>[^&\"\\s]+)` | api_method != \"\" | api_method=~\"$api_method\" | api_key=~\"$api_key\" | client_ip=~\"$client_ip\" | request_time > 30 [$__range]))",
+          "legendFormat": "{{api_method}}"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "Value #CNT": "总请求数",
+              "Value #AVGRT": "平均耗时(s)",
+              "Value #IN": "入参总字节",
+              "Value #OUT": "出参总字节",
+              "Value #S200": "状态码200",
+              "Value #S3XX": "状态码3xx",
+              "Value #S4XX": "状态码4xx",
+              "Value #S404": "状态码404",
+              "Value #S5XX": "状态码5xx",
+              "Value #RT1": "耗时≤1秒",
+              "Value #RT3": "耗时1~3秒",
+              "Value #RT10": "耗时3~10秒",
+              "Value #RT30": "耗时10~30秒",
+              "Value #RT30P": "耗时>30秒"
+            },
+            "indexByName": {
+              "node": 0,
+              "server_name": 1,
+              "client_ip": 2,
+              "api_key": 3,
+              "server_addr": 4,
+              "request_method": 5,
+              "api_method": 6,
+              "总请求数": 7,
+              "平均耗时(s)": 8,
+              "入参总字节": 9,
+              "出参总字节": 10,
+              "状态码200": 11,
+              "状态码3xx": 12,
+              "状态码4xx": 13,
+              "状态码404": 14,
+              "状态码5xx": 15,
+              "耗时≤1秒": 16,
+              "耗时1~3秒": 17,
+              "耗时3~10秒": 18,
+              "耗时10~30秒": 19,
+              "耗时>30秒": 20
+            },
+            "excludeByName": {
+              "Time": true
+            }
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "number",
+                "targetField": "总请求数"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "平均耗时(s)"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "入参总字节"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "出参总字节"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "状态码200"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "状态码3xx"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "状态码4xx"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "状态码404"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "状态码5xx"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "耗时≤1秒"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "耗时1~3秒"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "耗时3~10秒"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "耗时10~30秒"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "耗时>30秒"
+              }
+            ],
+            "fields": {}
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "总请求数",
+                "desc": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "limit",
+          "options": {
+            "limitField": 100
+          }
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "QPS 趋势（Top 25 接口方法）",
+      "description": "按 args/request_uri 中 method= 的 QPS（5m rate）；右侧图例为接口名及 Max/Mean/Last。调用次数见下方「维度汇总」表。",
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 18
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "decimals": 3,
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "fillOpacity": 8,
+            "spanNulls": true,
+            "showPoints": "never",
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "right",
+          "width": 720,
+          "calcs": [
+            "max",
+            "mean",
+            "last"
+          ],
+          "sortBy": "Max",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "maxDataPoints": 120,
+      "targets": [
+        {
+          "refId": "A",
+          "editorMode": "code",
+          "queryType": "range",
+          "interval": "90s",
+          "expr": "topk(25, sum by (api_method) (rate({job=\"nginx\", node=~\"$node\", server_name=~\"$host\", request_method=~\"$method\"} | json | uri=~\".*ecterpapi.*\" | client_ip != \"\" and client_ip != \"-\" | server_addr != \"\" and server_addr != \"-\" | line_format \"{{.args}}&{{.request_uri}}\" | regexp `(?i)(?:^|[?&])method=(?P<api_method>[A-Za-z0-9_]+)` | regexp `(?i)(?:^|[?&])apiKey=(?P<api_key>[^&\"\\s]+)` | api_method != \"\" | api_method=~\"$api_method\" | api_key=~\"$api_key\" | client_ip=~\"$client_ip\" [5m])))",
+          "legendFormat": "{{api_method}}"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "table",
+      "title": "echterpapi 维度汇总（域名 / 接口 / Key / IP / 状态）",
+      "description": "按入口域名、接口 method、AppKey、客户端 IP、服务端 IP、远程 IP 聚合；含 200/3xx/4xx/404/5xx 计数及流量。点击「访问次数」→ Explore 明细。建议 ≤30m；Top 100。",
+      "gridPos": {
+        "h": 16,
+        "w": 24,
+        "x": 0,
+        "y": 32
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "frozenColumns": {
+          "left": 6
+        },
+        "sortBy": [
+          {
+            "displayName": "访问次数",
+            "desc": true
+          }
+        ]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "0",
+          "nullValueMode": "null as zero"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "server_name"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "入口域名"
+              },
+              {
+                "id": "custom.width",
+                "value": 220
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "api_method"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "接口方法"
+              },
+              {
+                "id": "custom.width",
+                "value": 176
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Explore 查看明细",
+                    "url": "/explore?schemaVersion=1&panes=%7B%22p1%22%3A%7B%22datasource%22%3A%22loki-nginx%22%2C%22queries%22%3A%5B%7B%22expr%22%3A%22%7Bjob%3D%5C%22nginx%5C%22%2Cnode%3D~%5C%22%24%7Bnode%7D%5C%22%2Cserver_name%3D~%5C%22%24%7B__data.fields%5B%5C%22server_name%5C%22%5D%7D%5C%22%7D%20%7C%20json%20%7C%20uri%3D~%5C%22.%2Aecterpapi.%2A%5C%22%20%7C%20client_ip%3D%5C%22%24%7B__data.fields%5B%5C%22client_ip%5C%22%5D%7D%5C%22%20%7C%20client_ip%20%21%3D%20%5C%22%5C%22%20and%20client_ip%20%21%3D%20%5C%22-%5C%22%20%7C%20server_addr%3D%5C%22%24%7B__data.fields%5B%5C%22server_addr%5C%22%5D%7D%5C%22%20%7C%20server_addr%20%21%3D%20%5C%22%5C%22%20and%20server_addr%20%21%3D%20%5C%22-%5C%22%20%7C%20remote_addr%3D%5C%22%24%7B__data.fields%5B%5C%22remote_addr%5C%22%5D%7D%5C%22%20%7C%20line_format%20%5C%22%7B%7B.args%7D%7D%26%7B%7B.request_uri%7D%7D%5C%22%20%7C%20regexp%20%60%28%3Fi%29%28%3F%3A%5E%7C%5B%3F%26%5D%29method%3D%28%3FP%3Capi_method%3E%5BA-Za-z0-9_%5D%2B%29%60%20%7C%20regexp%20%60%28%3Fi%29%28%3F%3A%5E%7C%5B%3F%26%5D%29apiKey%3D%28%3FP%3Capi_key%3E%5B%5E%26%5C%22%5C%5Cs%5D%2B%29%60%20%7C%20api_method%3D%5C%22%24%7B__value.text%7D%5C%22%20%7C%20api_key%3D%5C%22%24%7B__data.fields%5B%5C%22api_key%5C%22%5D%7D%5C%22%22%2C%22maxLines%22%3A500%2C%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22loki%22%2C%22uid%22%3A%22loki-nginx%22%7D%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22%24%7B__from%7D%22%2C%22to%22%3A%22%24%7B__to%7D%22%7D%7D%7D&orgId=${__org.id}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "api_key"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "AppKey"
+              },
+              {
+                "id": "custom.width",
+                "value": 132
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "client_ip"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "客户端 IP"
+              },
+              {
+                "id": "custom.width",
+                "value": 138
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "server_addr"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "服务端 IP"
+              },
+              {
+                "id": "custom.width",
+                "value": 132
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "remote_addr"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "远程 IP"
+              },
+              {
+                "id": "custom.width",
+                "value": 132
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "访问次数"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "custom.width",
+                "value": 108
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Explore 查看明细",
+                    "url": "/explore?schemaVersion=1&panes=%7B%22p1%22%3A%7B%22datasource%22%3A%22loki-nginx%22%2C%22queries%22%3A%5B%7B%22expr%22%3A%22%7Bjob%3D%5C%22nginx%5C%22%2Cnode%3D~%5C%22%24%7Bnode%7D%5C%22%2Cserver_name%3D~%5C%22%24%7B__data.fields%5B%5C%22server_name%5C%22%5D%7D%5C%22%7D%20%7C%20json%20%7C%20uri%3D~%5C%22.%2Aecterpapi.%2A%5C%22%20%7C%20client_ip%3D%5C%22%24%7B__data.fields%5B%5C%22client_ip%5C%22%5D%7D%5C%22%20%7C%20client_ip%20%21%3D%20%5C%22%5C%22%20and%20client_ip%20%21%3D%20%5C%22-%5C%22%20%7C%20server_addr%3D%5C%22%24%7B__data.fields%5B%5C%22server_addr%5C%22%5D%7D%5C%22%20%7C%20server_addr%20%21%3D%20%5C%22%5C%22%20and%20server_addr%20%21%3D%20%5C%22-%5C%22%20%7C%20remote_addr%3D%5C%22%24%7B__data.fields%5B%5C%22remote_addr%5C%22%5D%7D%5C%22%20%7C%20line_format%20%5C%22%7B%7B.args%7D%7D%26%7B%7B.request_uri%7D%7D%5C%22%20%7C%20regexp%20%60%28%3Fi%29%28%3F%3A%5E%7C%5B%3F%26%5D%29method%3D%28%3FP%3Capi_method%3E%5BA-Za-z0-9_%5D%2B%29%60%20%7C%20regexp%20%60%28%3Fi%29%28%3F%3A%5E%7C%5B%3F%26%5D%29apiKey%3D%28%3FP%3Capi_key%3E%5B%5E%26%5C%22%5C%5Cs%5D%2B%29%60%20%7C%20api_method%3D%5C%22%24%7B__data.fields%5B%5C%22api_method%5C%22%5D%7D%5C%22%20%7C%20api_key%3D%5C%22%24%7B__data.fields%5B%5C%22api_key%5C%22%5D%7D%5C%22%22%2C%22maxLines%22%3A500%2C%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22loki%22%2C%22uid%22%3A%22loki-nginx%22%7D%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22%24%7B__from%7D%22%2C%22to%22%3A%22%24%7B__to%7D%22%7D%7D%7D&orgId=${__org.id}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "入口流量"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "decbytes"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.width",
+                "value": 118
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "出口流量"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "decbytes"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.width",
+                "value": 118
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^状态码"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "custom.width",
+                "value": 92
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "CNT",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, api_method, api_key, client_ip, server_addr, remote_addr) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\", request_method=~\"$method\"} | json | uri=~\".*ecterpapi.*\" | client_ip != \"\" and client_ip != \"-\" | server_addr != \"\" and server_addr != \"-\" | line_format \"{{.args}}&{{.request_uri}}\" | regexp `(?i)(?:^|[?&])method=(?P<api_method>[A-Za-z0-9_]+)` | regexp `(?i)(?:^|[?&])apiKey=(?P<api_key>[^&\"\\s]+)` | api_method != \"\" | api_method=~\"$api_method\" | api_key=~\"$api_key\" | client_ip=~\"$client_ip\" [$__range]))",
+          "legendFormat": "{{api_method}}"
+        },
+        {
+          "refId": "IN",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, api_method, api_key, client_ip, server_addr, remote_addr) (sum_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\", request_method=~\"$method\"} | json | uri=~\".*ecterpapi.*\" | client_ip != \"\" and client_ip != \"-\" | server_addr != \"\" and server_addr != \"-\" | line_format \"{{.args}}&{{.request_uri}}\" | regexp `(?i)(?:^|[?&])method=(?P<api_method>[A-Za-z0-9_]+)` | regexp `(?i)(?:^|[?&])apiKey=(?P<api_key>[^&\"\\s]+)` | api_method != \"\" | api_method=~\"$api_method\" | api_key=~\"$api_key\" | client_ip=~\"$client_ip\" | unwrap request_length [$__range]))",
+          "legendFormat": "{{api_method}}"
+        },
+        {
+          "refId": "OUT",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, api_method, api_key, client_ip, server_addr, remote_addr) (sum_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\", request_method=~\"$method\"} | json | uri=~\".*ecterpapi.*\" | client_ip != \"\" and client_ip != \"-\" | server_addr != \"\" and server_addr != \"-\" | line_format \"{{.args}}&{{.request_uri}}\" | regexp `(?i)(?:^|[?&])method=(?P<api_method>[A-Za-z0-9_]+)` | regexp `(?i)(?:^|[?&])apiKey=(?P<api_key>[^&\"\\s]+)` | api_method != \"\" | api_method=~\"$api_method\" | api_key=~\"$api_key\" | client_ip=~\"$client_ip\" | unwrap body_bytes_sent [$__range]))",
+          "legendFormat": "{{api_method}}"
+        },
+        {
+          "refId": "S200",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, api_method, api_key, client_ip, server_addr, remote_addr) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\", request_method=~\"$method\"} | json | uri=~\".*ecterpapi.*\" | client_ip != \"\" and client_ip != \"-\" | server_addr != \"\" and server_addr != \"-\" | line_format \"{{.args}}&{{.request_uri}}\" | regexp `(?i)(?:^|[?&])method=(?P<api_method>[A-Za-z0-9_]+)` | regexp `(?i)(?:^|[?&])apiKey=(?P<api_key>[^&\"\\s]+)` | api_method != \"\" | api_method=~\"$api_method\" | api_key=~\"$api_key\" | client_ip=~\"$client_ip\" | status=200 [$__range]))",
+          "legendFormat": "{{api_method}}"
+        },
+        {
+          "refId": "S3XX",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, api_method, api_key, client_ip, server_addr, remote_addr) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\", request_method=~\"$method\", status_class=\"3xx\"} | json | uri=~\".*ecterpapi.*\" | client_ip != \"\" and client_ip != \"-\" | server_addr != \"\" and server_addr != \"-\" | line_format \"{{.args}}&{{.request_uri}}\" | regexp `(?i)(?:^|[?&])method=(?P<api_method>[A-Za-z0-9_]+)` | regexp `(?i)(?:^|[?&])apiKey=(?P<api_key>[^&\"\\s]+)` | api_method != \"\" | api_method=~\"$api_method\" | api_key=~\"$api_key\" | client_ip=~\"$client_ip\" [$__range]))",
+          "legendFormat": "{{api_method}}"
+        },
+        {
+          "refId": "S4XX",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, api_method, api_key, client_ip, server_addr, remote_addr) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\", request_method=~\"$method\", status_class=\"4xx\"} | json | uri=~\".*ecterpapi.*\" | client_ip != \"\" and client_ip != \"-\" | server_addr != \"\" and server_addr != \"-\" | line_format \"{{.args}}&{{.request_uri}}\" | regexp `(?i)(?:^|[?&])method=(?P<api_method>[A-Za-z0-9_]+)` | regexp `(?i)(?:^|[?&])apiKey=(?P<api_key>[^&\"\\s]+)` | api_method != \"\" | api_method=~\"$api_method\" | api_key=~\"$api_key\" | client_ip=~\"$client_ip\" [$__range]))",
+          "legendFormat": "{{api_method}}"
+        },
+        {
+          "refId": "S404",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, api_method, api_key, client_ip, server_addr, remote_addr) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\", request_method=~\"$method\"} | json | uri=~\".*ecterpapi.*\" | client_ip != \"\" and client_ip != \"-\" | server_addr != \"\" and server_addr != \"-\" | line_format \"{{.args}}&{{.request_uri}}\" | regexp `(?i)(?:^|[?&])method=(?P<api_method>[A-Za-z0-9_]+)` | regexp `(?i)(?:^|[?&])apiKey=(?P<api_key>[^&\"\\s]+)` | api_method != \"\" | api_method=~\"$api_method\" | api_key=~\"$api_key\" | client_ip=~\"$client_ip\" | status=404 [$__range]))",
+          "legendFormat": "{{api_method}}"
+        },
+        {
+          "refId": "S5XX",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, api_method, api_key, client_ip, server_addr, remote_addr) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\", request_method=~\"$method\", status_class=\"5xx\"} | json | uri=~\".*ecterpapi.*\" | client_ip != \"\" and client_ip != \"-\" | server_addr != \"\" and server_addr != \"-\" | line_format \"{{.args}}&{{.request_uri}}\" | regexp `(?i)(?:^|[?&])method=(?P<api_method>[A-Za-z0-9_]+)` | regexp `(?i)(?:^|[?&])apiKey=(?P<api_key>[^&\"\\s]+)` | api_method != \"\" | api_method=~\"$api_method\" | api_key=~\"$api_key\" | client_ip=~\"$client_ip\" [$__range]))",
+          "legendFormat": "{{api_method}}"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "Value #CNT": "访问次数",
+              "Value #IN": "入口流量",
+              "Value #OUT": "出口流量",
+              "Value #S200": "状态码200",
+              "Value #S3XX": "状态码3xx",
+              "Value #S4XX": "状态码4xx",
+              "Value #S404": "状态码404",
+              "Value #S5XX": "状态码5xx"
+            },
+            "indexByName": {
+              "server_name": 0,
+              "api_method": 1,
+              "api_key": 2,
+              "client_ip": 3,
+              "server_addr": 4,
+              "remote_addr": 5,
+              "访问次数": 6,
+              "入口流量": 7,
+              "出口流量": 8,
+              "状态码200": 9,
+              "状态码3xx": 10,
+              "状态码4xx": 11,
+              "状态码404": 12,
+              "状态码5xx": 13
+            },
+            "excludeByName": {
+              "Time": true
+            }
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "number",
+                "targetField": "访问次数"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "入口流量"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "出口流量"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "状态码200"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "状态码3xx"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "状态码4xx"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "状态码404"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "状态码5xx"
+              }
+            ],
+            "fields": {}
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "访问次数",
+                "desc": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "limit",
+          "options": {
+            "limitField": 100
+          }
+        }
+      ]
+    }
+  ]
+}

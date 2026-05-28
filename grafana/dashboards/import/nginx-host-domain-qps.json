@@ -1,0 +1,836 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_LOKI",
+      "label": "Loki",
+      "description": "选择已配置的 Loki 数据源",
+      "type": "datasource",
+      "pluginId": "loki",
+      "pluginName": "Loki"
+    }
+  ],
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "12.2.0"
+    },
+    {
+      "type": "datasource",
+      "id": "loki",
+      "name": "Loki",
+      "version": "1.0.0"
+    }
+  ],
+  "uid": "nginx-host-domain-qps",
+  "title": "Nginx 按主机查域名与QPS",
+  "tags": ["nginx", "loki"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 22,
+  "refresh": false,
+  "time": { "from": "now-15m", "to": "now" },
+  "links": [
+    {
+      "title": "最近访问明细",
+      "type": "link",
+      "url": "/d/nginx-access-recent?orgId=${__org.id}&from=${__from}&to=${__to}&${node:queryparam}",
+      "targetBlank": true
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "node",
+        "label": "中转主机",
+        "type": "query",
+        "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+        "query": { "type": "label_values", "label": "node", "stream": "{job=\"nginx\"}" },
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "refresh": 2,
+        "sort": 1,
+        "description": "选一台或多台中转；All 表示全部"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "table",
+      "title": "各域名访问汇总（QPS / 流量 / 方法 / 静态 / 状态码 / 耗时）",
+      "description": "总请求数=所选时间段内全部请求；近N秒=仪表板结束时刻向前 N 秒内的请求数（instant 查询）。入口域名、中转主机左侧冻结（Grafana ≥12.2）。",
+      "gridPos": { "h": 18, "w": 24, "x": 0, "y": 0 },
+      "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+      "options": {
+        "showHeader": true,
+        "frozenColumns": { "left": 2 },
+        "sortBy": [{ "displayName": "每秒请求数", "desc": true }],
+        "footer": {
+          "show": true,
+          "reducer": ["sum"],
+          "fields": ["总请求数", "近1秒", "近2秒", "近3秒", "近5秒", "近10秒", "近15秒", "近30秒", "近60秒", "入口流量", "出口流量", "GET访问次数", "POST访问次数", "JS访问次数", "CSS访问次数", "状态码200", "状态码3xx", "状态码4xx", "状态码404", "状态码5xx", "耗时≤1秒", "耗时1~3秒", "耗时3~10秒", "耗时10~30秒", "耗时>30秒", "附件访问次数", "开放平台访问次数"]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "0",
+          "mappings": [
+            {
+              "type": "special",
+              "options": {
+                "null": { "index": 0, "text": "0" }
+              }
+            }
+          ]
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "host" },
+            "properties": [
+              { "id": "displayName", "value": "入口域名" },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "查看访问明细",
+                    "url": "/d/nginx-access-recent?orgId=${__org.id}&from=${__from}&to=${__to}&var-node=${__data.fields[\"node\"]}&var-host=${__value.text}&var-max_rows=500&var-method=.*&var-status_class=.*&var-uri_pattern=.*&var-extra_pipeline=",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              { "id": "custom.width", "value": 190 },
+              { "id": "mappings", "value": [] },
+              { "id": "noValue", "value": "" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "node" },
+            "properties": [
+              { "id": "displayName", "value": "中转主机" },
+              { "id": "custom.width", "value": 150 },
+              { "id": "mappings", "value": [] },
+              { "id": "noValue", "value": "" }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "每秒请求数" },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "查看明细",
+                    "url": "/d/nginx-access-recent?orgId=${__org.id}&from=${__from}&to=${__to}&var-node=${__data.fields[\"node\"]}&var-host=${__data.fields[\"host\"]}&var-max_rows=500&var-method=.*&var-status_class=.*&var-uri_pattern=.*&var-extra_pipeline=",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              { "id": "unit", "value": "reqps" },
+              { "id": "decimals", "value": 3 },
+              { "id": "custom.displayMode", "value": "gradient-gauge" },
+              { "id": "custom.width", "value": 120 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "总请求数" },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "查看明细",
+                    "url": "/d/nginx-access-recent?orgId=${__org.id}&from=${__from}&to=${__to}&var-node=${__data.fields[\"node\"]}&var-host=${__data.fields[\"host\"]}&var-max_rows=500&var-method=.*&var-status_class=.*&var-uri_pattern=.*&var-extra_pipeline=",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              { "id": "unit", "value": "short" },
+              { "id": "custom.width", "value": 120 }
+            ]
+          },
+          {
+            "matcher": { "id": "byRegexp", "options": "^近[0-9]+秒$" },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "查看明细",
+                    "url": "/d/nginx-access-recent?orgId=${__org.id}&from=${__from}&to=${__to}&var-node=${__data.fields[\"node\"]}&var-host=${__data.fields[\"host\"]}&var-max_rows=500&var-method=.*&var-status_class=.*&var-uri_pattern=.*&var-extra_pipeline=",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              { "id": "unit", "value": "short" },
+              { "id": "custom.width", "value": 100 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "入口流量" },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "查看明细",
+                    "url": "/d/nginx-access-recent?orgId=${__org.id}&from=${__from}&to=${__to}&var-node=${__data.fields[\"node\"]}&var-host=${__data.fields[\"host\"]}&var-max_rows=500&var-method=.*&var-status_class=.*&var-uri_pattern=.*&var-extra_pipeline=",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              { "id": "unit", "value": "decbytes" },
+              { "id": "decimals", "value": 2 },
+              { "id": "min", "value": 0 },
+              { "id": "custom.width", "value": 120 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "出口流量" },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "查看明细",
+                    "url": "/d/nginx-access-recent?orgId=${__org.id}&from=${__from}&to=${__to}&var-node=${__data.fields[\"node\"]}&var-host=${__data.fields[\"host\"]}&var-max_rows=500&var-method=.*&var-status_class=.*&var-uri_pattern=.*&var-extra_pipeline=",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              { "id": "unit", "value": "decbytes" },
+              { "id": "decimals", "value": 2 },
+              { "id": "min", "value": 0 },
+              { "id": "custom.width", "value": 120 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "GET访问次数" },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "查看明细",
+                    "url": "/d/nginx-access-recent?orgId=${__org.id}&from=${__from}&to=${__to}&var-node=${__data.fields[\"node\"]}&var-host=${__data.fields[\"host\"]}&var-max_rows=500&var-method=GET&var-status_class=.*&var-uri_pattern=.*&var-extra_pipeline=",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              { "id": "unit", "value": "short" },
+              { "id": "custom.width", "value": 100 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "POST访问次数" },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "查看明细",
+                    "url": "/d/nginx-access-recent?orgId=${__org.id}&from=${__from}&to=${__to}&var-node=${__data.fields[\"node\"]}&var-host=${__data.fields[\"host\"]}&var-max_rows=500&var-method=POST&var-status_class=.*&var-uri_pattern=.*&var-extra_pipeline=",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              { "id": "unit", "value": "short" },
+              { "id": "custom.width", "value": 100 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "JS访问次数" },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "查看明细",
+                    "url": "/d/nginx-access-recent?orgId=${__org.id}&from=${__from}&to=${__to}&var-node=${__data.fields[\"node\"]}&var-host=${__data.fields[\"host\"]}&var-max_rows=500&var-method=.*&var-status_class=.*&var-uri_pattern=(?i).+\\\\.js($|\\\\?|;)&var-extra_pipeline=",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              { "id": "unit", "value": "short" },
+              { "id": "custom.width", "value": 100 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "CSS访问次数" },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "查看明细",
+                    "url": "/d/nginx-access-recent?orgId=${__org.id}&from=${__from}&to=${__to}&var-node=${__data.fields[\"node\"]}&var-host=${__data.fields[\"host\"]}&var-max_rows=500&var-method=.*&var-status_class=.*&var-uri_pattern=(?i).+\\\\.css($|\\\\?|;)&var-extra_pipeline=",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              { "id": "unit", "value": "short" },
+              { "id": "custom.width", "value": 100 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "状态码200" },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "查看明细",
+                    "url": "/d/nginx-access-recent?orgId=${__org.id}&from=${__from}&to=${__to}&var-node=${__data.fields[\"node\"]}&var-host=${__data.fields[\"host\"]}&var-max_rows=500&var-method=.*&var-status_class=.*&var-uri_pattern=.*&var-extra_pipeline=%7C%20status%3D200",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              { "id": "unit", "value": "short" },
+              { "id": "custom.width", "value": 100 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "状态码3xx" },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "查看明细",
+                    "url": "/d/nginx-access-recent?orgId=${__org.id}&from=${__from}&to=${__to}&var-node=${__data.fields[\"node\"]}&var-host=${__data.fields[\"host\"]}&var-max_rows=500&var-method=.*&var-status_class=3xx&var-uri_pattern=.*&var-extra_pipeline=",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              { "id": "unit", "value": "short" },
+              { "id": "custom.width", "value": 100 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "状态码4xx" },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "查看明细",
+                    "url": "/d/nginx-access-recent?orgId=${__org.id}&from=${__from}&to=${__to}&var-node=${__data.fields[\"node\"]}&var-host=${__data.fields[\"host\"]}&var-max_rows=500&var-method=.*&var-status_class=4xx&var-uri_pattern=.*&var-extra_pipeline=",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              { "id": "unit", "value": "short" },
+              { "id": "custom.width", "value": 100 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "状态码404" },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "查看明细",
+                    "url": "/d/nginx-access-recent?orgId=${__org.id}&from=${__from}&to=${__to}&var-node=${__data.fields[\"node\"]}&var-host=${__data.fields[\"host\"]}&var-max_rows=500&var-method=.*&var-status_class=.*&var-uri_pattern=.*&var-extra_pipeline=%7C%20status%3D404",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              { "id": "unit", "value": "short" },
+              { "id": "custom.width", "value": 100 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "状态码5xx" },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "查看明细",
+                    "url": "/d/nginx-access-recent?orgId=${__org.id}&from=${__from}&to=${__to}&var-node=${__data.fields[\"node\"]}&var-host=${__data.fields[\"host\"]}&var-max_rows=500&var-method=.*&var-status_class=5xx&var-uri_pattern=.*&var-extra_pipeline=",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              { "id": "unit", "value": "short" },
+              { "id": "custom.width", "value": 100 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "耗时≤1秒" },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "查看明细",
+                    "url": "/d/nginx-access-recent?orgId=${__org.id}&from=${__from}&to=${__to}&var-node=${__data.fields[\"node\"]}&var-host=${__data.fields[\"host\"]}&var-max_rows=500&var-method=.*&var-status_class=.*&var-uri_pattern=.*&var-extra_pipeline=%7C%20request_time%20%3C%3D%201",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              { "id": "unit", "value": "short" },
+              { "id": "custom.width", "value": 100 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "耗时1~3秒" },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "查看明细",
+                    "url": "/d/nginx-access-recent?orgId=${__org.id}&from=${__from}&to=${__to}&var-node=${__data.fields[\"node\"]}&var-host=${__data.fields[\"host\"]}&var-max_rows=500&var-method=.*&var-status_class=.*&var-uri_pattern=.*&var-extra_pipeline=%7C%20request_time%20%3E%201%20%7C%20request_time%20%3C%3D%203",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              { "id": "unit", "value": "short" },
+              { "id": "custom.width", "value": 100 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "耗时3~10秒" },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "查看明细",
+                    "url": "/d/nginx-access-recent?orgId=${__org.id}&from=${__from}&to=${__to}&var-node=${__data.fields[\"node\"]}&var-host=${__data.fields[\"host\"]}&var-max_rows=500&var-method=.*&var-status_class=.*&var-uri_pattern=.*&var-extra_pipeline=%7C%20request_time%20%3E%203%20%7C%20request_time%20%3C%3D%2010",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              { "id": "unit", "value": "short" },
+              { "id": "custom.width", "value": 100 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "耗时10~30秒" },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "查看明细",
+                    "url": "/d/nginx-access-recent?orgId=${__org.id}&from=${__from}&to=${__to}&var-node=${__data.fields[\"node\"]}&var-host=${__data.fields[\"host\"]}&var-max_rows=500&var-method=.*&var-status_class=.*&var-uri_pattern=.*&var-extra_pipeline=%7C%20request_time%20%3E%2010%20%7C%20request_time%20%3C%3D%2030",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              { "id": "unit", "value": "short" },
+              { "id": "custom.width", "value": 100 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "耗时>30秒" },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "查看明细",
+                    "url": "/d/nginx-access-recent?orgId=${__org.id}&from=${__from}&to=${__to}&var-node=${__data.fields[\"node\"]}&var-host=${__data.fields[\"host\"]}&var-max_rows=500&var-method=.*&var-status_class=.*&var-uri_pattern=.*&var-extra_pipeline=%7C%20request_time%20%3E%2030",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              { "id": "unit", "value": "short" },
+              { "id": "custom.width", "value": 100 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "附件访问次数" },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "查看明细",
+                    "url": "/d/nginx-access-recent?orgId=${__org.id}&from=${__from}&to=${__to}&var-node=${__data.fields[\"node\"]}&var-host=${__data.fields[\"host\"]}&var-max_rows=500&var-method=.*&var-status_class=.*&var-uri_pattern=.*blobdata.*&var-extra_pipeline=",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              { "id": "unit", "value": "short" },
+              { "id": "custom.width", "value": 100 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "接口访问次数" },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "查看明细",
+                    "url": "/d/nginx-access-recent?orgId=${__org.id}&from=${__from}&to=${__to}&var-node=${__data.fields[\"node\"]}&var-host=${__data.fields[\"host\"]}&var-max_rows=500&var-method=.*&var-status_class=.*&var-uri_pattern=.*ecterpapi.*&var-extra_pipeline=",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              { "id": "unit", "value": "short" },
+              { "id": "custom.width", "value": 100 }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "QPS",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, host) (rate({job=\"nginx\", node=~\"$node\"} | json | host != \"\" and host != \"-\" [5m]))",
+          "legendFormat": "{{node}} / {{host}}"
+        },
+        {
+          "refId": "CNT",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, host) (count_over_time({job=\"nginx\", node=~\"$node\"} | json | host != \"\" and host != \"-\" [$__range]))",
+          "legendFormat": "{{node}} / {{host}}"
+        },
+        {
+          "refId": "N1",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, host) (count_over_time({job=\"nginx\", node=~\"$node\"} | json | host != \"\" and host != \"-\" [1s]))",
+          "legendFormat": "{{node}} / {{host}}"
+        },
+        {
+          "refId": "N2",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, host) (count_over_time({job=\"nginx\", node=~\"$node\"} | json | host != \"\" and host != \"-\" [2s]))",
+          "legendFormat": "{{node}} / {{host}}"
+        },
+        {
+          "refId": "N3",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, host) (count_over_time({job=\"nginx\", node=~\"$node\"} | json | host != \"\" and host != \"-\" [3s]))",
+          "legendFormat": "{{node}} / {{host}}"
+        },
+        {
+          "refId": "N5",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, host) (count_over_time({job=\"nginx\", node=~\"$node\"} | json | host != \"\" and host != \"-\" [5s]))",
+          "legendFormat": "{{node}} / {{host}}"
+        },
+        {
+          "refId": "N10",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, host) (count_over_time({job=\"nginx\", node=~\"$node\"} | json | host != \"\" and host != \"-\" [10s]))",
+          "legendFormat": "{{node}} / {{host}}"
+        },
+        {
+          "refId": "N15",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, host) (count_over_time({job=\"nginx\", node=~\"$node\"} | json | host != \"\" and host != \"-\" [15s]))",
+          "legendFormat": "{{node}} / {{host}}"
+        },
+        {
+          "refId": "N30",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, host) (count_over_time({job=\"nginx\", node=~\"$node\"} | json | host != \"\" and host != \"-\" [30s]))",
+          "legendFormat": "{{node}} / {{host}}"
+        },
+        {
+          "refId": "N60",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, host) (count_over_time({job=\"nginx\", node=~\"$node\"} | json | host != \"\" and host != \"-\" [60s]))",
+          "legendFormat": "{{node}} / {{host}}"
+        },
+        {
+          "refId": "IN",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, host) (sum_over_time({job=\"nginx\", node=~\"$node\"} | json | host != \"\" and host != \"-\" | unwrap request_length [$__range]))",
+          "legendFormat": "{{node}} / {{host}}"
+        },
+        {
+          "refId": "OUT",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, host) (sum_over_time({job=\"nginx\", node=~\"$node\"} | json | host != \"\" and host != \"-\" | unwrap bytes_sent [$__range]))",
+          "legendFormat": "{{node}} / {{host}}"
+        },
+        {
+          "refId": "GET",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, host) (count_over_time({job=\"nginx\", node=~\"$node\"} | json | host != \"\" and host != \"-\" and request_method=\"GET\" [$__range]))",
+          "legendFormat": "{{node}} / {{host}}"
+        },
+        {
+          "refId": "POST",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, host) (count_over_time({job=\"nginx\", node=~\"$node\"} | json | host != \"\" and host != \"-\" and request_method=\"POST\" [$__range]))",
+          "legendFormat": "{{node}} / {{host}}"
+        },
+        {
+          "refId": "JS",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, host) (count_over_time({job=\"nginx\", node=~\"$node\"} | json | host != \"\" and host != \"-\" | uri=~\"(?i).+\\\\.js($|\\\\?|;)\" [$__range]))",
+          "legendFormat": "{{node}} / {{host}}"
+        },
+        {
+          "refId": "CSS",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, host) (count_over_time({job=\"nginx\", node=~\"$node\"} | json | host != \"\" and host != \"-\" | uri=~\"(?i).+\\\\.css($|\\\\?|;)\" [$__range]))",
+          "legendFormat": "{{node}} / {{host}}"
+        },
+        {
+          "refId": "S200",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, host) (count_over_time({job=\"nginx\", node=~\"$node\"} | json | host != \"\" and host != \"-\" | status=200 [$__range]))",
+          "legendFormat": "{{node}} / {{host}}"
+        },
+        {
+          "refId": "S3XX",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, host) (count_over_time({job=\"nginx\", node=~\"$node\", status_class=\"3xx\"} | json | host != \"\" and host != \"-\" [$__range]))",
+          "legendFormat": "{{node}} / {{host}}"
+        },
+        {
+          "refId": "S4XX",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, host) (count_over_time({job=\"nginx\", node=~\"$node\", status_class=\"4xx\"} | json | host != \"\" and host != \"-\" [$__range]))",
+          "legendFormat": "{{node}} / {{host}}"
+        },
+        {
+          "refId": "S404",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, host) (count_over_time({job=\"nginx\", node=~\"$node\"} | json | host != \"\" and host != \"-\" | status=404 [$__range]))",
+          "legendFormat": "{{node}} / {{host}}"
+        },
+        {
+          "refId": "S5XX",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, host) (count_over_time({job=\"nginx\", node=~\"$node\", status_class=\"5xx\"} | json | host != \"\" and host != \"-\" [$__range]))",
+          "legendFormat": "{{node}} / {{host}}"
+        },
+        {
+          "refId": "RT1",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, host) (count_over_time({job=\"nginx\", node=~\"$node\"} | json | host != \"\" and host != \"-\" | request_time <= 1 [$__range]))",
+          "legendFormat": "{{node}} / {{host}}"
+        },
+        {
+          "refId": "RT3",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, host) (count_over_time({job=\"nginx\", node=~\"$node\"} | json | host != \"\" and host != \"-\" | request_time > 1 and request_time <= 3 [$__range]))",
+          "legendFormat": "{{node}} / {{host}}"
+        },
+        {
+          "refId": "RT10",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, host) (count_over_time({job=\"nginx\", node=~\"$node\"} | json | host != \"\" and host != \"-\" | request_time > 3 and request_time <= 10 [$__range]))",
+          "legendFormat": "{{node}} / {{host}}"
+        },
+        {
+          "refId": "RT30",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, host) (count_over_time({job=\"nginx\", node=~\"$node\"} | json | host != \"\" and host != \"-\" | request_time > 10 and request_time <= 30 [$__range]))",
+          "legendFormat": "{{node}} / {{host}}"
+        },
+        {
+          "refId": "RT30P",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, host) (count_over_time({job=\"nginx\", node=~\"$node\"} | json | host != \"\" and host != \"-\" | request_time > 30 [$__range]))",
+          "legendFormat": "{{node}} / {{host}}"
+        },
+        {
+          "refId": "BLOB",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, host) (count_over_time({job=\"nginx\", node=~\"$node\"} | json | host != \"\" and host != \"-\" | uri=~\".*/blobdata/.*\" [$__range]))",
+          "legendFormat": "{{node}} / {{host}}"
+        },
+        {
+          "refId": "ECT",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (node, host) (count_over_time({job=\"nginx\", node=~\"$node\"} | json | host != \"\" and host != \"-\" | uri=~\".*/ecterpapi/.*\" [$__range]))",
+          "legendFormat": "{{node}} / {{host}}"
+        }
+      ],
+      "transformations": [
+        { "id": "merge", "options": {} },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "Value #QPS": "每秒请求数",
+              "Value #CNT": "总请求数",
+              "Value #N1": "近1秒",
+              "Value #N2": "近2秒",
+              "Value #N3": "近3秒",
+              "Value #N5": "近5秒",
+              "Value #N10": "近10秒",
+              "Value #N15": "近15秒",
+              "Value #N30": "近30秒",
+              "Value #N60": "近60秒",
+              "Value #IN": "入口流量",
+              "Value #OUT": "出口流量",
+              "Value #GET": "GET访问次数",
+              "Value #POST": "POST访问次数",
+              "Value #JS": "JS访问次数",
+              "Value #CSS": "CSS访问次数",
+              "Value #S200": "状态码200",
+              "Value #S3XX": "状态码3xx",
+              "Value #S4XX": "状态码4xx",
+              "Value #S404": "状态码404",
+              "Value #S5XX": "状态码5xx",
+              "Value #RT1": "耗时≤1秒",
+              "Value #RT3": "耗时1~3秒",
+              "Value #RT10": "耗时3~10秒",
+              "Value #RT30": "耗时10~30秒",
+              "Value #RT30P": "耗时>30秒",
+              "Value #BLOB": "附件访问次数",
+              "Value #ECT": "接口访问次数"
+            },
+            "indexByName": {
+              "host": 0,
+              "node": 1,
+              "每秒请求数": 2,
+              "总请求数": 3,
+              "近1秒": 4,
+              "近2秒": 5,
+              "近3秒": 6,
+              "近5秒": 7,
+              "近10秒": 8,
+              "近15秒": 9,
+              "近30秒": 10,
+              "近60秒": 11,
+              "入口流量": 12,
+              "出口流量": 13,
+              "GET访问次数": 14,
+              "POST访问次数": 15,
+              "JS访问次数": 16,
+              "CSS访问次数": 17,
+              "状态码200": 18,
+              "状态码3xx": 19,
+              "状态码4xx": 20,
+              "状态码404": 21,
+              "状态码5xx": 22,
+              "耗时≤1秒": 23,
+              "耗时1~3秒": 24,
+              "耗时3~10秒": 25,
+              "耗时10~30秒": 26,
+              "耗时>30秒": 27,
+              "附件访问次数": 28,
+              "接口访问次数": 29
+            },
+            "excludeByName": { "Time": true }
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              { "destinationType": "number", "targetField": "每秒请求数" },
+              { "destinationType": "number", "targetField": "总请求数" },
+              { "destinationType": "number", "targetField": "近1秒" },
+              { "destinationType": "number", "targetField": "近2秒" },
+              { "destinationType": "number", "targetField": "近3秒" },
+              { "destinationType": "number", "targetField": "近5秒" },
+              { "destinationType": "number", "targetField": "近10秒" },
+              { "destinationType": "number", "targetField": "近15秒" },
+              { "destinationType": "number", "targetField": "近30秒" },
+              { "destinationType": "number", "targetField": "近60秒" },
+              { "destinationType": "number", "targetField": "入口流量" },
+              { "destinationType": "number", "targetField": "出口流量" },
+              { "destinationType": "number", "targetField": "GET访问次数" },
+              { "destinationType": "number", "targetField": "POST访问次数" },
+              { "destinationType": "number", "targetField": "JS访问次数" },
+              { "destinationType": "number", "targetField": "CSS访问次数" },
+              { "destinationType": "number", "targetField": "状态码200" },
+              { "destinationType": "number", "targetField": "状态码3xx" },
+              { "destinationType": "number", "targetField": "状态码4xx" },
+              { "destinationType": "number", "targetField": "状态码404" },
+              { "destinationType": "number", "targetField": "状态码5xx" },
+              { "destinationType": "number", "targetField": "耗时≤1秒" },
+              { "destinationType": "number", "targetField": "耗时1~3秒" },
+              { "destinationType": "number", "targetField": "耗时3~10秒" },
+              { "destinationType": "number", "targetField": "耗时10~30秒" },
+              { "destinationType": "number", "targetField": "耗时>30秒" },
+              { "destinationType": "number", "targetField": "附件访问次数" },
+              { "destinationType": "number", "targetField": "接口访问次数" }
+            ],
+            "fields": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "QPS 趋势（Top 25）",
+      "description": "Top 25 域名 QPS 折线趋势（5m rate）。",
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 18 },
+      "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "decimals": 3,
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "fillOpacity": 8,
+            "spanNulls": true,
+            "showPoints": "never",
+            "stacking": { "mode": "none", "group": "A" }
+          }
+        }
+      },
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "right",
+          "width": 720,
+          "calcs": ["min", "max", "mean", "last"],
+          "sortBy": "Max",
+          "sortDesc": true
+        },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "maxDataPoints": 300,
+      "targets": [
+        {
+          "refId": "A",
+          "editorMode": "code",
+          "queryType": "range",
+          "interval": "30s",
+          "expr": "topk(25, sum by (node, host) (rate({job=\"nginx\", node=~\"$node\"} | json | host != \"\" and host != \"-\" [5m])))",
+          "legendFormat": "{{node}} / {{host}}"
+        }
+      ]
+    }
+  ]
+}

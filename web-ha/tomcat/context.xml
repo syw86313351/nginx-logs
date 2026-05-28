@@ -1,0 +1,20 @@
+<Context>
+    <!--
+    Tomcat Session 管理器 — Redisson（Redis Sentinel 模式）
+
+    参数说明:
+      className             — Redisson 的 Tomcat Session Manager 实现类
+      configPath            — redisson.yaml 配置文件的绝对路径
+      readMode              — REDIS:  始终从 Redis 读取 session（多 Tomcat 共享时必须用这个）
+                              MEMORY: 优先从本地内存读（单机模式，不共享 session 用）
+      updateMode            — AFTER_REQUEST: 请求处理完后立即把 session 写回 Redis
+                              DEFAULT:       按时间间隔批量写（可能丢最新变更）
+      broadcastSessionEvents — false: 不广播 session 事件（两台 Tomcat 时不需要，靠 Redis 同步）
+                               true:  广播事件给其他 Tomcat（多台 Tomcat 时需要）
+    -->
+    <Manager className="org.redisson.tomcat.RedissonSessionManager"
+             configPath="/softs/ect-apps/ROOT/WEB-INF/redisson.yaml"
+             readMode="REDIS"
+             broadcastSessionEvents="false"
+             updateMode="AFTER_REQUEST" />
+</Context>

@@ -1,4 +1,3 @@
-
 auth_enabled: false
 
 server:
@@ -39,12 +38,13 @@ limits_config:
   retention_period: 48h
   ingestion_rate_mb: 64
   ingestion_burst_size_mb: 128
-  max_query_series: 10000
+  max_query_series: 10000000
   max_query_lookback: 48h
   max_entries_limit_per_query: 100000
   max_query_parallelism: 32
   per_stream_rate_limit: "32MB"
   per_stream_rate_limit_burst: "64MB"
+  split_queries_by_interval: 15m
 
 compactor:
   working_directory: /loki/compactor
@@ -52,6 +52,10 @@ compactor:
   retention_enabled: true
   retention_delete_delay: 2h
   delete_request_store: filesystem
+# ===== 查询器并发 =====
+querier:
+  max_concurrent: 16
+  query_ingesters_within: 2h
 
 ingester:
   chunk_idle_period: 30m

@@ -1,0 +1,30 @@
+# ====================================================================
+# Redisson 配置 — Tomcat Session 共享（Sentinel 模式）
+# ====================================================================
+# 部署路径: /softs/ect-apps/ROOT/WEB-INF/redisson.yaml
+#
+# 连接流程:
+#   1. Redisson 连接 Sentinel (26379)
+#   2. 问: "redis-ha 的 Master 是谁？"
+#   3. Sentinel 答: "192.168.131.10:6379"（或故障转移后的新 Master）
+#   4. Redisson 连接 Master 读写 session 数据
+#
+# 故障切换:
+#   Master 挂了 → Sentinel 提升 Slave 为新 Master
+#   → Sentinel 推送通知给 Redisson
+#   → Redisson 自动断开旧连接，连到新 Master
+#   → Tomcat 无感知，session 不丢
+
+sentinelServersConfig:                          # Sentinel 模式
+  masterName: "redis-ha"                        # 集群名，和 sentinel.conf 里一致
+  sentinelAddresses:                            # Sentinel 地址列表（哨兵，不是 Redis）
+    - "redis://192.168.131.10:26379"              # app10 Sentinel
+    - "redis://192.168.131.11:26379"              # app11 Sentinel
+    - "redis://192.168.131.30:26379"              # 仲裁机 Sentinel（按实际 IP 改）
+  password: "cns@2035"                          # Redis 密码
+  database: 1                                   # 使用 1 号数据库
+  connectionMinimumIdleSize: 5                  # 连接池最小空闲连接
+  connectionPoolSize: 20                        # 连接池最大连接数
+
+threads: 16                                     # Redisson 工作线程
+nettyThreads: 32                                # Netty 网络线程

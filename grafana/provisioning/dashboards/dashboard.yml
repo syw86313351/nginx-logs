@@ -1,12 +1,4 @@
+# 仪表板改为手动导入，见 grafana/dashboards/import/
+# 若需恢复自动加载，取消下方注释并确保 path 指向含 .json 的目录
 apiVersion: 1
-
-providers:
-  - name: 'nginx-logs'
-    orgId: 1
-    folder: 'Nginx'
-    type: file
-    disableDeletion: false
-    editable: true
-    options:
-      path: /etc/grafana/provisioning/dashboards
-
+providers: []

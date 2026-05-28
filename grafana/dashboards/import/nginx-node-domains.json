@@ -1,0 +1,179 @@
+{  "__inputs": [
+    {
+      "name": "DS_LOKI",
+      "label": "Loki",
+      "description": "选择已配置的 Loki 数据源",
+      "type": "datasource",
+      "pluginId": "loki",
+      "pluginName": "Loki"
+    }
+  ],
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "10.0.0"
+    },
+    {
+      "type": "datasource",
+      "id": "loki",
+      "name": "Loki",
+      "version": "1.0.0"
+    }
+  ],
+  "uid": "nginx-node-domains",
+  "title": "Nginx 节点-域名统计",
+  "tags": ["nginx", "loki"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "1m",
+  "time": { "from": "now-15m", "to": "now" },
+  "links": [
+    {
+      "title": "最近访问明细",
+      "type": "link",
+      "url": "/d/nginx-access-recent?orgId=${__org.id}&from=${__from}&to=${__to}&${node:queryparam}&${host:queryparam}",
+      "targetBlank": true
+    },
+    {
+      "title": "运营总览",
+      "type": "link",
+      "url": "/d/nginx-ops-overview?orgId=${__org.id}&from=${__from}&to=${__to}",
+      "targetBlank": true
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "node",
+        "label": "中转节点",
+        "type": "query",
+        "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+        "query": { "type": "label_values", "label": "node", "stream": "{job=\"nginx\"}" },
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "refresh": 2,
+        "sort": 1
+      },
+      {
+        "name": "host",
+        "label": "入口域名",
+        "type": "query",
+        "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+        "query": { "type": "label_values", "label": "host", "stream": "{job=\"nginx\",node=~\"$node\"}" },
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "refresh": 2,
+        "sort": 1
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "table",
+      "title": "按节点统计入口域名与访问次数",
+      "description": "访问次数=所选时间段内日志条数。点击「入口域名」跳转最近访问明细。纯标签聚合，适合 6h 内查询。",
+      "gridPos": { "h": 14, "w": 24, "x": 0, "y": 0 },
+      "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "访问次数", "desc": true }],
+        "footer": { "show": true, "reducer": ["sum"], "fields": ["访问次数"] }
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "入口域名" },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "查看访问明细",
+                    "url": "/d/nginx-access-recent?orgId=${__org.id}&from=${__from}&to=${__to}&var-node=${__data.fields[\"中转节点\"]}&var-host=${__value.text}&var-max_rows=500&var-method=.*&var-status_class=.*&var-uri_pattern=.*&var-extra_pipeline=",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "访问次数" },
+            "properties": [
+              { "id": "custom.displayMode", "value": "gradient-gauge" },
+              { "id": "custom.width", "value": 140 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "QPS" },
+            "properties": [
+              { "id": "decimals", "value": 2 },
+              { "id": "unit", "value": "reqps" }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (node, host) (count_over_time({job=\"nginx\", node=~\"$node\", host=~\"$host\"}[$__range]))",
+          "instant": true,
+          "legendFormat": "{{node}} {{host}}"
+        },
+        {
+          "refId": "B",
+          "expr": "sum by (node, host) (rate({job=\"nginx\", node=~\"$node\", host=~\"$host\"}[5m]))",
+          "instant": true,
+          "legendFormat": "{{node}} {{host}}"
+        }
+      ],
+      "transformations": [
+        { "id": "merge", "options": {} },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "node": "中转节点",
+              "host": "入口域名",
+              "Value #A": "访问次数",
+              "Value #B": "QPS"
+            },
+            "excludeByName": { "Time": true }
+          }
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "QPS 趋势（按中转节点）",
+      "description": "观察哪个中转节点 QPS 突增。不按域名拆线，避免图例过多。",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 14 },
+      "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": { "lineWidth": 2, "fillOpacity": 10 }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] },
+        "tooltip": { "mode": "multi" }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (node) (rate({job=\"nginx\", node=~\"$node\", host=~\"$host\"}[5m]))",
+          "legendFormat": "{{node}}"
+        }
+      ]
+    }
+  ]
+}
+

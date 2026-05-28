@@ -1,0 +1,1414 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_LOKI",
+      "label": "Loki",
+      "description": "选择已配置的 Loki 数据源",
+      "type": "datasource",
+      "pluginId": "loki",
+      "pluginName": "Loki"
+    }
+  ],
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "12.2.0"
+    },
+    {
+      "type": "datasource",
+      "id": "loki",
+      "name": "Loki",
+      "version": "1.0.0"
+    }
+  ],
+  "uid": "nginx-client-ip-stats",
+  "title": "Nginx 按节点/域名查 IP 访问统计",
+  "tags": [
+    "nginx",
+    "loki"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 22,
+  "refresh": false,
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "links": [
+    {
+      "title": "Explore 查询",
+      "type": "link",
+      "url": "/explore?schemaVersion=1&panes=%7B%22p1%22%3A%7B%22datasource%22%3A%22loki-nginx%22%2C%22queries%22%3A%5B%7B%22expr%22%3A%22%7Bjob%3D%5C%5C%5C%22nginx%5C%5C%5C%22%2Cnode%3D~%5C%5C%5C%22%24%7Bnode%7D%5C%5C%5C%22%2Cserver_name%3D~%5C%5C%5C%22%24%7Bhost%7D%5C%5C%5C%22%7D%20%7C%20json%22%2C%22maxLines%22%3A200%2C%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22loki%22%2C%22uid%22%3A%22loki-nginx%22%7D%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22%24%7B__from%7D%22%2C%22to%22%3A%22%24%7B__to%7D%22%7D%7D%7D&orgId=${__org.id}",
+      "targetBlank": true
+    },
+    {
+      "title": "域名汇总",
+      "type": "link",
+      "url": "/d/nginx-host-domain-qps?orgId=${__org.id}&from=${__from}&to=${__to}&var-node=${node}",
+      "targetBlank": false
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "node",
+        "label": "中转主机",
+        "type": "query",
+        "datasource": {
+          "type": "loki",
+          "uid": "${DS_LOKI}"
+        },
+        "query": {
+          "label": "node",
+          "stream": "{job=\"nginx\"}",
+          "type": 1
+        },
+        "multi": false,
+        "includeAll": false,
+        "refresh": 2,
+        "sort": 1,
+        "description": "必选：先选中转节点"
+      },
+      {
+        "name": "host",
+        "label": "入口域名",
+        "type": "query",
+        "datasource": {
+          "type": "loki",
+          "uid": "${DS_LOKI}"
+        },
+        "query": {
+          "label": "server_name",
+          "stream": "{job=\"nginx\",node=~\"$node\"}",
+          "type": 1
+        },
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "description": "Loki 标签 server_name（与 nginx-analytics 一致）；须先选中转主机"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "table",
+      "title": "各 IP 访问汇总（QPS / 流量 / 方法 / 静态 / 状态码 / 耗时）",
+      "description": "须先选中转主机；入口域名按 Loki 标签 server_name 筛选（可选 All）。入口域名 + 客户端 IP 左侧冻结（Grafana ≥12.2）。指标列较多，请使用表格底部横向滚动条查看。时间范围建议 ≤30m；展示总请求数 Top 100。",
+      "gridPos": {
+        "h": 18,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "options": {
+        "showHeader": true,
+        "frozenColumns": {
+          "left": 2
+        },
+        "sortBy": [
+          {
+            "displayName": "总请求数",
+            "desc": true
+          }
+        ],
+        "footer": {
+          "show": true,
+          "reducer": [
+            "sum"
+          ],
+          "fields": [
+            "总请求数",
+            "近1秒",
+            "近2秒",
+            "近3秒",
+            "近5秒",
+            "近10秒",
+            "近15秒",
+            "近30秒",
+            "近60秒",
+            "入口流量",
+            "出口流量",
+            "GET访问次数",
+            "POST访问次数",
+            "JS访问次数",
+            "CSS访问次数",
+            "状态码200",
+            "状态码3xx",
+            "状态码4xx",
+            "状态码404",
+            "状态码5xx",
+            "耗时≤1秒",
+            "耗时1~3秒",
+            "耗时3~10秒",
+            "耗时10~30秒",
+            "耗时>30秒",
+            "附件访问次数",
+            "开放平台访问次数"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "0",
+          "nullValueMode": "null as zero",
+          "mappings": [
+            {
+              "type": "special",
+              "options": {
+                "null": {
+                  "index": 0,
+                  "text": "0"
+                },
+                "empty": {
+                  "index": 1,
+                  "text": "0"
+                },
+                "NaN": {
+                  "index": 2,
+                  "text": "0"
+                }
+              }
+            }
+          ]
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "server_name"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "入口域名"
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Explore 查询日志",
+                    "url": "/explore?schemaVersion=1&panes=%7B%22p1%22%3A%7B%22datasource%22%3A%22loki-nginx%22%2C%22queries%22%3A%5B%7B%22expr%22%3A%22%7Bjob%3D%5C%5C%5C%22nginx%5C%5C%5C%22%2Cnode%3D~%5C%5C%5C%22%24%7Bnode%7D%5C%5C%5C%22%2Cserver_name%3D~%5C%5C%5C%22%24%7B__value.text%7D%5C%5C%5C%22%7D%20%7C%20json%20%7C%20client_ip%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22client_ip%5C%5C%5C%22%5D%7D%5C%5C%5C%22%22%2C%22maxLines%22%3A200%2C%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22loki%22%2C%22uid%22%3A%22loki-nginx%22%7D%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22%24%7B__from%7D%22%2C%22to%22%3A%22%24%7B__to%7D%22%7D%7D%7D&orgId=${__org.id}",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              {
+                "id": "custom.width",
+                "value": 190
+              },
+              {
+                "id": "mappings",
+                "value": []
+              },
+              {
+                "id": "noValue",
+                "value": ""
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "client_ip"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "客户端 IP"
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Explore 查询日志",
+                    "url": "/explore?schemaVersion=1&panes=%7B%22p1%22%3A%7B%22datasource%22%3A%22loki-nginx%22%2C%22queries%22%3A%5B%7B%22expr%22%3A%22%7Bjob%3D%5C%5C%5C%22nginx%5C%5C%5C%22%2Cnode%3D~%5C%5C%5C%22%24%7Bnode%7D%5C%5C%5C%22%2Cserver_name%3D~%5C%5C%5C%22%24%7B__data.fields%5B%5C%22server_name%5C%22%5D%7D%5C%5C%5C%22%7D%20%7C%20json%20%7C%20client_ip%20%3D%20%5C%5C%5C%22%24%7B__value.text%7D%5C%5C%5C%22%22%2C%22maxLines%22%3A200%2C%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22loki%22%2C%22uid%22%3A%22loki-nginx%22%7D%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22%24%7B__from%7D%22%2C%22to%22%3A%22%24%7B__to%7D%22%7D%7D%7D&orgId=${__org.id}",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              {
+                "id": "custom.width",
+                "value": 130
+              },
+              {
+                "id": "mappings",
+                "value": []
+              },
+              {
+                "id": "noValue",
+                "value": ""
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "remote_addr"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "远程 IP"
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Explore 查询日志",
+                    "url": "/explore?schemaVersion=1&panes=%7B%22p1%22%3A%7B%22datasource%22%3A%22loki-nginx%22%2C%22queries%22%3A%5B%7B%22expr%22%3A%22%7Bjob%3D%5C%5C%5C%22nginx%5C%5C%5C%22%2Cnode%3D~%5C%5C%5C%22%24%7Bnode%7D%5C%5C%5C%22%2Cserver_name%3D~%5C%5C%5C%22%24%7B__data.fields%5B%5C%22server_name%5C%22%5D%7D%5C%5C%5C%22%7D%20%7C%20json%20%7C%20client_ip%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22client_ip%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20remote_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22remote_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20server_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22server_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20remote_addr%20%3D%20%5C%5C%5C%22%24%7B__value.text%7D%5C%5C%5C%22%22%2C%22maxLines%22%3A200%2C%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22loki%22%2C%22uid%22%3A%22loki-nginx%22%7D%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22%24%7B__from%7D%22%2C%22to%22%3A%22%24%7B__to%7D%22%7D%7D%7D&orgId=${__org.id}",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              {
+                "id": "custom.width",
+                "value": 120
+              },
+              {
+                "id": "mappings",
+                "value": []
+              },
+              {
+                "id": "noValue",
+                "value": ""
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "server_addr"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "服务端 IP"
+              },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Explore 查询日志",
+                    "url": "/explore?schemaVersion=1&panes=%7B%22p1%22%3A%7B%22datasource%22%3A%22loki-nginx%22%2C%22queries%22%3A%5B%7B%22expr%22%3A%22%7Bjob%3D%5C%5C%5C%22nginx%5C%5C%5C%22%2Cnode%3D~%5C%5C%5C%22%24%7Bnode%7D%5C%5C%5C%22%2Cserver_name%3D~%5C%5C%5C%22%24%7B__data.fields%5B%5C%22server_name%5C%22%5D%7D%5C%5C%5C%22%7D%20%7C%20json%20%7C%20client_ip%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22client_ip%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20remote_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22remote_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20server_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22server_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20server_addr%20%3D%20%5C%5C%5C%22%24%7B__value.text%7D%5C%5C%5C%22%22%2C%22maxLines%22%3A200%2C%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22loki%22%2C%22uid%22%3A%22loki-nginx%22%7D%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22%24%7B__from%7D%22%2C%22to%22%3A%22%24%7B__to%7D%22%7D%7D%7D&orgId=${__org.id}",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              {
+                "id": "custom.width",
+                "value": 120
+              },
+              {
+                "id": "mappings",
+                "value": []
+              },
+              {
+                "id": "noValue",
+                "value": ""
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "每秒请求数"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Explore 查询日志",
+                    "url": "/explore?schemaVersion=1&panes=%7B%22p1%22%3A%7B%22datasource%22%3A%22loki-nginx%22%2C%22queries%22%3A%5B%7B%22expr%22%3A%22%7Bjob%3D%5C%5C%5C%22nginx%5C%5C%5C%22%2Cnode%3D~%5C%5C%5C%22%24%7Bnode%7D%5C%5C%5C%22%2Cserver_name%3D~%5C%5C%5C%22%24%7B__data.fields%5B%5C%22server_name%5C%22%5D%7D%5C%5C%5C%22%7D%20%7C%20json%20%7C%20client_ip%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22client_ip%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20remote_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22remote_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20server_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22server_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%22%2C%22maxLines%22%3A200%2C%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22loki%22%2C%22uid%22%3A%22loki-nginx%22%7D%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22%24%7B__from%7D%22%2C%22to%22%3A%22%24%7B__to%7D%22%7D%7D%7D&orgId=${__org.id}",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "reqps"
+              },
+              {
+                "id": "decimals",
+                "value": 3
+              },
+              {
+                "id": "custom.displayMode",
+                "value": "gradient-gauge"
+              },
+              {
+                "id": "custom.width",
+                "value": 120
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "总请求数"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Explore 查询日志",
+                    "url": "/explore?schemaVersion=1&panes=%7B%22p1%22%3A%7B%22datasource%22%3A%22loki-nginx%22%2C%22queries%22%3A%5B%7B%22expr%22%3A%22%7Bjob%3D%5C%5C%5C%22nginx%5C%5C%5C%22%2Cnode%3D~%5C%5C%5C%22%24%7Bnode%7D%5C%5C%5C%22%2Cserver_name%3D~%5C%5C%5C%22%24%7B__data.fields%5B%5C%22server_name%5C%22%5D%7D%5C%5C%5C%22%7D%20%7C%20json%20%7C%20client_ip%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22client_ip%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20remote_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22remote_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20server_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22server_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%22%2C%22maxLines%22%3A200%2C%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22loki%22%2C%22uid%22%3A%22loki-nginx%22%7D%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22%24%7B__from%7D%22%2C%22to%22%3A%22%24%7B__to%7D%22%7D%7D%7D&orgId=${__org.id}",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "custom.width",
+                "value": 120
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^近[0-9]+秒$"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Explore 查询日志",
+                    "url": "/explore?schemaVersion=1&panes=%7B%22p1%22%3A%7B%22datasource%22%3A%22loki-nginx%22%2C%22queries%22%3A%5B%7B%22expr%22%3A%22%7Bjob%3D%5C%5C%5C%22nginx%5C%5C%5C%22%2Cnode%3D~%5C%5C%5C%22%24%7Bnode%7D%5C%5C%5C%22%2Cserver_name%3D~%5C%5C%5C%22%24%7B__data.fields%5B%5C%22server_name%5C%22%5D%7D%5C%5C%5C%22%7D%20%7C%20json%20%7C%20client_ip%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22client_ip%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20remote_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22remote_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20server_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22server_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%22%2C%22maxLines%22%3A200%2C%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22loki%22%2C%22uid%22%3A%22loki-nginx%22%7D%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22%24%7B__from%7D%22%2C%22to%22%3A%22%24%7B__to%7D%22%7D%7D%7D&orgId=${__org.id}",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "入口流量"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Explore 查询日志",
+                    "url": "/explore?schemaVersion=1&panes=%7B%22p1%22%3A%7B%22datasource%22%3A%22loki-nginx%22%2C%22queries%22%3A%5B%7B%22expr%22%3A%22%7Bjob%3D%5C%5C%5C%22nginx%5C%5C%5C%22%2Cnode%3D~%5C%5C%5C%22%24%7Bnode%7D%5C%5C%5C%22%2Cserver_name%3D~%5C%5C%5C%22%24%7B__data.fields%5B%5C%22server_name%5C%22%5D%7D%5C%5C%5C%22%7D%20%7C%20json%20%7C%20client_ip%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22client_ip%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20remote_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22remote_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20server_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22server_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%22%2C%22maxLines%22%3A200%2C%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22loki%22%2C%22uid%22%3A%22loki-nginx%22%7D%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22%24%7B__from%7D%22%2C%22to%22%3A%22%24%7B__to%7D%22%7D%7D%7D&orgId=${__org.id}",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "decbytes"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 120
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "出口流量"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Explore 查询日志",
+                    "url": "/explore?schemaVersion=1&panes=%7B%22p1%22%3A%7B%22datasource%22%3A%22loki-nginx%22%2C%22queries%22%3A%5B%7B%22expr%22%3A%22%7Bjob%3D%5C%5C%5C%22nginx%5C%5C%5C%22%2Cnode%3D~%5C%5C%5C%22%24%7Bnode%7D%5C%5C%5C%22%2Cserver_name%3D~%5C%5C%5C%22%24%7B__data.fields%5B%5C%22server_name%5C%22%5D%7D%5C%5C%5C%22%7D%20%7C%20json%20%7C%20client_ip%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22client_ip%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20remote_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22remote_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20server_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22server_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%22%2C%22maxLines%22%3A200%2C%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22loki%22%2C%22uid%22%3A%22loki-nginx%22%7D%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22%24%7B__from%7D%22%2C%22to%22%3A%22%24%7B__to%7D%22%7D%7D%7D&orgId=${__org.id}",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "decbytes"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 120
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "GET访问次数"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Explore 查询日志",
+                    "url": "/explore?schemaVersion=1&panes=%7B%22p1%22%3A%7B%22datasource%22%3A%22loki-nginx%22%2C%22queries%22%3A%5B%7B%22expr%22%3A%22%7Bjob%3D%5C%5C%5C%22nginx%5C%5C%5C%22%2Cnode%3D~%5C%5C%5C%22%24%7Bnode%7D%5C%5C%5C%22%2Cserver_name%3D~%5C%5C%5C%22%24%7B__data.fields%5B%5C%22server_name%5C%22%5D%7D%5C%5C%5C%22%7D%20%7C%20json%20%7C%20client_ip%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22client_ip%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20remote_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22remote_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20server_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22server_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20request_method%3D%5C%5C%5C%22GET%5C%5C%5C%22%22%2C%22maxLines%22%3A200%2C%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22loki%22%2C%22uid%22%3A%22loki-nginx%22%7D%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22%24%7B__from%7D%22%2C%22to%22%3A%22%24%7B__to%7D%22%7D%7D%7D&orgId=${__org.id}",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "POST访问次数"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Explore 查询日志",
+                    "url": "/explore?schemaVersion=1&panes=%7B%22p1%22%3A%7B%22datasource%22%3A%22loki-nginx%22%2C%22queries%22%3A%5B%7B%22expr%22%3A%22%7Bjob%3D%5C%5C%5C%22nginx%5C%5C%5C%22%2Cnode%3D~%5C%5C%5C%22%24%7Bnode%7D%5C%5C%5C%22%2Cserver_name%3D~%5C%5C%5C%22%24%7B__data.fields%5B%5C%22server_name%5C%22%5D%7D%5C%5C%5C%22%7D%20%7C%20json%20%7C%20client_ip%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22client_ip%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20remote_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22remote_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20server_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22server_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20request_method%3D%5C%5C%5C%22POST%5C%5C%5C%22%22%2C%22maxLines%22%3A200%2C%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22loki%22%2C%22uid%22%3A%22loki-nginx%22%7D%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22%24%7B__from%7D%22%2C%22to%22%3A%22%24%7B__to%7D%22%7D%7D%7D&orgId=${__org.id}",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "JS访问次数"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Explore 查询日志",
+                    "url": "/explore?schemaVersion=1&panes=%7B%22p1%22%3A%7B%22datasource%22%3A%22loki-nginx%22%2C%22queries%22%3A%5B%7B%22expr%22%3A%22%7Bjob%3D%5C%5C%5C%22nginx%5C%5C%5C%22%2Cnode%3D~%5C%5C%5C%22%24%7Bnode%7D%5C%5C%5C%22%2Cserver_name%3D~%5C%5C%5C%22%24%7B__data.fields%5B%5C%22server_name%5C%22%5D%7D%5C%5C%5C%22%7D%20%7C%20json%20%7C%20client_ip%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22client_ip%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20remote_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22remote_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20server_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22server_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20uri%3D~%5C%5C%5C%22%28%3Fi%29.%2B%5C%5C%5C%5C.js%28%24%7C%5C%5C%5C%5C%3F%7C%3B%29%5C%5C%5C%22%22%2C%22maxLines%22%3A200%2C%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22loki%22%2C%22uid%22%3A%22loki-nginx%22%7D%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22%24%7B__from%7D%22%2C%22to%22%3A%22%24%7B__to%7D%22%7D%7D%7D&orgId=${__org.id}",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "CSS访问次数"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Explore 查询日志",
+                    "url": "/explore?schemaVersion=1&panes=%7B%22p1%22%3A%7B%22datasource%22%3A%22loki-nginx%22%2C%22queries%22%3A%5B%7B%22expr%22%3A%22%7Bjob%3D%5C%5C%5C%22nginx%5C%5C%5C%22%2Cnode%3D~%5C%5C%5C%22%24%7Bnode%7D%5C%5C%5C%22%2Cserver_name%3D~%5C%5C%5C%22%24%7B__data.fields%5B%5C%22server_name%5C%22%5D%7D%5C%5C%5C%22%7D%20%7C%20json%20%7C%20client_ip%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22client_ip%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20remote_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22remote_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20server_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22server_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20uri%3D~%5C%5C%5C%22%28%3Fi%29.%2B%5C%5C%5C%5C.css%28%24%7C%5C%5C%5C%5C%3F%7C%3B%29%5C%5C%5C%22%22%2C%22maxLines%22%3A200%2C%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22loki%22%2C%22uid%22%3A%22loki-nginx%22%7D%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22%24%7B__from%7D%22%2C%22to%22%3A%22%24%7B__to%7D%22%7D%7D%7D&orgId=${__org.id}",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "状态码200"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Explore 查询日志",
+                    "url": "/explore?schemaVersion=1&panes=%7B%22p1%22%3A%7B%22datasource%22%3A%22loki-nginx%22%2C%22queries%22%3A%5B%7B%22expr%22%3A%22%7Bjob%3D%5C%5C%5C%22nginx%5C%5C%5C%22%2Cnode%3D~%5C%5C%5C%22%24%7Bnode%7D%5C%5C%5C%22%2Cserver_name%3D~%5C%5C%5C%22%24%7B__data.fields%5B%5C%22server_name%5C%22%5D%7D%5C%5C%5C%22%7D%20%7C%20json%20%7C%20client_ip%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22client_ip%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20remote_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22remote_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20server_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22server_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20status%3D200%22%2C%22maxLines%22%3A200%2C%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22loki%22%2C%22uid%22%3A%22loki-nginx%22%7D%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22%24%7B__from%7D%22%2C%22to%22%3A%22%24%7B__to%7D%22%7D%7D%7D&orgId=${__org.id}",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "状态码3xx"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Explore 查询日志",
+                    "url": "/explore?schemaVersion=1&panes=%7B%22p1%22%3A%7B%22datasource%22%3A%22loki-nginx%22%2C%22queries%22%3A%5B%7B%22expr%22%3A%22%7Bjob%3D%5C%5C%5C%22nginx%5C%5C%5C%22%2Cnode%3D~%5C%5C%5C%22%24%7Bnode%7D%5C%5C%5C%22%2Cserver_name%3D~%5C%5C%5C%22%24%7B__data.fields%5B%5C%22server_name%5C%22%5D%7D%5C%5C%5C%22%2Cstatus_class%3D%5C%5C%5C%223xx%5C%5C%5C%22%7D%20%7C%20json%20%7C%20client_ip%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22client_ip%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20remote_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22remote_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20server_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22server_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%22%2C%22maxLines%22%3A200%2C%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22loki%22%2C%22uid%22%3A%22loki-nginx%22%7D%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22%24%7B__from%7D%22%2C%22to%22%3A%22%24%7B__to%7D%22%7D%7D%7D&orgId=${__org.id}",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "状态码4xx"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Explore 查询日志",
+                    "url": "/explore?schemaVersion=1&panes=%7B%22p1%22%3A%7B%22datasource%22%3A%22loki-nginx%22%2C%22queries%22%3A%5B%7B%22expr%22%3A%22%7Bjob%3D%5C%5C%5C%22nginx%5C%5C%5C%22%2Cnode%3D~%5C%5C%5C%22%24%7Bnode%7D%5C%5C%5C%22%2Cserver_name%3D~%5C%5C%5C%22%24%7B__data.fields%5B%5C%22server_name%5C%22%5D%7D%5C%5C%5C%22%2Cstatus_class%3D%5C%5C%5C%224xx%5C%5C%5C%22%7D%20%7C%20json%20%7C%20client_ip%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22client_ip%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20remote_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22remote_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20server_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22server_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%22%2C%22maxLines%22%3A200%2C%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22loki%22%2C%22uid%22%3A%22loki-nginx%22%7D%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22%24%7B__from%7D%22%2C%22to%22%3A%22%24%7B__to%7D%22%7D%7D%7D&orgId=${__org.id}",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "状态码404"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Explore 查询日志",
+                    "url": "/explore?schemaVersion=1&panes=%7B%22p1%22%3A%7B%22datasource%22%3A%22loki-nginx%22%2C%22queries%22%3A%5B%7B%22expr%22%3A%22%7Bjob%3D%5C%5C%5C%22nginx%5C%5C%5C%22%2Cnode%3D~%5C%5C%5C%22%24%7Bnode%7D%5C%5C%5C%22%2Cserver_name%3D~%5C%5C%5C%22%24%7B__data.fields%5B%5C%22server_name%5C%22%5D%7D%5C%5C%5C%22%7D%20%7C%20json%20%7C%20client_ip%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22client_ip%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20remote_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22remote_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20server_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22server_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20status%3D404%22%2C%22maxLines%22%3A200%2C%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22loki%22%2C%22uid%22%3A%22loki-nginx%22%7D%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22%24%7B__from%7D%22%2C%22to%22%3A%22%24%7B__to%7D%22%7D%7D%7D&orgId=${__org.id}",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "状态码5xx"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Explore 查询日志",
+                    "url": "/explore?schemaVersion=1&panes=%7B%22p1%22%3A%7B%22datasource%22%3A%22loki-nginx%22%2C%22queries%22%3A%5B%7B%22expr%22%3A%22%7Bjob%3D%5C%5C%5C%22nginx%5C%5C%5C%22%2Cnode%3D~%5C%5C%5C%22%24%7Bnode%7D%5C%5C%5C%22%2Cserver_name%3D~%5C%5C%5C%22%24%7B__data.fields%5B%5C%22server_name%5C%22%5D%7D%5C%5C%5C%22%2Cstatus_class%3D%5C%5C%5C%225xx%5C%5C%5C%22%7D%20%7C%20json%20%7C%20client_ip%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22client_ip%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20remote_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22remote_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20server_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22server_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%22%2C%22maxLines%22%3A200%2C%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22loki%22%2C%22uid%22%3A%22loki-nginx%22%7D%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22%24%7B__from%7D%22%2C%22to%22%3A%22%24%7B__to%7D%22%7D%7D%7D&orgId=${__org.id}",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "耗时≤1秒"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Explore 查询日志",
+                    "url": "/explore?schemaVersion=1&panes=%7B%22p1%22%3A%7B%22datasource%22%3A%22loki-nginx%22%2C%22queries%22%3A%5B%7B%22expr%22%3A%22%7Bjob%3D%5C%5C%5C%22nginx%5C%5C%5C%22%2Cnode%3D~%5C%5C%5C%22%24%7Bnode%7D%5C%5C%5C%22%2Cserver_name%3D~%5C%5C%5C%22%24%7B__data.fields%5B%5C%22server_name%5C%22%5D%7D%5C%5C%5C%22%7D%20%7C%20json%20%7C%20client_ip%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22client_ip%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20remote_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22remote_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20server_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22server_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20request_time%20%3C%3D%201%22%2C%22maxLines%22%3A200%2C%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22loki%22%2C%22uid%22%3A%22loki-nginx%22%7D%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22%24%7B__from%7D%22%2C%22to%22%3A%22%24%7B__to%7D%22%7D%7D%7D&orgId=${__org.id}",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "耗时1~3秒"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Explore 查询日志",
+                    "url": "/explore?schemaVersion=1&panes=%7B%22p1%22%3A%7B%22datasource%22%3A%22loki-nginx%22%2C%22queries%22%3A%5B%7B%22expr%22%3A%22%7Bjob%3D%5C%5C%5C%22nginx%5C%5C%5C%22%2Cnode%3D~%5C%5C%5C%22%24%7Bnode%7D%5C%5C%5C%22%2Cserver_name%3D~%5C%5C%5C%22%24%7B__data.fields%5B%5C%22server_name%5C%22%5D%7D%5C%5C%5C%22%7D%20%7C%20json%20%7C%20client_ip%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22client_ip%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20remote_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22remote_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20server_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22server_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20request_time%20%3E%201%20%7C%20request_time%20%3C%3D%203%22%2C%22maxLines%22%3A200%2C%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22loki%22%2C%22uid%22%3A%22loki-nginx%22%7D%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22%24%7B__from%7D%22%2C%22to%22%3A%22%24%7B__to%7D%22%7D%7D%7D&orgId=${__org.id}",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "耗时3~10秒"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Explore 查询日志",
+                    "url": "/explore?schemaVersion=1&panes=%7B%22p1%22%3A%7B%22datasource%22%3A%22loki-nginx%22%2C%22queries%22%3A%5B%7B%22expr%22%3A%22%7Bjob%3D%5C%5C%5C%22nginx%5C%5C%5C%22%2Cnode%3D~%5C%5C%5C%22%24%7Bnode%7D%5C%5C%5C%22%2Cserver_name%3D~%5C%5C%5C%22%24%7B__data.fields%5B%5C%22server_name%5C%22%5D%7D%5C%5C%5C%22%7D%20%7C%20json%20%7C%20client_ip%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22client_ip%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20remote_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22remote_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20server_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22server_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20request_time%20%3C%3D%201%22%2C%22maxLines%22%3A200%2C%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22loki%22%2C%22uid%22%3A%22loki-nginx%22%7D%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22%24%7B__from%7D%22%2C%22to%22%3A%22%24%7B__to%7D%22%7D%7D%7D&orgId=${__org.id}",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "耗时10~30秒"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Explore 查询日志",
+                    "url": "/explore?schemaVersion=1&panes=%7B%22p1%22%3A%7B%22datasource%22%3A%22loki-nginx%22%2C%22queries%22%3A%5B%7B%22expr%22%3A%22%7Bjob%3D%5C%5C%5C%22nginx%5C%5C%5C%22%2Cnode%3D~%5C%5C%5C%22%24%7Bnode%7D%5C%5C%5C%22%2Cserver_name%3D~%5C%5C%5C%22%24%7B__data.fields%5B%5C%22server_name%5C%22%5D%7D%5C%5C%5C%22%7D%20%7C%20json%20%7C%20client_ip%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22client_ip%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20remote_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22remote_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20server_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22server_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20request_time%20%3E%2010%20%7C%20request_time%20%3C%3D%2030%22%2C%22maxLines%22%3A200%2C%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22loki%22%2C%22uid%22%3A%22loki-nginx%22%7D%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22%24%7B__from%7D%22%2C%22to%22%3A%22%24%7B__to%7D%22%7D%7D%7D&orgId=${__org.id}",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "耗时>30秒"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Explore 查询日志",
+                    "url": "/explore?schemaVersion=1&panes=%7B%22p1%22%3A%7B%22datasource%22%3A%22loki-nginx%22%2C%22queries%22%3A%5B%7B%22expr%22%3A%22%7Bjob%3D%5C%5C%5C%22nginx%5C%5C%5C%22%2Cnode%3D~%5C%5C%5C%22%24%7Bnode%7D%5C%5C%5C%22%2Cserver_name%3D~%5C%5C%5C%22%24%7B__data.fields%5B%5C%22server_name%5C%22%5D%7D%5C%5C%5C%22%7D%20%7C%20json%20%7C%20client_ip%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22client_ip%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20remote_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22remote_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20server_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22server_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20request_time%20%3E%2030%22%2C%22maxLines%22%3A200%2C%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22loki%22%2C%22uid%22%3A%22loki-nginx%22%7D%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22%24%7B__from%7D%22%2C%22to%22%3A%22%24%7B__to%7D%22%7D%7D%7D&orgId=${__org.id}",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "附件访问次数"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Explore 查询日志",
+                    "url": "/explore?schemaVersion=1&panes=%7B%22p1%22%3A%7B%22datasource%22%3A%22loki-nginx%22%2C%22queries%22%3A%5B%7B%22expr%22%3A%22%7Bjob%3D%5C%5C%5C%22nginx%5C%5C%5C%22%2Cnode%3D~%5C%5C%5C%22%24%7Bnode%7D%5C%5C%5C%22%2Cserver_name%3D~%5C%5C%5C%22%24%7B__data.fields%5B%5C%22server_name%5C%22%5D%7D%5C%5C%5C%22%7D%20%7C%20json%20%7C%20client_ip%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22client_ip%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20remote_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22remote_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20server_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22server_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20uri%3D~%5C%5C%5C%22.%2Ablobdata.%2A%5C%5C%5C%22%22%2C%22maxLines%22%3A200%2C%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22loki%22%2C%22uid%22%3A%22loki-nginx%22%7D%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22%24%7B__from%7D%22%2C%22to%22%3A%22%24%7B__to%7D%22%7D%7D%7D&orgId=${__org.id}",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "开放平台访问次数"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Explore 查询日志",
+                    "url": "/explore?schemaVersion=1&panes=%7B%22p1%22%3A%7B%22datasource%22%3A%22loki-nginx%22%2C%22queries%22%3A%5B%7B%22expr%22%3A%22%7Bjob%3D%5C%5C%5C%22nginx%5C%5C%5C%22%2Cnode%3D~%5C%5C%5C%22%24%7Bnode%7D%5C%5C%5C%22%2Cserver_name%3D~%5C%5C%5C%22%24%7B__data.fields%5B%5C%22server_name%5C%22%5D%7D%5C%5C%5C%22%7D%20%7C%20json%20%7C%20client_ip%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22client_ip%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20remote_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22remote_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20server_addr%20%3D%20%5C%5C%5C%22%24%7B__data.fields%5B%5C%5C%5C%22server_addr%5C%5C%5C%22%5D%7D%5C%5C%5C%22%20%7C%20uri%3D~%5C%5C%5C%22.%2A%2Fecterpapi%2F.%2A%5C%5C%5C%22%22%2C%22maxLines%22%3A200%2C%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22loki%22%2C%22uid%22%3A%22loki-nginx%22%7D%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22%24%7B__from%7D%22%2C%22to%22%3A%22%24%7B__to%7D%22%7D%7D%7D&orgId=${__org.id}",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "custom.width",
+                "value": 100
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^(每秒请求数|总请求数|近[0-9]+秒|入口流量|出口流量|GET访问次数|POST访问次数|JS访问次数|CSS访问次数|状态码200|状态码3xx|状态码4xx|状态码404|状态码5xx|耗时≤1秒|耗时1~3秒|耗时3~10秒|耗时10~30秒|耗时>30秒|附件访问次数|开放平台访问次数)$"
+            },
+            "properties": [
+              {
+                "id": "noValue",
+                "value": "0"
+              },
+              {
+                "id": "nullValueMode",
+                "value": "null as zero"
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "special",
+                    "options": {
+                      "null": {
+                        "index": 0,
+                        "text": "0"
+                      },
+                      "empty": {
+                        "index": 1,
+                        "text": "0"
+                      },
+                      "NaN": {
+                        "index": 2,
+                        "text": "0"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "QPS",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, client_ip, remote_addr, server_addr) (rate({job=\"nginx\", node=~\"$node\", server_name=~\"$host\"} | json | client_ip != \"\" and client_ip != \"-\" | remote_addr != \"\" and remote_addr != \"-\" [5m]))",
+          "legendFormat": "{{server_name}}"
+        },
+        {
+          "refId": "CNT",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, client_ip, remote_addr, server_addr) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\"} | json | client_ip != \"\" and client_ip != \"-\" | remote_addr != \"\" and remote_addr != \"-\" [$__range]))",
+          "legendFormat": "{{server_name}}"
+        },
+        {
+          "refId": "N1",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, client_ip, remote_addr, server_addr) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\"} | json | client_ip != \"\" and client_ip != \"-\" | remote_addr != \"\" and remote_addr != \"-\" [1s]))",
+          "legendFormat": "{{server_name}}"
+        },
+        {
+          "refId": "N2",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, client_ip, remote_addr, server_addr) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\"} | json | client_ip != \"\" and client_ip != \"-\" | remote_addr != \"\" and remote_addr != \"-\" [2s]))",
+          "legendFormat": "{{server_name}}"
+        },
+        {
+          "refId": "N3",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, client_ip, remote_addr, server_addr) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\"} | json | client_ip != \"\" and client_ip != \"-\" | remote_addr != \"\" and remote_addr != \"-\" [3s]))",
+          "legendFormat": "{{server_name}}"
+        },
+        {
+          "refId": "N5",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, client_ip, remote_addr, server_addr) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\"} | json | client_ip != \"\" and client_ip != \"-\" | remote_addr != \"\" and remote_addr != \"-\" [5s]))",
+          "legendFormat": "{{server_name}}"
+        },
+        {
+          "refId": "N10",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, client_ip, remote_addr, server_addr) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\"} | json | client_ip != \"\" and client_ip != \"-\" | remote_addr != \"\" and remote_addr != \"-\" [10s]))",
+          "legendFormat": "{{server_name}}"
+        },
+        {
+          "refId": "N15",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, client_ip, remote_addr, server_addr) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\"} | json | client_ip != \"\" and client_ip != \"-\" | remote_addr != \"\" and remote_addr != \"-\" [15s]))",
+          "legendFormat": "{{server_name}}"
+        },
+        {
+          "refId": "N30",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, client_ip, remote_addr, server_addr) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\"} | json | client_ip != \"\" and client_ip != \"-\" | remote_addr != \"\" and remote_addr != \"-\" [30s]))",
+          "legendFormat": "{{server_name}}"
+        },
+        {
+          "refId": "N60",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, client_ip, remote_addr, server_addr) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\"} | json | client_ip != \"\" and client_ip != \"-\" | remote_addr != \"\" and remote_addr != \"-\" [60s]))",
+          "legendFormat": "{{server_name}}"
+        },
+        {
+          "refId": "IN",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, client_ip, remote_addr, server_addr) (sum_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\"} | json | client_ip != \"\" and client_ip != \"-\" | remote_addr != \"\" and remote_addr != \"-\" | unwrap request_length [$__range]))",
+          "legendFormat": "{{server_name}}"
+        },
+        {
+          "refId": "OUT",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, client_ip, remote_addr, server_addr) (sum_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\"} | json | client_ip != \"\" and client_ip != \"-\" | remote_addr != \"\" and remote_addr != \"-\" | unwrap bytes_sent [$__range]))",
+          "legendFormat": "{{server_name}}"
+        },
+        {
+          "refId": "GET",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, client_ip, remote_addr, server_addr) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\"} | json | client_ip != \"\" and client_ip != \"-\" | remote_addr != \"\" and remote_addr != \"-\" and request_method=\"GET\" [$__range]))",
+          "legendFormat": "{{server_name}}"
+        },
+        {
+          "refId": "POST",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, client_ip, remote_addr, server_addr) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\"} | json | client_ip != \"\" and client_ip != \"-\" | remote_addr != \"\" and remote_addr != \"-\" and request_method=\"POST\" [$__range]))",
+          "legendFormat": "{{server_name}}"
+        },
+        {
+          "refId": "JS",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, client_ip, remote_addr, server_addr) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\"} | json | client_ip != \"\" and client_ip != \"-\" | remote_addr != \"\" and remote_addr != \"-\" | uri=~\"(?i).+\\\\.js($|\\\\?|;)\" [$__range]))",
+          "legendFormat": "{{server_name}}"
+        },
+        {
+          "refId": "CSS",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, client_ip, remote_addr, server_addr) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\"} | json | client_ip != \"\" and client_ip != \"-\" | remote_addr != \"\" and remote_addr != \"-\" | uri=~\"(?i).+\\\\.css($|\\\\?|;)\" [$__range]))",
+          "legendFormat": "{{server_name}}"
+        },
+        {
+          "refId": "S200",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, client_ip, remote_addr, server_addr) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\"} | json | client_ip != \"\" and client_ip != \"-\" | remote_addr != \"\" and remote_addr != \"-\" | status=200 [$__range]))",
+          "legendFormat": "{{server_name}}"
+        },
+        {
+          "refId": "S3XX",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, client_ip, remote_addr, server_addr) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\", status_class=\"3xx\"} | json | client_ip != \"\" and client_ip != \"-\" | remote_addr != \"\" and remote_addr != \"-\" [$__range]))",
+          "legendFormat": "{{server_name}}"
+        },
+        {
+          "refId": "S4XX",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, client_ip, remote_addr, server_addr) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\", status_class=\"4xx\"} | json | client_ip != \"\" and client_ip != \"-\" | remote_addr != \"\" and remote_addr != \"-\" [$__range]))",
+          "legendFormat": "{{server_name}}"
+        },
+        {
+          "refId": "S404",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, client_ip, remote_addr, server_addr) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\"} | json | client_ip != \"\" and client_ip != \"-\" | remote_addr != \"\" and remote_addr != \"-\" | status=404 [$__range]))",
+          "legendFormat": "{{server_name}}"
+        },
+        {
+          "refId": "S5XX",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, client_ip, remote_addr, server_addr) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\", status_class=\"5xx\"} | json | client_ip != \"\" and client_ip != \"-\" | remote_addr != \"\" and remote_addr != \"-\" [$__range]))",
+          "legendFormat": "{{server_name}}"
+        },
+        {
+          "refId": "RT1",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, client_ip, remote_addr, server_addr) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\"} | json | client_ip != \"\" and client_ip != \"-\" | remote_addr != \"\" and remote_addr != \"-\" | request_time <= 1 [$__range]))",
+          "legendFormat": "{{server_name}}"
+        },
+        {
+          "refId": "RT3",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, client_ip, remote_addr, server_addr) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\"} | json | client_ip != \"\" and client_ip != \"-\" | remote_addr != \"\" and remote_addr != \"-\" | request_time > 1 and request_time <= 3 [$__range]))",
+          "legendFormat": "{{server_name}}"
+        },
+        {
+          "refId": "RT10",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, client_ip, remote_addr, server_addr) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\"} | json | client_ip != \"\" and client_ip != \"-\" | remote_addr != \"\" and remote_addr != \"-\" | request_time > 3 and request_time <= 10 [$__range]))",
+          "legendFormat": "{{server_name}}"
+        },
+        {
+          "refId": "RT30",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, client_ip, remote_addr, server_addr) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\"} | json | client_ip != \"\" and client_ip != \"-\" | remote_addr != \"\" and remote_addr != \"-\" | request_time > 10 and request_time <= 30 [$__range]))",
+          "legendFormat": "{{server_name}}"
+        },
+        {
+          "refId": "RT30P",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, client_ip, remote_addr, server_addr) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\"} | json | client_ip != \"\" and client_ip != \"-\" | remote_addr != \"\" and remote_addr != \"-\" | request_time > 30 [$__range]))",
+          "legendFormat": "{{server_name}}"
+        },
+        {
+          "refId": "BLOB",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, client_ip, remote_addr, server_addr) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\"} | json | client_ip != \"\" and client_ip != \"-\" | remote_addr != \"\" and remote_addr != \"-\" | uri=~\".*/blobdata/.*\" [$__range]))",
+          "legendFormat": "{{server_name}}"
+        },
+        {
+          "refId": "ECT",
+          "editorMode": "code",
+          "queryType": "instant",
+          "expr": "sum by (server_name, client_ip, remote_addr, server_addr) (count_over_time({job=\"nginx\", node=~\"$node\", server_name=~\"$host\"} | json | client_ip != \"\" and client_ip != \"-\" | remote_addr != \"\" and remote_addr != \"-\" | uri=~\".*/ecterpapi/.*\" [$__range]))",
+          "legendFormat": "{{server_name}}"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "Value #QPS": "每秒请求数",
+              "Value #CNT": "总请求数",
+              "Value #N1": "近1秒",
+              "Value #N2": "近2秒",
+              "Value #N3": "近3秒",
+              "Value #N5": "近5秒",
+              "Value #N10": "近10秒",
+              "Value #N15": "近15秒",
+              "Value #N30": "近30秒",
+              "Value #N60": "近60秒",
+              "Value #IN": "入口流量",
+              "Value #OUT": "出口流量",
+              "Value #GET": "GET访问次数",
+              "Value #POST": "POST访问次数",
+              "Value #JS": "JS访问次数",
+              "Value #CSS": "CSS访问次数",
+              "Value #S200": "状态码200",
+              "Value #S3XX": "状态码3xx",
+              "Value #S4XX": "状态码4xx",
+              "Value #S404": "状态码404",
+              "Value #S5XX": "状态码5xx",
+              "Value #RT1": "耗时≤1秒",
+              "Value #RT3": "耗时1~3秒",
+              "Value #RT10": "耗时3~10秒",
+              "Value #RT30": "耗时10~30秒",
+              "Value #RT30P": "耗时>30秒",
+              "Value #BLOB": "附件访问次数",
+              "Value #ECT": "开放平台访问次数"
+            },
+            "indexByName": {
+              "server_name": 0,
+              "client_ip": 1,
+              "remote_addr": 2,
+              "server_addr": 3,
+              "每秒请求数": 4,
+              "总请求数": 5,
+              "近1秒": 6,
+              "近2秒": 7,
+              "近3秒": 8,
+              "近5秒": 9,
+              "近10秒": 10,
+              "近15秒": 11,
+              "近30秒": 12,
+              "近60秒": 13,
+              "入口流量": 14,
+              "出口流量": 15,
+              "GET访问次数": 16,
+              "POST访问次数": 17,
+              "JS访问次数": 18,
+              "CSS访问次数": 19,
+              "状态码200": 20,
+              "状态码3xx": 21,
+              "状态码4xx": 22,
+              "状态码404": 23,
+              "状态码5xx": 24,
+              "耗时≤1秒": 25,
+              "耗时1~3秒": 26,
+              "耗时3~10秒": 27,
+              "耗时10~30秒": 28,
+              "耗时>30秒": 29,
+              "附件访问次数": 30,
+              "开放平台访问次数": 31
+            },
+            "excludeByName": {
+              "Time": true
+            }
+          }
+        },
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "number",
+                "targetField": "每秒请求数"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "总请求数"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "近1秒"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "近2秒"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "近3秒"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "近5秒"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "近10秒"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "近15秒"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "近30秒"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "近60秒"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "入口流量"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "出口流量"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "GET访问次数"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "POST访问次数"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "JS访问次数"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "CSS访问次数"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "状态码200"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "状态码3xx"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "状态码4xx"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "状态码404"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "状态码5xx"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "耗时≤1秒"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "耗时1~3秒"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "耗时3~10秒"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "耗时10~30秒"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "耗时>30秒"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "附件访问次数"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "开放平台访问次数"
+              }
+            ],
+            "fields": {}
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "sort": [
+              {
+                "field": "总请求数",
+                "desc": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "limit",
+          "options": {
+            "limitField": 100
+          }
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "QPS 趋势（Top 25 域名+客户端 IP）",
+      "description": "按 server_name + client_ip 的 QPS（5m rate，Top25）。入口域名=All 时数据量大，建议时间范围 ≤30m 或选定单个域名。",
+      "gridPos": {
+        "h": 16,
+        "w": 24,
+        "x": 0,
+        "y": 18
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "${DS_LOKI}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "decimals": 3,
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "fillOpacity": 8,
+            "spanNulls": true,
+            "showPoints": "never",
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        }
+      },
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "displayMode": "table",
+          "placement": "right",
+          "width": 720,
+          "calcs": [
+            "max",
+            "mean",
+            "last"
+          ],
+          "sortBy": "Max",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "maxDataPoints": 120,
+      "targets": [
+        {
+          "refId": "A",
+          "editorMode": "code",
+          "queryType": "range",
+          "interval": "90s",
+          "expr": "topk(25, sum by (server_name, client_ip) (rate({job=\"nginx\", node=~\"$node\", server_name=~\"$host\"} | json | client_ip != \"\" and client_ip != \"-\" [5m])))",
+          "legendFormat": "{{server_name}} / {{client_ip}}"
+        }
+      ]
+    }
+  ]
+}
