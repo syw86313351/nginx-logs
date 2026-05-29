@@ -61,18 +61,18 @@ details{margin:1rem 0;border:1px solid var(--border);border-radius:8px;backgroun
 <main>
 <header class="doc-header">
 <h1>机房网络网关迁移改造文档</h1>
-<p class="meta">华为 USG6305E · ws1~ws20 · VLAN192 / VLAN10 · 线路 A 不动 / 线路 B 新增<br>版本 1.0 · 2026-05-28</p>
+<p class="meta">华为 USG6305E · 本次范围：A组 ws1~ws7，B组 ws11~ws19 · VLAN192 / VLAN10 · 线路 A 不动 / 线路 B 新增<br>版本 1.1 · 2026-05-28</p>
 </header>
 <section id="executive">
 <h2>汇报结论（领导速览）</h2>
 <div class="exec-grid">
   <div class="exec-card">
     <h4>改什么</h4>
-    <p>仅改 B 组（ws9~ws20）默认网关：<span class="ip">10.0.0.11</span> → <span class="ip"><strong>10.0.0.254</strong></span>，并启用线路 B（XGE0/0/0 + GE0/0/7）。</p>
+    <p>仅改 B 组（ws11~ws19）默认网关：<span class="ip">10.0.0.11</span> → <span class="ip"><strong>10.0.0.254</strong></span>，并启用线路 B（XGE0/0/0 + GE0/0/7）。</p>
   </div>
   <div class="exec-card">
     <h4>不改什么</h4>
-    <p>A 组（ws1~ws8）公网出网路径保持原样，GE0/0/0 与 GE0/0/1 持续交换透传，现网业务路径不变。</p>
+    <p>A 组（ws1~ws7）公网出网路径保持原样，GE0/0/0 与 GE0/0/1 持续交换透传，现网业务路径不变。</p>
   </div>
   <div class="exec-card">
     <h4>预期收益</h4>
@@ -93,12 +93,12 @@ details{margin:1rem 0;border:1px solid var(--border);border-radius:8px;backgroun
 </section>
 <section id="intro">
 <h2>文档说明</h2>
-<p>涵盖<strong>服务器 ws1~ws20</strong>、<strong>内网交换机</strong>、<strong>华为 USG6305E</strong>、<strong>线路 A/B</strong>、<strong>VLAN 192 / VLAN10</strong>、<strong>IP 分配</strong>及改造前/后对照。</p>
+<p>涵盖<strong>本次改造服务器（A组 ws1~ws7；B组 ws11~ws19）</strong>、<strong>内网交换机</strong>、<strong>华为 USG6305E</strong>、<strong>线路 A/B</strong>、<strong>VLAN 192 / VLAN10</strong>、<strong>IP 分配</strong>及改造前/后对照。</p>
 <div class="quick-cards">
 <div class="quick-card"><strong>10.0.0.254</strong><span>新网关 GE0/0/7</span></div>
 <div class="quick-card"><strong>10.0.0.11</strong><span>旧网关 ws1</span></div>
-<div class="quick-card"><strong>A 组不改</strong><span>ws1~ws8 公网</span></div>
-<div class="quick-card"><strong>B 组改网关</strong><span>ws9~ws20</span></div>
+<div class="quick-card"><strong>A 组不改</strong><span>ws1~ws7 公网</span></div>
+<div class="quick-card"><strong>B 组改网关</strong><span>ws11~ws19</span></div>
 </div>
 <div class="legend"><span class="unchanged">不变</span><span class="new">新增</span><span class="changed">变更</span><span class="tbd">待填</span></div>
 </section>
@@ -112,8 +112,8 @@ details{margin:1rem 0;border:1px solid var(--border);border-radius:8px;backgroun
 <tr class="new"><td>GE0/0/7</td><td>未接</td><td>10.0.0.254 LAN</td><td><strong>新增</strong></td></tr>
 <tr class="unchanged"><td>Sw-A / VLAN192</td><td>A 组</td><td>不变</td><td>否</td></tr>
 <tr class="new"><td>Sw-B</td><td>无</td><td>Access VLAN10</td><td><strong>新增</strong></td></tr>
-<tr class="unchanged"><td>ws1~ws8</td><td>公网 IP</td><td>不变</td><td>否</td></tr>
-<tr class="changed"><td>ws9~ws20</td><td>网关 10.0.0.11</td><td>网关 <strong>10.0.0.254</strong></td><td><strong>是</strong></td></tr>
+<tr class="unchanged"><td>ws1~ws7</td><td>公网 IP</td><td>不变</td><td>否</td></tr>
+<tr class="changed"><td>ws11~ws19</td><td>网关 10.0.0.11</td><td>网关 <strong>10.0.0.254</strong></td><td><strong>是</strong></td></tr>
 <tr class="changed"><td>ws1 NAT</td><td>10.0.0.11</td><td>迁后关闭</td><td>稍后</td></tr>
 </tbody></table></div>
 </section>
@@ -122,14 +122,14 @@ details{margin:1rem 0;border:1px solid var(--border);border-radius:8px;backgroun
 <div class="cols2">
 <div><h3>改造前</h3>
 <pre class="topo">[线路A]--GE0/0/0==VLAN1桥==GE0/0/1--[Sw-A]
-  |-- VLAN192: ws1~ws8 公网IP
-  +-- VLAN10:  ws9~ws20 --&gt; 10.0.0.11(ws1 NAT) --&gt; 线路A
+  |-- VLAN192: ws1~ws7 公网IP
+  +-- VLAN10:  ws11~ws19 --&gt; 10.0.0.11(ws1 NAT) --&gt; 线路A
 XGE0/0/0、GE0/0/7: 未接</pre>
 <p><strong>A组：</strong>公网IP → VLAN192 → 透明桥 → 线路A</p>
 <p><strong>B组：</strong>10.0.0.x → ws1 NAT → 线路A</p></div>
 <div><h3>改造后</h3>
-<pre class="topo">[线路A]--GE0/0/0==桥==GE0/0/1--[Sw-A]-- VLAN192 ws1~ws8(不动)
-[线路B]--XGE0/0/0(SNAT)-- GE0/0/7(10.0.0.254)--[Sw-B]-- VLAN10 ws9~ws20</pre>
+<pre class="topo">[线路A]--GE0/0/0==桥==GE0/0/1--[Sw-A]-- VLAN192 ws1~ws7(不动)
+[线路B]--XGE0/0/0(SNAT)-- GE0/0/7(10.0.0.254)--[Sw-B]-- VLAN10 ws11~ws19</pre>
 <p><strong>A组：</strong>不变</p>
 <p><strong>B组：</strong>10.0.0.x → 10.0.0.254 → SNAT → 线路B</p></div>
 </div>
@@ -146,7 +146,7 @@ XGE0/0/0、GE0/0/7: 未接</pre>
 <tr><td>WAN IP</td><td>无</td><td class="tbd">&lt;线路B公网IP/掩码&gt;</td></tr>
 <tr><td>运营商网关</td><td>各机公网网关</td><td class="tbd">&lt;线路B运营商网关&gt;</td></tr>
 <tr class="new"><td>LAN IP</td><td>—</td><td class="ip"><strong>10.0.0.254/24</strong></td></tr>
-<tr><td>服务器</td><td>ws1~ws8</td><td>ws9~ws20</td></tr>
+<tr><td>服务器</td><td>ws1~ws7</td><td>ws11~ws19</td></tr>
 <tr><td>NAT</td><td>无</td><td>SNAT 10.0.0.0/24</td></tr>
 </tbody></table></div>
 </section>
@@ -156,8 +156,8 @@ XGE0/0/0、GE0/0/7: 未接</pre>
 <thead><tr><th>VLAN</th><th>网段</th><th>改造前网关</th><th>改造后网关</th><th>成员</th></tr></thead>
 <tbody>
 <tr class="unchanged"><td>VLAN 1</td><td>无三层</td><td>—</td><td>—</td><td>GE0/0/0 ↔ GE0/0/1 ↔ Sw-A</td></tr>
-<tr class="unchanged"><td>VLAN 192</td><td>公网 IP</td><td>各机公网网关</td><td><strong>不变</strong></td><td>ws1~ws8 网卡1</td></tr>
-<tr class="changed"><td>VLAN10</td><td class="ip">10.0.0.0/24</td><td class="ip">10.0.0.11</td><td class="ip"><strong>10.0.0.254</strong></td><td>ws9~ws20 + Sw-B</td></tr>
+<tr class="unchanged"><td>VLAN 192</td><td>公网 IP</td><td>各机公网网关</td><td><strong>不变</strong></td><td>ws1~ws7 网卡1</td></tr>
+<tr class="changed"><td>VLAN10</td><td class="ip">10.0.0.0/24</td><td class="ip">10.0.0.11</td><td class="ip"><strong>10.0.0.254</strong></td><td>ws11~ws19 + Sw-B</td></tr>
 </tbody></table></div>
 </section>
 <section id="cabling">
@@ -168,8 +168,8 @@ XGE0/0/0、GE0/0/7: 未接</pre>
 <tbody>
 <tr><td>运营商A</td><td>—</td><td>GE0/0/0</td><td>线路A</td></tr>
 <tr><td>USG</td><td>GE0/0/1</td><td>Sw-A</td><td>透明桥</td></tr>
-<tr><td>交换机</td><td>Access</td><td>ws1~ws8 网卡1</td><td>VLAN192</td></tr>
-<tr><td>交换机</td><td>Access</td><td>ws9~ws20</td><td>VLAN10</td></tr>
+<tr><td>交换机</td><td>Access</td><td>ws1~ws7 网卡1</td><td>VLAN192</td></tr>
+<tr><td>交换机</td><td>Access</td><td>ws11~ws19</td><td>VLAN10</td></tr>
 <tr><td>交换机</td><td>Access</td><td>ws1 网卡2</td><td>10.0.0.11 NAT</td></tr>
 <tr class="unchanged"><td>USG</td><td>XGE0/0/0、GE0/0/7</td><td>未接</td><td>空闲</td></tr>
 </tbody></table></div>
@@ -208,8 +208,8 @@ interface GigabitEthernet0/0/7
 <thead><tr><th>端口</th><th>模式</th><th>VLAN</th><th>接入</th><th>变更</th></tr></thead>
 <tbody>
 <tr class="unchanged"><td>Sw-A</td><td>Access/Trunk</td><td>VLAN1</td><td>GE0/0/1</td><td>不动</td></tr>
-<tr class="unchanged"><td>A组口</td><td>Access</td><td>192</td><td>ws1~ws8 网卡1</td><td>不动</td></tr>
-<tr class="unchanged"><td>B组口</td><td>Access</td><td>VLAN10</td><td>ws9~ws20</td><td>不动</td></tr>
+<tr class="unchanged"><td>A组口</td><td>Access</td><td>192</td><td>ws1~ws7 网卡1</td><td>不动</td></tr>
+<tr class="unchanged"><td>B组口</td><td>Access</td><td>VLAN10</td><td>ws11~ws19</td><td>不动</td></tr>
 <tr class="changed"><td>ws1网卡2</td><td>Access</td><td>VLAN10</td><td>ws1</td><td>释放IP</td></tr>
 <tr class="new"><td><strong>Sw-B</strong></td><td>Access</td><td>VLAN10</td><td><strong>GE0/0/7</strong></td><td><strong>新增</strong></td></tr>
 </tbody></table></div>
@@ -221,8 +221,6 @@ interface GigabitEthernet0/0/7
 <tbody>
 <tr class="new"><td class="ip"><strong>10.0.0.254</strong></td><td>USG GE0/0/7</td><td>/24</td><td>—</td><td><strong>B组新网关</strong></td><td>新增</td></tr>
 <tr class="changed"><td class="ip">10.0.0.11</td><td>ws1 网卡2</td><td>/24</td><td>NAT网关</td><td>释放</td><td>下线</td></tr>
-<tr class="changed"><td class="ip">10.0.0.12</td><td>ws9</td><td>/24</td><td>网关→11</td><td>网关→254</td><td>改网关</td></tr>
-<tr class="changed"><td class="ip">10.0.0.13</td><td>ws10</td><td>/24</td><td>网关→11</td><td>网关→254</td><td>改网关</td></tr>
 <tr class="changed"><td class="ip">10.0.0.14</td><td>ws11</td><td>/24</td><td>网关→11</td><td>网关→254</td><td>改网关</td></tr>
 <tr class="changed"><td class="ip">10.0.0.15</td><td>ws12</td><td>/24</td><td>网关→11</td><td>网关→254</td><td>改网关</td></tr>
 <tr class="changed"><td class="ip">10.0.0.16</td><td>ws13</td><td>/24</td><td>网关→11</td><td>网关→254</td><td>改网关</td></tr>
@@ -232,12 +230,11 @@ interface GigabitEthernet0/0/7
 <tr class="changed"><td class="ip">10.0.0.20</td><td>ws17</td><td>/24</td><td>网关→11</td><td>网关→254</td><td>改网关</td></tr>
 <tr class="changed"><td class="ip">10.0.0.21</td><td>ws18</td><td>/24</td><td>网关→11</td><td>网关→254</td><td>改网关</td></tr>
 <tr class="changed"><td class="ip">10.0.0.22</td><td>ws19</td><td>/24</td><td>网关→11</td><td>网关→254</td><td>改网关</td></tr>
-<tr class="changed"><td class="ip">10.0.0.23</td><td>ws20</td><td>/24</td><td>网关→11</td><td>网关→254</td><td>改网关</td></tr>
 </tbody></table></div>
-<p class="note">10.0.0.12~23 为示例，请按现网核对。</p>
+<p class="note">当前 B 组迁移范围为 ws11~ws19（示例 IP：10.0.0.14~10.0.0.22），请按现网核对。</p>
 </section>
 <section id="servers">
-<h2>9. 服务器清单 ws1~ws20</h2>
+<h2>9. 服务器清单（本次范围）</h2>
 <h3>A 组（VLAN192 · 不改）</h3>
 <div class="table-wrap"><table>
 <thead><tr><th>主机</th><th>网卡</th><th>VLAN</th><th>IP</th><th>掩码</th><th>网关</th><th>DNS</th><th>出网</th><th>操作</th></tr></thead>
@@ -250,14 +247,11 @@ interface GigabitEthernet0/0/7
 <tr class="unchanged"><td>ws5</td><td>网卡1</td><td>192</td><td class="tbd">&lt;公网IP-5&gt;</td><td class="tbd">&lt;掩码&gt;</td><td class="tbd">&lt;网关&gt;</td><td class="tbd">&lt;DNS&gt;</td><td>线路A</td><td>不改</td></tr>
 <tr class="unchanged"><td>ws6</td><td>网卡1</td><td>192</td><td class="tbd">&lt;公网IP-6&gt;</td><td class="tbd">&lt;掩码&gt;</td><td class="tbd">&lt;网关&gt;</td><td class="tbd">&lt;DNS&gt;</td><td>线路A</td><td>不改</td></tr>
 <tr class="unchanged"><td>ws7</td><td>网卡1</td><td>192</td><td class="tbd">&lt;公网IP-7&gt;</td><td class="tbd">&lt;掩码&gt;</td><td class="tbd">&lt;网关&gt;</td><td class="tbd">&lt;DNS&gt;</td><td>线路A</td><td>不改</td></tr>
-<tr class="unchanged"><td>ws8</td><td>网卡1</td><td>192</td><td class="tbd">&lt;公网IP-8&gt;</td><td class="tbd">&lt;掩码&gt;</td><td class="tbd">&lt;网关&gt;</td><td class="tbd">&lt;DNS&gt;</td><td>线路A</td><td>不改</td></tr>
 </tbody></table></div>
 <h3>B 组（VLAN10 · 只改网关）</h3>
 <div class="table-wrap"><table>
 <thead><tr><th>主机</th><th>IP</th><th>掩码</th><th>改造前网关</th><th>改造后网关</th><th>出网</th><th>操作</th></tr></thead>
 <tbody>
-<tr class="changed"><td>ws9</td><td class="ip">10.0.0.12</td><td>/24</td><td class="ip">10.0.0.11</td><td class="ip"><strong>10.0.0.254</strong></td><td>线路B</td><td>改GATEWAY</td></tr>
-<tr class="changed"><td>ws10</td><td class="ip">10.0.0.13</td><td>/24</td><td class="ip">10.0.0.11</td><td class="ip"><strong>10.0.0.254</strong></td><td>线路B</td><td>改GATEWAY</td></tr>
 <tr class="changed"><td>ws11</td><td class="ip">10.0.0.14</td><td>/24</td><td class="ip">10.0.0.11</td><td class="ip"><strong>10.0.0.254</strong></td><td>线路B</td><td>改GATEWAY</td></tr>
 <tr class="changed"><td>ws12</td><td class="ip">10.0.0.15</td><td>/24</td><td class="ip">10.0.0.11</td><td class="ip"><strong>10.0.0.254</strong></td><td>线路B</td><td>改GATEWAY</td></tr>
 <tr class="changed"><td>ws13</td><td class="ip">10.0.0.16</td><td>/24</td><td class="ip">10.0.0.11</td><td class="ip"><strong>10.0.0.254</strong></td><td>线路B</td><td>改GATEWAY</td></tr>
@@ -267,7 +261,6 @@ interface GigabitEthernet0/0/7
 <tr class="changed"><td>ws17</td><td class="ip">10.0.0.20</td><td>/24</td><td class="ip">10.0.0.11</td><td class="ip"><strong>10.0.0.254</strong></td><td>线路B</td><td>改GATEWAY</td></tr>
 <tr class="changed"><td>ws18</td><td class="ip">10.0.0.21</td><td>/24</td><td class="ip">10.0.0.11</td><td class="ip"><strong>10.0.0.254</strong></td><td>线路B</td><td>改GATEWAY</td></tr>
 <tr class="changed"><td>ws19</td><td class="ip">10.0.0.22</td><td>/24</td><td class="ip">10.0.0.11</td><td class="ip"><strong>10.0.0.254</strong></td><td>线路B</td><td>改GATEWAY</td></tr>
-<tr class="changed"><td>ws20</td><td class="ip">10.0.0.23</td><td>/24</td><td class="ip">10.0.0.11</td><td class="ip"><strong>10.0.0.254</strong></td><td>线路B</td><td>改GATEWAY</td></tr>
 </tbody></table></div>
 </section>
 <section id="changes">
@@ -275,9 +268,9 @@ interface GigabitEthernet0/0/7
 <div class="table-wrap"><table>
 <thead><tr><th>对象</th><th>操作</th></tr></thead>
 <tbody>
-<tr class="unchanged"><td>线路A、GE0/0/0/1、Sw-A、VLAN192、ws1~ws8</td><td><strong>不改</strong></td></tr>
+<tr class="unchanged"><td>线路A、GE0/0/0/1、Sw-A、VLAN192、ws1~ws7</td><td><strong>不改</strong></td></tr>
 <tr class="new"><td>线路B、XGE、GE7、Sw-B</td><td>新接线+新配置</td></tr>
-<tr class="changed"><td>ws9~ws20</td><td>网关 10.0.0.11 → <strong>10.0.0.254</strong></td></tr>
+<tr class="changed"><td>ws11~ws19</td><td>网关 10.0.0.11 → <strong>10.0.0.254</strong></td></tr>
 </tbody></table></div>
 <ol class="steps">
 <li>准备：备份 ws1 NAT；记录实际 IP；获取线路 B 参数</li>
@@ -295,7 +288,7 @@ interface GigabitEthernet0/0/7
 <li>VLAN10 实际 VLAN ID</li>
 <li>Sw-A / Sw-B 端口号</li>
 <li>10.0.0.254 未占用</li>
-<li>ws9~ws20 实际 IP</li>
+<li>ws11~ws19 实际 IP</li>
 <li>线路 B 公网 IP/掩码/网关/DNS</li>
 <li>A 组各台公网 IP 填入第 9 节</li>
 <li>ws1 DNAT 是否需迁防火墙</li>
