@@ -148,19 +148,33 @@ details{margin:1rem 0;border:1px solid var(--border);border-radius:8px;backgroun
 @media(max-width:1200px){.kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.kpi-grid{grid-template-columns:1fr}}
 
-.sw48-panel{flex-direction:column;align-items:stretch;gap:.35rem;padding:.55rem .65rem!important;min-height:auto!important}
+.sw48-panel{flex-direction:column;align-items:stretch;gap:.4rem;padding:.55rem .65rem!important;min-height:auto!important}
 .sw48-head{display:flex;justify-content:space-between;align-items:baseline;width:100%}
-.sw48-head strong{font-size:.8rem;color:#1e40af}
-.sw48-head span{font-size:.65rem;color:#64748b;font-family:Consolas,"Courier New",monospace}
-.sw48-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:2px;width:100%}
-.sw48-port{height:13px;border-radius:2px;font-size:.5rem;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;line-height:1;cursor:default}
-.sw48-port--v10{background:#2563eb}.sw48-port--v20{background:#7c3aed}.sw48-port--v30{background:#d97706}
-.sw48-port--v40{background:#059669}.sw48-port--trunk{background:#e0e7ff;color:#3730a3;border:1px solid #a5b4fc;font-weight:700}
-.sw48-port--up{background:#475569}.sw48-port--rsv{background:#cbd5e1;color:#475569}
-.sw48-legend{display:flex;flex-wrap:wrap;gap:.25rem .55rem;width:100%;font-size:.6rem;color:#475569;margin-top:.15rem}
-.sw48-legend i{display:inline-block;width:9px;height:9px;border-radius:2px;vertical-align:middle;margin-right:.15rem}
-.sw48-ranges{font-size:.62rem;color:#475569;line-height:1.45;width:100%;margin-top:.1rem}
-.sw48-ranges code{font-size:.6rem;background:#f1f5f9;padding:.05rem .25rem;border-radius:3px}
+.sw48-head strong{font-size:.85rem;color:#1e40af}
+.sw48-head span{font-size:.68rem;color:#64748b;font-family:Consolas,"Courier New",monospace}
+.sw48-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;width:100%}
+.sw48-port{height:20px;border-radius:3px;font-size:.62rem;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;line-height:1;cursor:default}
+.sw48-port--v1{background:#94a3b8;color:#334155}
+.sw48-port--v100{background:#2563eb}  /* 10.0.0.0/24 */
+.sw48-port--v192{background:#d97706}  /* 192.168.1.0/24 */
+.sw48-port--v200{background:#059669}  /* 管理 */
+.sw48-port--v300{background:#7c3aed}  /* 开心私网 */
+.sw48-port--trunk{background:#e0e7ff;color:#3730a3;border:2px solid #6366f1;font-weight:700}
+.sw48-port--up{box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}
+.sw48-port--down{opacity:.35;text-decoration:line-through}
+.sw48-port--rsv{background:#cbd5e1;color:#475569}
+.sw48-legend{display:flex;flex-wrap:wrap;gap:.3rem .7rem;width:100%;font-size:.75rem;color:#475569;margin-top:.2rem;font-weight:500}
+.sw48-legend i{display:inline-block;width:13px;height:13px;border-radius:3px;vertical-align:middle;margin-right:.2rem}
+.sw48-ranges{font-size:.78rem;color:#334155;line-height:1.55;width:100%;margin-top:.15rem}
+.sw48-ranges code{font-size:.74rem;background:#f1f5f9;padding:.08rem .35rem;border-radius:3px;font-family:Consolas,"Courier New",monospace;color:#1e40af}
+.sw48-vlan-detail{display:flex;flex-direction:column;gap:.15rem;width:100%;margin-top:.15rem;font-size:.76rem;color:#334155;line-height:1.5}
+.sw48-vlan-detail .vd-row{display:flex;align-items:flex-start;gap:.35rem}
+.sw48-vlan-detail .vd-vlan{flex-shrink:0;min-width:4.4em;font-weight:700;font-family:Consolas,"Courier New",monospace;font-size:.78rem}
+.sw48-vlan-detail .vd-ports{flex:1;font-family:Consolas,"Courier New",monospace;font-size:.74rem;word-break:break-word}
+.sw48-vlan-detail .vd-up{color:#059669;font-weight:600;font-size:.7rem}
+.sw48-vlan-detail .vd-down{color:#94a3b8;font-size:.7rem}
+.sw48-summary{font-size:.78rem;color:#475569;display:block;margin-top:.25rem}
+.sw48-summary code{font-size:.72rem;background:#f1f5f9;padding:.05rem .25rem;border-radius:3px;font-family:Consolas,"Courier New",monospace;color:#0f172a}
 
 
 .layout{display:flex;max-width:none;width:100%;margin:0;padding:0 var(--content-pad)}
@@ -412,7 +426,7 @@ table.nic-table .nic-merge-cab,table.nic-table .nic-merge-srv{background:#f8fafc
 <section id="masterplan">
 <h2>0. 总规划图（现网架构）</h2>
 <div class="panel">
-<p><strong>基础信息：</strong>防火墙 <strong>华为 USG6305E</strong>；机柜 <strong>C06、D03、D04</strong>。每柜：<strong>华为存储×1 + 万兆交换机×2 + 千兆交换机×1（48 口）</strong> + 多台服务器。万兆：<strong>C06/D04 各 12 口×2</strong>，<strong>D03 为 24 口×2</strong>；千兆按 VLAN 10/20/30/40 分区预留。</p>
+<p><strong>基础信息：</strong>防火墙 <strong>华为 USG6305E</strong>；机柜 <strong>C06、D03、D04</strong>。每柜：<strong>华为存储×1 + 万兆交换机×2 + 千兆交换机×1（48 口）</strong> + 多台服务器。万兆：<strong>C06/D04 各 12 口×2</strong>，<strong>D03 为 24 口×2</strong>；千兆 VLAN 划分：<strong>VLAN100</strong>(10.0.0.0/24 业务)、<strong>VLAN192</strong>(192.168.1.0/24 业务)、<strong>VLAN200</strong>(管理)、<strong>VLAN300</strong>(D03 开心私网)，VLAN 1 为默认。</p>
 <div class="diagram-wrap">
 <div class="rack-room">
     <div class="topo-canvas">
@@ -428,11 +442,11 @@ table.nic-table .nic-merge-cab,table.nic-table .nic-merge-srv{background:#f8fafc
       <line x1="600" y1="30" x2="600" y2="44" stroke="#dc2626" stroke-width="2" marker-end="url(#arr)"/>
       <text x="618" y="40" font-size="8" fill="#dc2626">GE0/0/0 极云</text>
       <line x1="380" y1="58" x2="280" y2="58" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="4 3"/>
-      <text x="330" y="52" text-anchor="middle" font-size="8" fill="#1d4ed8">GE0/0/1 ↔ 千兆外网 VLAN1</text>
+      <text x="330" y="52" text-anchor="middle" font-size="8" fill="#1d4ed8">GE0/0/1 ↔ C06 GE1/0/33-44 VLAN1</text>
       <line x1="420" y1="84" x2="200" y2="110" stroke="#4f46e5" stroke-width="1.5" marker-end="url(#arr)"/>
       <text x="195" y="108" text-anchor="end" font-size="8" fill="#3730a3">GE0/0/2 管理·交换机1</text>
       <line x1="520" y1="84" x2="600" y2="110" stroke="#4f46e5" stroke-width="1.5" marker-end="url(#arr)"/>
-      <text x="605" y="108" font-size="8" fill="#3730a3">GE0/0/3 内网·交换机2</text>
+      <text x="605" y="108" font-size="8" fill="#3730a3">GE0/0/3 接内网(VLAN100)</text>
       <rect x="720" y="88" width="90" height="22" rx="4" fill="#f1f5f9" stroke="#94a3b8"/>
       <text x="765" y="102" text-anchor="middle" font-size="7" fill="#64748b">GE4~7 路由·未配</text>
       <rect x="820" y="36" width="70" height="18" rx="3" fill="#ddd6fe" stroke="#a78bfa"/>
@@ -441,8 +455,8 @@ table.nic-table .nic-merge-cab,table.nic-table .nic-merge-srv{background:#f8fafc
       <text x="935" y="48" text-anchor="middle" font-size="7" fill="#0e7490">XGE0/0×2</text>
       <line x1="200" y1="130" x2="1000" y2="130" stroke="#d97706" stroke-width="1.5" stroke-dasharray="6 4"/>
       <text x="600" y="148" text-anchor="middle" font-size="9" fill="#92400e">三柜万兆交换机骨干 Trunk（示意）</text>
-      <text x="600" y="168" text-anchor="middle" font-size="8" fill="#059669">10网 192.168.10.0/24 · 防火墙 :8443 · 虚拟管理 10.0.0.210</text>
-      <text x="600" y="185" text-anchor="middle" font-size="8" fill="#b45309">改造：XGE0/0/0←西信骨干 · GE7→10.0.0.0/24</text>
+      <text x="600" y="168" text-anchor="middle" font-size="8" fill="#059669">管理 192.168.10.0/24(VLAN200) · 防火墙 :8443 · 虚拟管理 10.0.0.210</text>
+      <text x="600" y="185" text-anchor="middle" font-size="8" fill="#b45309">改造：XGE0/0/0←西信骨干 · GE0/0/7→10.0.0.0/24(VLAN100)</text>
     </svg>
     <div class="cable-legend">
       <span><i class="cl-wan"></i>GE0/0/0 极云入网</span>
@@ -703,10 +717,10 @@ table.nic-table .nic-merge-cab,table.nic-table .nic-merge-srv{background:#f8fafc
       <div class="table-wrap fw-port-table-wrap">
         <table>
           <thead><tr><th>接口</th><th>别名</th><th>安全域</th><th>模式</th><th>连接类型</th><th>VLAN/IP</th><th>线缆/对端</th><th>现网</th><th>改造规划</th></tr></thead>
-          <tbody><tr class="unchanged"><td class="ip">GE0/0/0</td><td>极云入网（经极云防火墙）</td><td>untrust</td><td>交换</td><td>Access</td><td>VLAN 1</td><td>↔ 极云侧 → 极云 FW → 本 USG</td><td>现网已用</td><td>—</td></tr><tr class="unchanged"><td class="ip">GE0/0/1</td><td>接千兆交换机外网VLAN</td><td>trust</td><td>交换</td><td>Access</td><td>VLAN 1</td><td>↔ 千兆交换机公网侧</td><td>现网已用</td><td>—</td></tr><tr class="unchanged"><td class="ip">GE0/0/2</td><td>管理口-接交换机1</td><td>trust</td><td>交换</td><td>Access</td><td>VLAN 2</td><td>↔ 机柜千兆交换机1（管理）</td><td>现网已用</td><td>—</td></tr><tr class="unchanged"><td class="ip">GE0/0/3</td><td>内网交换机2</td><td>trust</td><td>交换</td><td>Access</td><td>VLAN 3</td><td>↔ 机柜千兆交换机2（内网）</td><td>现网已用</td><td>—</td></tr><tr class=""><td class="ip">GE0/0/4</td><td>—</td><td>NONE</td><td>路由</td><td>静态 IP</td><td>未配置</td><td>—</td><td>未接线</td><td>—</td></tr><tr class=""><td class="ip">GE0/0/5</td><td>—</td><td>NONE</td><td>路由</td><td>静态 IP</td><td>未配置</td><td>—</td><td>未接线</td><td>—</td></tr><tr class=""><td class="ip">GE0/0/6</td><td>—</td><td>NONE</td><td>路由</td><td>静态 IP</td><td>未配置</td><td>—</td><td>未接线</td><td>—</td></tr><tr class="new"><td class="ip">GE0/0/7</td><td>业务网 · 10.0.0.0/24</td><td>trust</td><td>路由</td><td>静态 IP</td><td class="ip">10.0.0.11 或 .254/24</td><td>↔ 三柜千兆 VLAN30</td><td>未接线</td><td><strong>改造</strong> · B 组网关</td></tr><tr class=""><td class="ip">WAN0/0/0</td><td>WAN 专用光口 #0</td><td>NONE</td><td>路由</td><td>未配置</td><td>—</td><td>—</td><td>未接线</td><td>—</td></tr><tr class=""><td class="ip">WAN0/0/1</td><td>WAN 专用光口 #1</td><td>NONE</td><td>路由</td><td>未配置</td><td>—</td><td>—</td><td>未接线</td><td>—</td></tr><tr class="new"><td class="ip">XGE0/0/0</td><td>西信电信 · 直连骨干</td><td>untrust</td><td>路由</td><td>静态 IP</td><td class="ip">182.140.240.121/25</td><td>↔ 西信机房</td><td>未接线</td><td><strong>改造</strong> · ws6 WAN</td></tr><tr class=""><td class="ip">XGE0/0/1</td><td>万兆光口 #1</td><td>NONE</td><td>路由</td><td>未配置</td><td>—</td><td>—</td><td>未接线</td><td>—</td></tr><tr class="unchanged"><td class="ip">MEth0/0/0</td><td>MGMT 带外</td><td>trust</td><td>路由</td><td>—</td><td>192.168.10.210</td><td>↔ 管理终端</td><td>现网</td><td>—</td></tr><tr class="unchanged"><td class="ip">虚拟管理口</td><td>虚拟管理口</td><td>trust</td><td>路由</td><td>—</td><td>10.0.0.210 · VLAN2</td><td>Web/CLI</td><td>现网</td><td>—</td></tr></tbody>
+          <tbody><tr class="unchanged"><td class="ip">GE0/0/0</td><td>极云入网（经极云防火墙）</td><td>untrust</td><td>交换</td><td>Access</td><td>VLAN 1</td><td>↔ 极云侧 → 极云 FW → 本 USG</td><td>现网已用</td><td>—</td></tr><tr class="unchanged"><td class="ip">GE0/0/1</td><td>接千兆交换机外网VLAN</td><td>trust</td><td>交换</td><td>Access</td><td>VLAN 1</td><td>↔ 千兆交换机公网侧</td><td>现网已用</td><td>—</td></tr><tr class="unchanged"><td class="ip">GE0/0/2</td><td>管理口-接交换机1</td><td>trust</td><td>交换</td><td>Access</td><td>VLAN 2</td><td>↔ 机柜千兆交换机1（管理）</td><td>现网已用</td><td>—</td></tr><tr class="unchanged"><td class="ip">GE0/0/3</td><td>内网交换机2</td><td>trust</td><td>交换</td><td>Access</td><td>VLAN 3</td><td>↔ 机柜千兆交换机2（内网）</td><td>现网已用</td><td>—</td></tr><tr class=""><td class="ip">GE0/0/4</td><td>—</td><td>NONE</td><td>路由</td><td>静态 IP</td><td>未配置</td><td>—</td><td>未接线</td><td>—</td></tr><tr class=""><td class="ip">GE0/0/5</td><td>—</td><td>NONE</td><td>路由</td><td>静态 IP</td><td>未配置</td><td>—</td><td>未接线</td><td>—</td></tr><tr class=""><td class="ip">GE0/0/6</td><td>—</td><td>NONE</td><td>路由</td><td>静态 IP</td><td>未配置</td><td>—</td><td>未接线</td><td>—</td></tr><tr class="new"><td class="ip">GE0/0/7</td><td>业务网 · 10.0.0.0/24</td><td>trust</td><td>路由</td><td>静态 IP</td><td class="ip">10.0.0.11 或 .254/24</td><td>↔ 三柜千兆 VLAN100</td><td>未接线</td><td><strong>改造</strong> · B 组网关</td></tr><tr class=""><td class="ip">WAN0/0/0</td><td>WAN 专用光口 #0</td><td>NONE</td><td>路由</td><td>未配置</td><td>—</td><td>—</td><td>未接线</td><td>—</td></tr><tr class=""><td class="ip">WAN0/0/1</td><td>WAN 专用光口 #1</td><td>NONE</td><td>路由</td><td>未配置</td><td>—</td><td>—</td><td>未接线</td><td>—</td></tr><tr class="new"><td class="ip">XGE0/0/0</td><td>西信电信 · 直连骨干</td><td>untrust</td><td>路由</td><td>静态 IP</td><td class="ip">182.140.240.121/25</td><td>↔ 西信机房</td><td>未接线</td><td><strong>改造</strong> · ws6 WAN</td></tr><tr class=""><td class="ip">XGE0/0/1</td><td>万兆光口 #1</td><td>NONE</td><td>路由</td><td>未配置</td><td>—</td><td>—</td><td>未接线</td><td>—</td></tr><tr class="unchanged"><td class="ip">MEth0/0/0</td><td>MGMT 带外</td><td>trust</td><td>路由</td><td>—</td><td>192.168.10.210</td><td>↔ 管理终端</td><td>现网</td><td>—</td></tr><tr class="unchanged"><td class="ip">虚拟管理口</td><td>虚拟管理口</td><td>trust</td><td>路由</td><td>—</td><td>10.0.0.210 · VLAN2</td><td>Web/CLI</td><td>现网</td><td>—</td></tr></tbody>
         </table>
       </div>
-      <p class="small" style="margin:.75rem 0 0;font-size:.9rem"><strong>GE0/0/0</strong> 为<strong>极云入网</strong>（流量经极云防火墙），与 GE0/0/1 组成 VLAN1 公网透传；<strong class="new">XGE0/0/0</strong> 为<strong>西信 WAN</strong>（<span class="ip">182.140.240.121/25</span>，见 <a href="#ws6-line">0.2.3</a>）；<strong class="new">GE0/0/7</strong> 接 <strong>10.0.0.0/24</strong> 业务网，B 组网关见 <a href="#gateway-options">0.1</a>。</p>
+      <p class="small" style="margin:.75rem 0 0;font-size:.9rem"><strong>GE0/0/0</strong> 为<strong>极云入网</strong>（流量经极云防火墙），与 GE0/0/1 组成 VLAN 1 公网透传；<strong class="new">XGE0/0/0</strong> 为<strong>西信 WAN</strong>（<span class="ip">182.140.240.121/25</span>，见 <a href="#ws6-line">0.2.3</a>）；<strong class="new">GE0/0/7</strong> 接 <strong>10.0.0.0/24</strong> 业务网，B 组网关见 <a href="#gateway-options">0.1</a>。</p>
     </div>
   </div>
   <div class="rack-trunk"></div>
@@ -721,58 +735,68 @@ table.nic-table .nic-merge-cab,table.nic-table .nic-merge-srv{background:#f8fafc
                 <div class="rack-u rack-u--net sw48-panel">
           <div class="sw48-head"><strong>千兆交换机 · 48 口</strong><span>Eth1/0/1~48</span></div>
           <div class="sw48-grid">
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/1 · VLAN10 公网">1</div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/2 · VLAN10 公网"></div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/3 · VLAN10 公网"></div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/4 · VLAN10 公网"></div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/5 · VLAN10 公网"></div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/6 · VLAN10 公网"></div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/7 · VLAN10 公网"></div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/8 · VLAN10 公网"></div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/9 · VLAN10 公网"></div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/10 · VLAN10 公网"></div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/11 · VLAN10 公网"></div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/12 · VLAN10 公网">12</div>
-          <div class="sw48-port sw48-port--v20" title="Eth1/0/13 · VLAN20 专线">13</div>
-          <div class="sw48-port sw48-port--v20" title="Eth1/0/14 · VLAN20 专线"></div>
-          <div class="sw48-port sw48-port--v20" title="Eth1/0/15 · VLAN20 专线"></div>
-          <div class="sw48-port sw48-port--v20" title="Eth1/0/16 · VLAN20 专线">16</div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/17 · VLAN30 业务">17</div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/18 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/19 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/20 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/21 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/22 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/23 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/24 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/25 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/26 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/27 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/28 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/29 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/30 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/31 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/32 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/33 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/34 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/35 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/36 · VLAN30 业务">36</div>
-          <div class="sw48-port sw48-port--v40" title="Eth1/0/37 · VLAN40 管理">37</div>
-          <div class="sw48-port sw48-port--v40" title="Eth1/0/38 · VLAN40 管理"></div>
-          <div class="sw48-port sw48-port--v40" title="Eth1/0/39 · VLAN40 管理"></div>
-          <div class="sw48-port sw48-port--v40" title="Eth1/0/40 · VLAN40 管理"></div>
-          <div class="sw48-port sw48-port--v40" title="Eth1/0/41 · VLAN40 管理"></div>
-          <div class="sw48-port sw48-port--v40" title="Eth1/0/42 · VLAN40 管理"></div>
-          <div class="sw48-port sw48-port--v40" title="Eth1/0/43 · VLAN40 管理"></div>
-          <div class="sw48-port sw48-port--v40" title="Eth1/0/44 · VLAN40 管理"></div>
-          <div class="sw48-port sw48-port--v40" title="Eth1/0/45 · VLAN40 管理"></div>
-          <div class="sw48-port sw48-port--v40" title="Eth1/0/46 · VLAN40 管理">46</div>
-          <div class="sw48-port sw48-port--up" title="Eth1/0/47 · 上联 USG/核心（现网多经 GE0/0/2、GE0/0/3）">47</div>
-          <div class="sw48-port sw48-port--trunk" title="Eth1/0/48 · Trunk 柜间/交换机互联（末口）">48</div>
-          </div>
-          <div class="sw48-legend"><span><i class="sw48-port--v10"></i>公网</span><span><i class="sw48-port--v20"></i>专线</span><span><i class="sw48-port--v30"></i>业务</span><span><i class="sw48-port--v40"></i>管理</span><span><i class="sw48-port--up"></i>47上联</span><span><i class="sw48-port--trunk"></i>48柜间Trunk</span></div>
-          <div class="sw48-ranges"><code>1–12</code> VLAN10 · <code>13–16</code> VLAN20 · <code>17–36</code> VLAN30 · <code>37–46</code> VLAN40 · <code>47</code> 上联 · <code>48</code> Trunk（末口）</div>
-          <span class="u-sub"><code>48</code> 三柜千兆互联 Trunk（末口）· <code>47</code> 可上联 USG（现网 GE0/0/2、GE0/0/3）</span>
+<div class="sw48-port sw48-port--v100 sw48-port--up" title="GE1/0/1 · VLAN100 · 10.0.0.0/24 · UP">1</div>
+<div class="sw48-port sw48-port--v100 sw48-port--up" title="GE1/0/2 · VLAN100 · UP"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--up" title="GE1/0/3 · VLAN100 · UP"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--up" title="GE1/0/4 · VLAN100 · UP"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--up" title="GE1/0/5 · VLAN100 · UP"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--up" title="GE1/0/6 · VLAN100 · UP"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--up" title="GE1/0/7 · VLAN100 · UP"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--up" title="GE1/0/8 · VLAN100 · UP"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--up" title="GE1/0/9 · VLAN100 · UP"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--down" title="GE1/0/10 · VLAN100 · DOWN"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--down" title="GE1/0/11 · VLAN100 · DOWN"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--down" title="GE1/0/12 · VLAN100 · DOWN">12</div>
+<div class="sw48-port sw48-port--v100 sw48-port--down" title="GE1/0/13 · VLAN100 · DOWN"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--down" title="GE1/0/14 · VLAN100 · DOWN"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--down" title="GE1/0/15 · VLAN100 · DOWN"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--up" title="GE1/0/16 · VLAN100 · UP">16</div>
+<div class="sw48-port sw48-port--v192 sw48-port--up" title="GE1/0/17 · VLAN192 · 192.168.1.0/24 · UP">17</div>
+<div class="sw48-port sw48-port--v192 sw48-port--up" title="GE1/0/18 · VLAN192 · UP"></div>
+<div class="sw48-port sw48-port--v192 sw48-port--up" title="GE1/0/19 · VLAN192 · UP"></div>
+<div class="sw48-port sw48-port--v192 sw48-port--up" title="GE1/0/20 · VLAN192 · UP"></div>
+<div class="sw48-port sw48-port--v192 sw48-port--up" title="GE1/0/21 · VLAN192 · UP"></div>
+<div class="sw48-port sw48-port--v192 sw48-port--up" title="GE1/0/22 · VLAN192 · UP"></div>
+<div class="sw48-port sw48-port--v192 sw48-port--up" title="GE1/0/23 · VLAN192 · UP"></div>
+<div class="sw48-port sw48-port--v192 sw48-port--up" title="GE1/0/24 · VLAN192 · UP">24</div>
+<div class="sw48-port sw48-port--v192 sw48-port--up" title="GE1/0/25 · VLAN192 · UP"></div>
+<div class="sw48-port sw48-port--v192 sw48-port--up" title="GE1/0/26 · VLAN192 · 100M · UP"></div>
+<div class="sw48-port sw48-port--v200 sw48-port--up" title="GE1/0/27 · VLAN200 · 管理 · UP">27</div>
+<div class="sw48-port sw48-port--v200 sw48-port--up" title="GE1/0/28 · VLAN200 · UP"></div>
+<div class="sw48-port sw48-port--v200 sw48-port--up" title="GE1/0/29 · VLAN200 · UP"></div>
+<div class="sw48-port sw48-port--v200 sw48-port--up" title="GE1/0/30 · VLAN200 · UP">30</div>
+<div class="sw48-port sw48-port--trunk" title="GE1/0/31 · Trunk ↔ D04 GE1/0/31 · PVID 192">31</div>
+<div class="sw48-port sw48-port--v192 sw48-port--down" title="GE1/0/32 · VLAN192 · DOWN"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--up" title="GE1/0/33 · VLAN1 · UP"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--up" title="GE1/0/34 · VLAN1 · UP"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--up" title="GE1/0/35 · VLAN1 · UP"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--up" title="GE1/0/36 · VLAN1 · UP">36</div>
+<div class="sw48-port sw48-port--v1 sw48-port--up" title="GE1/0/37 · VLAN1 · UP"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--up" title="GE1/0/38 · VLAN1 · UP"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--up" title="GE1/0/39 · VLAN1 · UP"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/40 · VLAN1 · DOWN"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--up" title="GE1/0/41 · VLAN1 · UP"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/42 · VLAN1 · DOWN"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/43 · VLAN1 · DOWN"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/44 · VLAN1 · DOWN"></div>
+<div class="sw48-port sw48-port--v200 sw48-port--up" title="GE1/0/45 · VLAN200 · UP"></div>
+<div class="sw48-port sw48-port--v200 sw48-port--up" title="GE1/0/46 · VLAN200 · UP">46</div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/47 · VLAN1 · DOWN"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--up" title="GE1/0/48 · VLAN1 · 4F-C06-g/1 · UP">48</div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/49 · VLAN1 · DOWN"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/50 · VLAN1 · DOWN"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/51 · VLAN1 · DOWN"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/52 · VLAN1 · DOWN"></div>
+</div>
+          <div class="sw48-legend"><span><i class="sw48-port--v100"></i>VLAN100 10.0.0.0/24</span><span><i class="sw48-port--v192"></i>VLAN192 192.168.1.0/24</span><span><i class="sw48-port--v200"></i>VLAN200 管理</span><span><i class="sw48-port--v1"></i>VLAN1 默认</span><span><i class="sw48-port--trunk"></i>Trunk</span><span><i style="background:#cbd5e1"></i>DOWN 未用</span></div>
+          <div class="sw48-vlan-detail">
+<div class="vd-row"><span class="vd-vlan">VLAN100</span><span class="vd-ports">GE1/0/1-9,16 / 10-15</span><span class="vd-up">UP 10</span> <span class="vd-down">DOWN 6</span></div>
+<div class="vd-row"><span class="vd-vlan">VLAN192</span><span class="vd-ports">GE1/0/17-26 / 32</span><span class="vd-up">UP 10</span> <span class="vd-down">DOWN 1</span></div>
+<div class="vd-row"><span class="vd-vlan">VLAN200</span><span class="vd-ports">GE1/0/27-30,45-46</span><span class="vd-up">UP 6</span> <span class="vd-down">DOWN 0</span></div>
+<div class="vd-row"><span class="vd-vlan">VLAN1</span><span class="vd-ports">GE1/0/33-39,41,48 / 40,42-44,47,49-52</span><span class="vd-up">UP 9</span> <span class="vd-down">DOWN 9</span></div>
+<div class="vd-row" style="background:#f5f3ff;border-radius:4px;padding:.15rem .25rem;margin-top:.1rem"><span class="vd-vlan">Trunk</span><span class="vd-ports">GE1/0/31 ↔ D04</span><span style="color:#6366f1;font-weight:600;font-size:.7rem">PVID 192 · 1,100,192,200</span></div>
+</div>
+          <span class="sw48-summary"><code>31</code> Trunk ↔ D04 GE1/0/31 (PVID 192) · <code>48</code> 描述 4F-C06-g/1 · 共 <b>36 UP</b> / 16 DOWN</span>
         </div>
         <div class="rack-u rack-u--section">▲ 服务器区（U 位自上而下）</div>
 <div class="rack-srv-list">
@@ -880,58 +904,69 @@ table.nic-table .nic-merge-cab,table.nic-table .nic-merge-srv{background:#f8fafc
                 <div class="rack-u rack-u--net sw48-panel">
           <div class="sw48-head"><strong>千兆交换机 · 48 口</strong><span>Eth1/0/1~48</span></div>
           <div class="sw48-grid">
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/1 · VLAN10 公网">1</div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/2 · VLAN10 公网"></div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/3 · VLAN10 公网"></div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/4 · VLAN10 公网"></div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/5 · VLAN10 公网"></div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/6 · VLAN10 公网"></div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/7 · VLAN10 公网"></div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/8 · VLAN10 公网"></div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/9 · VLAN10 公网"></div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/10 · VLAN10 公网"></div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/11 · VLAN10 公网"></div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/12 · VLAN10 公网">12</div>
-          <div class="sw48-port sw48-port--v20" title="Eth1/0/13 · VLAN20 专线">13</div>
-          <div class="sw48-port sw48-port--v20" title="Eth1/0/14 · VLAN20 专线"></div>
-          <div class="sw48-port sw48-port--v20" title="Eth1/0/15 · VLAN20 专线"></div>
-          <div class="sw48-port sw48-port--v20" title="Eth1/0/16 · VLAN20 专线">16</div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/17 · VLAN30 业务">17</div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/18 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/19 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/20 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/21 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/22 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/23 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/24 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/25 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/26 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/27 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/28 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/29 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/30 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/31 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/32 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/33 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/34 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/35 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/36 · VLAN30 业务">36</div>
-          <div class="sw48-port sw48-port--v40" title="Eth1/0/37 · VLAN40 管理">37</div>
-          <div class="sw48-port sw48-port--v40" title="Eth1/0/38 · VLAN40 管理"></div>
-          <div class="sw48-port sw48-port--v40" title="Eth1/0/39 · VLAN40 管理"></div>
-          <div class="sw48-port sw48-port--v40" title="Eth1/0/40 · VLAN40 管理"></div>
-          <div class="sw48-port sw48-port--v40" title="Eth1/0/41 · VLAN40 管理"></div>
-          <div class="sw48-port sw48-port--v40" title="Eth1/0/42 · VLAN40 管理"></div>
-          <div class="sw48-port sw48-port--v40" title="Eth1/0/43 · VLAN40 管理"></div>
-          <div class="sw48-port sw48-port--v40" title="Eth1/0/44 · VLAN40 管理"></div>
-          <div class="sw48-port sw48-port--v40" title="Eth1/0/45 · VLAN40 管理"></div>
-          <div class="sw48-port sw48-port--v40" title="Eth1/0/46 · VLAN40 管理">46</div>
-          <div class="sw48-port sw48-port--up" title="Eth1/0/47 · 上联 USG/核心（现网多经 GE0/0/2、GE0/0/3）">47</div>
-          <div class="sw48-port sw48-port--trunk" title="Eth1/0/48 · Trunk 柜间/交换机互联（末口）">48</div>
-          </div>
-          <div class="sw48-legend"><span><i class="sw48-port--v10"></i>公网</span><span><i class="sw48-port--v20"></i>专线</span><span><i class="sw48-port--v30"></i>业务</span><span><i class="sw48-port--v40"></i>管理</span><span><i class="sw48-port--up"></i>47上联</span><span><i class="sw48-port--trunk"></i>48柜间Trunk</span></div>
-          <div class="sw48-ranges"><code>1–12</code> VLAN10 · <code>13–16</code> VLAN20 · <code>17–36</code> VLAN30 · <code>37–46</code> VLAN40 · <code>47</code> 上联 · <code>48</code> Trunk（末口）</div>
-          <span class="u-sub"><code>48</code> 柜间 Trunk（末口）· <code>47</code>↔USG（现网 GE0/0/3 等，以现场为准）</span>
+<div class="sw48-port sw48-port--v100 sw48-port--up" title="GE1/0/1 · VLAN100 · 内网10.0.0.x · UP">1</div>
+<div class="sw48-port sw48-port--v100 sw48-port--up" title="GE1/0/2 · VLAN100 · UP"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--down" title="GE1/0/3 · VLAN100 · DOWN"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--down" title="GE1/0/4 · VLAN100 · DOWN"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--down" title="GE1/0/5 · VLAN100 · DOWN"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--down" title="GE1/0/6 · VLAN100 · DOWN"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--down" title="GE1/0/7 · VLAN100 · DOWN"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--down" title="GE1/0/8 · VLAN100 · DOWN"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--down" title="GE1/0/9 · VLAN100 · DOWN"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--down" title="GE1/0/10 · VLAN100 · DOWN"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--down" title="GE1/0/11 · VLAN100 · DOWN"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--down" title="GE1/0/12 · VLAN100 · DOWN">12</div>
+<div class="sw48-port sw48-port--v192 sw48-port--up" title="GE1/0/13 · VLAN192 · 192.168.1.x · UP">13</div>
+<div class="sw48-port sw48-port--v192 sw48-port--up" title="GE1/0/14 · VLAN192 · UP"></div>
+<div class="sw48-port sw48-port--v192 sw48-port--down" title="GE1/0/15 · VLAN192 · DOWN"></div>
+<div class="sw48-port sw48-port--v192 sw48-port--down" title="GE1/0/16 · VLAN192 · DOWN">16</div>
+<div class="sw48-port sw48-port--v192 sw48-port--down" title="GE1/0/17 · VLAN192 · DOWN"></div>
+<div class="sw48-port sw48-port--v192 sw48-port--down" title="GE1/0/18 · VLAN192 · DOWN"></div>
+<div class="sw48-port sw48-port--v192 sw48-port--down" title="GE1/0/19 · VLAN192 · DOWN"></div>
+<div class="sw48-port sw48-port--v192 sw48-port--down" title="GE1/0/20 · VLAN192 · DOWN"></div>
+<div class="sw48-port sw48-port--v192 sw48-port--down" title="GE1/0/21 · VLAN192 · DOWN"></div>
+<div class="sw48-port sw48-port--v192 sw48-port--down" title="GE1/0/22 · VLAN192 · DOWN"></div>
+<div class="sw48-port sw48-port--v192 sw48-port--down" title="GE1/0/23 · VLAN192 · DOWN"></div>
+<div class="sw48-port sw48-port--v192 sw48-port--down" title="GE1/0/24 · VLAN192 · DOWN">24</div>
+<div class="sw48-port sw48-port--v200 sw48-port--down" title="GE1/0/25 · VLAN200 · 管理192.168.10.x · DOWN"></div>
+<div class="sw48-port sw48-port--v200 sw48-port--down" title="GE1/0/26 · VLAN200 · DOWN"></div>
+<div class="sw48-port sw48-port--v200 sw48-port--up" title="GE1/0/27 · VLAN200 · UP">27</div>
+<div class="sw48-port sw48-port--v200 sw48-port--up" title="GE1/0/28 · VLAN200 · UP">28</div>
+<div class="sw48-port sw48-port--v200 sw48-port--down" title="GE1/0/29 · VLAN200 · DOWN"></div>
+<div class="sw48-port sw48-port--v200 sw48-port--down" title="GE1/0/30 · VLAN200 · DOWN">30</div>
+<div class="sw48-port sw48-port--v200 sw48-port--down" title="GE1/0/31 · VLAN200 · DOWN"></div>
+<div class="sw48-port sw48-port--v200 sw48-port--down" title="GE1/0/32 · VLAN200 · DOWN"></div>
+<div class="sw48-port sw48-port--v200 sw48-port--down" title="GE1/0/33 · VLAN200 · DOWN"></div>
+<div class="sw48-port sw48-port--v200 sw48-port--down" title="GE1/0/34 · VLAN200 · DOWN"></div>
+<div class="sw48-port sw48-port--v200 sw48-port--down" title="GE1/0/35 · VLAN200 · DOWN"></div>
+<div class="sw48-port sw48-port--v200 sw48-port--down" title="GE1/0/36 · VLAN200 · DOWN">36</div>
+<div class="sw48-port sw48-port--v300 sw48-port--up" title="GE1/0/37 · VLAN300 · 开心私网 · UP">37</div>
+<div class="sw48-port sw48-port--v300 sw48-port--up" title="GE1/0/38 · VLAN300 · UP"></div>
+<div class="sw48-port sw48-port--v300 sw48-port--down" title="GE1/0/39 · VLAN300 · DOWN"></div>
+<div class="sw48-port sw48-port--v300 sw48-port--down" title="GE1/0/40 · VLAN300 · DOWN"></div>
+<div class="sw48-port sw48-port--v300 sw48-port--down" title="GE1/0/41 · VLAN300 · DOWN"></div>
+<div class="sw48-port sw48-port--v300 sw48-port--down" title="GE1/0/42 · VLAN300 · DOWN"></div>
+<div class="sw48-port sw48-port--v300 sw48-port--up" title="GE1/0/43 · VLAN300 · UP"></div>
+<div class="sw48-port sw48-port--v300 sw48-port--down" title="GE1/0/44 · VLAN300 · DOWN">44</div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/45 · VLAN1 · 公网 · DOWN"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/46 · VLAN1 · DOWN"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/47 · VLAN1 · DOWN"></div>
+<div class="sw48-port sw48-port--trunk" title="GE1/0/48 · Trunk ↑上联 · PVID 192 · permit 1,10,100,192,200">48</div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/49 · VLAN1 · DOWN"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/50 · VLAN1 · DOWN"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/51 · VLAN1 · DOWN"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/52 · VLAN1 · DOWN"></div>
+</div>
+          <div class="sw48-legend"><span><i class="sw48-port--v100"></i>VLAN100 10内网</span><span><i class="sw48-port--v192"></i>VLAN192 192.168.1.x</span><span><i class="sw48-port--v200"></i>VLAN200 管理</span><span><i class="sw48-port--v300"></i>VLAN300 开心私网</span><span><i class="sw48-port--v1"></i>VLAN1 公网</span><span><i class="sw48-port--trunk"></i>Trunk</span><span><i style="background:#cbd5e1"></i>DOWN</span></div>
+          <div class="sw48-vlan-detail">
+<div class="vd-row"><span class="vd-vlan">VLAN100</span><span class="vd-ports">GE1/0/1-2 / 3-12</span><span class="vd-up">UP 2</span> <span class="vd-down">DOWN 10</span></div>
+<div class="vd-row"><span class="vd-vlan">VLAN192</span><span class="vd-ports">GE1/0/13-14 / 15-24</span><span class="vd-up">UP 2</span> <span class="vd-down">DOWN 10</span></div>
+<div class="vd-row"><span class="vd-vlan">VLAN200</span><span class="vd-ports">GE1/0/27-28 / 25-26,29-36</span><span class="vd-up">UP 2</span> <span class="vd-down">DOWN 10</span></div>
+<div class="vd-row"><span class="vd-vlan">VLAN300</span><span class="vd-ports">GE1/0/37-38,43 / 39-42,44</span><span class="vd-up">UP 3</span> <span class="vd-down">DOWN 5</span></div>
+<div class="vd-row"><span class="vd-vlan">VLAN1</span><span class="vd-ports">GE1/0/45-47,49-52</span><span class="vd-down">DOWN 7</span></div>
+<div class="vd-row" style="background:#f5f3ff;border-radius:4px;padding:.15rem .25rem;margin-top:.1rem"><span class="vd-vlan">Trunk</span><span class="vd-ports">GE1/0/48 ↑上联</span><span style="color:#6366f1;font-weight:600;font-size:.7rem">PVID 192 · 1,10,100,192,200</span></div>
+</div>
+          <span class="sw48-summary"><code>48</code> Trunk 上联 (PVID 192, permit 1,10,100,192,200) · 共 <b>10 UP</b> / 42 DOWN</span>
         </div>
         <div class="rack-u rack-u--section">▲ 服务器区</div>
 <div class="rack-srv-list">
@@ -1024,58 +1059,68 @@ table.nic-table .nic-merge-cab,table.nic-table .nic-merge-srv{background:#f8fafc
                 <div class="rack-u rack-u--net sw48-panel">
           <div class="sw48-head"><strong>千兆交换机 · 48 口</strong><span>Eth1/0/1~48</span></div>
           <div class="sw48-grid">
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/1 · VLAN10 公网">1</div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/2 · VLAN10 公网"></div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/3 · VLAN10 公网"></div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/4 · VLAN10 公网"></div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/5 · VLAN10 公网"></div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/6 · VLAN10 公网"></div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/7 · VLAN10 公网"></div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/8 · VLAN10 公网"></div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/9 · VLAN10 公网"></div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/10 · VLAN10 公网"></div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/11 · VLAN10 公网"></div>
-          <div class="sw48-port sw48-port--v10" title="Eth1/0/12 · VLAN10 公网">12</div>
-          <div class="sw48-port sw48-port--v20" title="Eth1/0/13 · VLAN20 专线">13</div>
-          <div class="sw48-port sw48-port--v20" title="Eth1/0/14 · VLAN20 专线"></div>
-          <div class="sw48-port sw48-port--v20" title="Eth1/0/15 · VLAN20 专线"></div>
-          <div class="sw48-port sw48-port--v20" title="Eth1/0/16 · VLAN20 专线">16</div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/17 · VLAN30 业务">17</div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/18 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/19 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/20 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/21 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/22 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/23 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/24 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/25 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/26 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/27 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/28 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/29 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/30 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/31 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/32 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/33 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/34 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/35 · VLAN30 业务"></div>
-          <div class="sw48-port sw48-port--v30" title="Eth1/0/36 · VLAN30 业务">36</div>
-          <div class="sw48-port sw48-port--v40" title="Eth1/0/37 · VLAN40 管理">37</div>
-          <div class="sw48-port sw48-port--v40" title="Eth1/0/38 · VLAN40 管理"></div>
-          <div class="sw48-port sw48-port--v40" title="Eth1/0/39 · VLAN40 管理"></div>
-          <div class="sw48-port sw48-port--v40" title="Eth1/0/40 · VLAN40 管理"></div>
-          <div class="sw48-port sw48-port--v40" title="Eth1/0/41 · VLAN40 管理"></div>
-          <div class="sw48-port sw48-port--v40" title="Eth1/0/42 · VLAN40 管理"></div>
-          <div class="sw48-port sw48-port--v40" title="Eth1/0/43 · VLAN40 管理"></div>
-          <div class="sw48-port sw48-port--v40" title="Eth1/0/44 · VLAN40 管理"></div>
-          <div class="sw48-port sw48-port--v40" title="Eth1/0/45 · VLAN40 管理"></div>
-          <div class="sw48-port sw48-port--v40" title="Eth1/0/46 · VLAN40 管理">46</div>
-          <div class="sw48-port sw48-port--up" title="Eth1/0/47 · 上联 USG/核心（现网多经 GE0/0/2、GE0/0/3）">47</div>
-          <div class="sw48-port sw48-port--trunk" title="Eth1/0/48 · Trunk 柜间/交换机互联（末口）">48</div>
-          </div>
-          <div class="sw48-legend"><span><i class="sw48-port--v10"></i>公网</span><span><i class="sw48-port--v20"></i>专线</span><span><i class="sw48-port--v30"></i>业务</span><span><i class="sw48-port--v40"></i>管理</span><span><i class="sw48-port--up"></i>47上联</span><span><i class="sw48-port--trunk"></i>48柜间Trunk</span></div>
-          <div class="sw48-ranges"><code>1–12</code> VLAN10 · <code>13–16</code> VLAN20 · <code>17–36</code> VLAN30 · <code>37–46</code> VLAN40 · <code>47</code> 上联 · <code>48</code> Trunk（末口）</div>
-          <span class="u-sub"><code>48</code> 柜间 Trunk（末口）· <code>47</code> 上联 USG</span>
+<div class="sw48-port sw48-port--v100 sw48-port--down" title="GE1/0/1 · VLAN100 · DOWN">1</div>
+<div class="sw48-port sw48-port--v100 sw48-port--up" title="GE1/0/2 · VLAN100 · UP"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--up" title="GE1/0/3 · VLAN100 · UP"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--up" title="GE1/0/4 · VLAN100 · UP"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--up" title="GE1/0/5 · VLAN100 · UP"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--up" title="GE1/0/6 · VLAN100 · UP"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--up" title="GE1/0/7 · VLAN100 · UP"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--up" title="GE1/0/8 · VLAN100 · UP"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--down" title="GE1/0/9 · VLAN100 · DOWN"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--up" title="GE1/0/10 · VLAN100 · UP"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--up" title="GE1/0/11 · VLAN100 · 100M · UP"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--down" title="GE1/0/12 · VLAN100 · DOWN">12</div>
+<div class="sw48-port sw48-port--v100 sw48-port--down" title="GE1/0/13 · VLAN100 · DOWN"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--down" title="GE1/0/14 · VLAN100 · DOWN"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--down" title="GE1/0/15 · VLAN100 · DOWN"></div>
+<div class="sw48-port sw48-port--v100 sw48-port--down" title="GE1/0/16 · VLAN100 · DOWN">16</div>
+<div class="sw48-port sw48-port--v192 sw48-port--down" title="GE1/0/17 · VLAN192 · DOWN">17</div>
+<div class="sw48-port sw48-port--v192 sw48-port--up" title="GE1/0/18 · VLAN192 · UP"></div>
+<div class="sw48-port sw48-port--v192 sw48-port--up" title="GE1/0/19 · VLAN192 · UP"></div>
+<div class="sw48-port sw48-port--v192 sw48-port--up" title="GE1/0/20 · VLAN192 · UP"></div>
+<div class="sw48-port sw48-port--v192 sw48-port--up" title="GE1/0/21 · VLAN192 · UP"></div>
+<div class="sw48-port sw48-port--v192 sw48-port--up" title="GE1/0/22 · VLAN192 · UP"></div>
+<div class="sw48-port sw48-port--v192 sw48-port--up" title="GE1/0/23 · VLAN192 · UP"></div>
+<div class="sw48-port sw48-port--v192 sw48-port--up" title="GE1/0/24 · VLAN192 · UP">24</div>
+<div class="sw48-port sw48-port--v192 sw48-port--up" title="GE1/0/25 · VLAN192 · UP"></div>
+<div class="sw48-port sw48-port--v192 sw48-port--down" title="GE1/0/26 · VLAN192 · DOWN"></div>
+<div class="sw48-port sw48-port--v200 sw48-port--up" title="GE1/0/27 · VLAN200 · UP">27</div>
+<div class="sw48-port sw48-port--v200 sw48-port--up" title="GE1/0/28 · VLAN200 · UP">28</div>
+<div class="sw48-port sw48-port--v192 sw48-port--down" title="GE1/0/29 · VLAN192 · DOWN"></div>
+<div class="sw48-port sw48-port--v192 sw48-port--down" title="GE1/0/30 · VLAN192 · DOWN">30</div>
+<div class="sw48-port sw48-port--trunk" title="GE1/0/31 · Trunk ↔ C06 GE1/0/31 · PVID 192">31</div>
+<div class="sw48-port sw48-port--v192 sw48-port--down" title="GE1/0/32 · VLAN192 · DOWN"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/33 · VLAN1 · DOWN"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--up" title="GE1/0/34 · VLAN1 · UP"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/35 · VLAN1 · DOWN"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/36 · VLAN1 · DOWN">36</div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/37 · VLAN1 · DOWN"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/38 · VLAN1 · DOWN"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/39 · VLAN1 · DOWN"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/40 · VLAN1 · DOWN"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/41 · VLAN1 · DOWN"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/42 · VLAN1 · DOWN"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/43 · VLAN1 · DOWN"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/44 · VLAN1 · DOWN"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--up" title="GE1/0/45 · VLAN1 · UP"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/46 · VLAN1 · DOWN"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/47 · VLAN1 · DOWN"></div>
+<div class="sw48-port sw48-port--trunk" title="GE1/0/48 · Trunk · PVID 192 · permit 1,100,192,200">48</div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/49 · VLAN1 · DOWN"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/50 · VLAN1 · DOWN"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/51 · VLAN1 · DOWN"></div>
+<div class="sw48-port sw48-port--v1 sw48-port--down" title="GE1/0/52 · VLAN1 · DOWN"></div>
+</div>
+          <div class="sw48-legend"><span><i class="sw48-port--v100"></i>VLAN100 10.0.0.0/24</span><span><i class="sw48-port--v192"></i>VLAN192 192.168.1.0/24</span><span><i class="sw48-port--v200"></i>VLAN200 管理</span><span><i class="sw48-port--v1"></i>VLAN1 默认</span><span><i class="sw48-port--trunk"></i>Trunk</span><span><i style="background:#cbd5e1"></i>DOWN</span></div>
+          <div class="sw48-vlan-detail">
+<div class="vd-row"><span class="vd-vlan">VLAN100</span><span class="vd-ports">GE1/0/2-8,10-11 / 1,9,12-16</span><span class="vd-up">UP 9</span> <span class="vd-down">DOWN 7</span></div>
+<div class="vd-row"><span class="vd-vlan">VLAN192</span><span class="vd-ports">GE1/0/18-25 / 17,26,29-30,32</span><span class="vd-up">UP 8</span> <span class="vd-down">DOWN 5</span></div>
+<div class="vd-row"><span class="vd-vlan">VLAN200</span><span class="vd-ports">GE1/0/27-28</span><span class="vd-up">UP 2</span> <span class="vd-down">DOWN 0</span></div>
+<div class="vd-row"><span class="vd-vlan">VLAN1</span><span class="vd-ports">GE1/0/34,45 / 33,35-44,46-47,49-52</span><span class="vd-up">UP 2</span> <span class="vd-down">DOWN 17</span></div>
+<div class="vd-row" style="background:#f5f3ff;border-radius:4px;padding:.15rem .25rem;margin-top:.1rem"><span class="vd-vlan">Trunk</span><span class="vd-ports">GE1/0/31 ↔ C06 · GE1/0/48 预留</span><span style="color:#6366f1;font-weight:600;font-size:.7rem">PVID 192 · 1,100,192,200</span></div>
+</div>
+          <span class="sw48-summary"><code>31</code> Trunk ↔ C06 GE1/0/31 · <code>48</code> Trunk 预留 (PVID 192) · 共 <b>23 UP</b> / 29 DOWN</span>
         </div>
         <div class="rack-u rack-u--section">▲ 服务器区</div>
 <div class="rack-srv-list">
@@ -1172,7 +1217,7 @@ table.nic-table .nic-merge-cab,table.nic-table .nic-merge-srv{background:#f8fafc
     </div>
   </div>
   <div class="rack-legend">
-    <span><i class="lg-a"></i><strong>公网 A 组</strong>：极云线路 · C06 ws1/2/3/5/7 + dev，D04 dev-2（Gb1 · VLAN10）</span>
+    <span><i class="lg-a"></i><strong>公网 A 组</strong>：极云线路 · C06 ws1/2/3/5/7 + dev，D04 dev-2（千兆 Gb1 · VLAN100/192）</span>
     <span><i class="lg-nat"></i><strong>ws1</strong>：公网 + Gb2 业务 <span class="ip">10.0.0.11</span>（DNAT，网卡保持；NAT 改由防火墙）</span>
     <span><i class="lg-b"></i><strong>走 .11 网关</strong>：C06 ws4/ws8 + D04 ws11~17、D03 ws18~19</span>
     <span><strong>ws6</strong>：公网在防火墙 XGE0/0/0 · 本机仅 <span class="ip">10.0.0.16</span>（<a href="#fw-config-steps">NAT 映射</a>）</span>
