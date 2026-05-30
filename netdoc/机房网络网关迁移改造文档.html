@@ -3,15 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>机房网络网关迁移改造文档</title>
+<title>西信机房网络改造 — 北京易诚通信息技术有限公司</title>
 <style>
 :root{--bg:#f4f6f9;--card:#fff;--text:#1a1d26;--muted:#5c6370;--border:#dde2ea;--accent:#2563eb;--new-bg:#ecfdf5;--new-border:#10b981;--chg-bg:#fffbeb;--chg-border:#f59e0b;--unch-bg:#f8fafc;--tbd-bg:#fef2f2;--page-max:100%;--content-pad:clamp(.75rem,1.2vw,2rem)}
 *{box-sizing:border-box}body{margin:0;font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
 
-.layout{display:flex;max-width:none;width:100%;margin:0;padding:0 var(--content-pad)}nav.toc{width:220px;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:1.25rem 1rem;background:var(--card);border-right:1px solid var(--border);font-size:.875rem}
-nav.toc h2{font-size:.75rem;text-transform:uppercase;color:var(--muted);margin:0 0 .75rem}nav.toc a{display:block;padding:.35rem .5rem;color:var(--text);text-decoration:none;border-radius:4px}nav.toc a:hover{background:#eff6ff;color:var(--accent)}
-main{flex:1;padding:2rem 0 4rem 2rem;min-width:0;max-width:100%}header.doc-header{background:linear-gradient(135deg,#1e3a5f,#2563eb);color:#fff;padding:2rem;border-radius:12px;margin-bottom:2rem}
-header.doc-header h1{margin:0 0 .5rem;font-size:1.75rem}header.doc-header .meta{opacity:.9;font-size:.9rem}
+.layout{display:flex;max-width:none;width:100%;margin:0;padding:0 var(--content-pad)}nav.toc{width:220px;flex-shrink:0;position:sticky;top:1rem;height:calc(100vh - 2rem);overflow-y:auto;padding:0;background:var(--card);border:1px solid var(--border);border-radius:10px;font-size:.875rem;box-shadow:0 1px 6px rgba(15,23,42,.06);display:flex;flex-direction:column}
+nav.toc h2{font-size:.7rem;text-transform:uppercase;color:var(--muted);margin:0;padding:.9rem 1rem .55rem;letter-spacing:.06em;flex-shrink:0}
+nav.toc .toc-list{flex:1;overflow-y:auto;padding:0 .6rem .6rem}
+nav.toc .toc-list a{display:block;padding:.32rem .55rem;color:var(--text);text-decoration:none;border-radius:4px;font-size:.84rem;line-height:1.4}
+nav.toc .toc-list a:hover{background:#eff6ff;color:var(--accent)}
+nav.toc .toc-footer{padding:.55rem .85rem;border-top:1px solid var(--border);font-size:.68rem;color:var(--muted);text-align:center;flex-shrink:0;letter-spacing:.03em}
+main{flex:1;padding:2rem 0 4rem 2rem;min-width:0;max-width:100%}header.doc-header{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 40%,#2563eb 100%);color:#fff;padding:2rem 2rem 1.6rem;border-radius:12px;margin-bottom:2rem;position:relative;overflow:hidden}
+header.doc-header::after{content:"";position:absolute;top:-60px;right:-40px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.04);pointer-events:none}
+.doc-header__top{display:flex;align-items:center;gap:.65rem;margin-bottom:.85rem}
+.doc-header__company{font-size:.95rem;font-weight:600;letter-spacing:.04em;opacity:.95}
+.doc-header__badge{font-size:.68rem;background:rgba(255,255,255,.15);padding:.15rem .55rem;border-radius:3px;font-weight:500;letter-spacing:.05em}
+header.doc-header h1{font-size:2rem;font-weight:800;letter-spacing:.06em;margin:0 0 1rem;line-height:1.2}
+.doc-header__meta-row{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-bottom:.85rem}
+@media(max-width:700px){.doc-header__meta-row{grid-template-columns:1fr}}
+.doc-header__meta-item{background:rgba(255,255,255,.08);border-radius:6px;padding:.5rem .75rem;font-size:.82rem;line-height:1.5}
+.doc-header__meta-item strong{display:block;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;opacity:.7;margin-bottom:.15rem}
+.doc-header__meta-item span{opacity:.95}
+.doc-header__footer{display:flex;gap:1.25rem;font-size:.76rem;opacity:.7;letter-spacing:.03em}
 .quick-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin:1.5rem 0}
 .quick-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1rem}.quick-card strong{display:block;font-size:1.1rem;color:var(--accent)}.quick-card span{font-size:.85rem;color:var(--muted)}
 section{margin-bottom:2.5rem}section h2{font-size:1.35rem;border-bottom:2px solid var(--accent);padding-bottom:.4rem;margin-top:0}section h3{font-size:1.1rem;margin-top:1.5rem;color:#334155}
@@ -176,6 +190,45 @@ details{margin:1rem 0;border:1px solid var(--border);border-radius:8px;backgroun
 .sw48-summary{font-size:.78rem;color:#475569;display:block;margin-top:.25rem}
 .sw48-summary code{font-size:.72rem;background:#f1f5f9;padding:.05rem .25rem;border-radius:3px;font-family:Consolas,"Courier New",monospace;color:#0f172a}
 
+/* ── 千兆端口接线图 ── */
+.ge-wiring-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;margin:1rem 0}
+@media(max-width:1100px){.ge-wiring-grid{grid-template-columns:1fr}}
+.ge-wiring-cab{background:var(--card);border:2px solid #64748b;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(15,23,42,.06)}
+.ge-wiring-cab--c06{border-color:#3b82f6}.ge-wiring-cab--d03{border-color:#f59e0b}.ge-wiring-cab--d04{border-color:#10b981}
+.ge-wiring-title{background:#1e293b;color:#fff;padding:.55rem .75rem;font-size:.85rem;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.ge-wiring-title small{font-weight:400;opacity:.8;font-size:.72rem}
+.ge-wiring-mgmt-strip{display:flex;gap:.25rem;padding:.4rem .55rem;background:#f8fafc;border-bottom:1px solid #e2e8f0;font-size:.62rem;align-items:center;flex-wrap:wrap}
+.ge-wiring-mgmt-strip .mgmt-label{font-weight:700;color:#64748b;white-space:nowrap}
+.ge-wiring-mgmt-strip .mgmt-port{display:inline-flex;align-items:center;gap:.15rem;padding:.12rem .35rem;border-radius:3px;border:1px solid #cbd5e1;background:#fff;font-family:Consolas,monospace;font-size:.6rem;white-space:nowrap}
+.ge-wiring-mgmt-strip .mgmt-port--sfp{background:#e0e7ff;border-color:#a5b4fc;color:#3730a3}
+.ge-wiring-mgmt-strip .mgmt-port--idle{background:#f1f5f9;color:#94a3b8}
+.ge-wiring-body{padding:.35rem}
+.ge-wiring-vlan-group{margin-bottom:.3rem}
+.ge-wiring-vlan-title{display:flex;align-items:center;gap:.35rem;padding:.2rem .45rem;font-size:.7rem;font-weight:700;border-radius:4px;margin-bottom:.15rem;position:sticky;top:0;z-index:1}
+.ge-wiring-vlan-title .vlan-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.ge-wiring-vlan-title .vlan-dot--v100{background:#2563eb}.ge-wiring-vlan-title .vlan-dot--v192{background:#d97706}
+.ge-wiring-vlan-title .vlan-dot--v200{background:#059669}.ge-wiring-vlan-title .vlan-dot--v300{background:#7c3aed}
+.ge-wiring-vlan-title .vlan-dot--v1{background:#94a3b8}.ge-wiring-vlan-title .vlan-dot--trunk{background:#6366f1}
+.ge-wiring-table{width:100%;border-collapse:collapse;font-size:.67rem;border:1px solid #e2e8f0}
+.ge-wiring-table th{background:#f1f5f9;font-weight:600;font-size:.62rem;padding:.2rem .3rem;text-align:center;border:1px solid #dde2ea;color:#475569}
+.ge-wiring-table td{padding:.15rem .3rem;border:1px solid #e2e8f0;vertical-align:middle;text-align:center}
+.ge-wiring-table .td-port{font-family:Consolas,"Courier New",monospace;font-weight:700;font-size:.65rem;text-align:left;white-space:nowrap}
+.ge-wiring-table .td-device{text-align:left;font-weight:600}
+.ge-wiring-table .td-ip{font-family:Consolas,"Courier New",monospace;font-size:.64rem;text-align:left}
+.ge-wiring-table .td-st{font-size:.62rem;font-weight:600}
+.ge-wiring-table tr.row-v100 td{background:#eff6ff}.ge-wiring-table tr.row-v192 td{background:#fff7ed}
+.ge-wiring-table tr.row-v200 td{background:#ecfdf5}.ge-wiring-table tr.row-v300 td{background:#f5f3ff}
+.ge-wiring-table tr.row-v1 td{background:#f8fafc}
+.ge-wiring-table tr.row-trunk td{background:#eef2ff;border-left:3px solid #6366f1}
+.ge-wiring-table tr.row-down td{color:#94a3b8;text-decoration:line-through;opacity:.7}
+.ge-wiring-table .st-up{color:#059669}.ge-wiring-table .st-down{color:#94a3b8}.ge-wiring-table .st-trunk{color:#6366f1;font-weight:700}
+.ge-wiring-table .td-range{font-size:.62rem;color:#64748b;font-style:italic;text-align:left}
+.ge-wiring-stats{display:flex;gap:.5rem;justify-content:center;padding:.35rem;font-size:.7rem;font-weight:600;border-top:2px solid #e2e8f0;background:#fafafa}
+.ge-wiring-stats span{padding:.1rem .4rem;border-radius:3px}
+.ge-wiring-stats .st-up-c{background:#dcfce7;color:#166534}
+.ge-wiring-stats .st-down-c{background:#f1f5f9;color:#64748b}
+.ge-wiring-stats .st-trunk-c{background:#eef2ff;color:#3730a3}
+
 
 .layout{display:flex;max-width:none;width:100%;margin:0;padding:0 var(--content-pad)}
 .topo-canvas{position:relative;width:100%;margin:0 0 .5rem;padding:.5rem 0;background:linear-gradient(180deg,#f8fafc 0%,#fff 100%);border-radius:10px;border:1px solid var(--border)}
@@ -295,25 +348,130 @@ details{margin:1rem 0;border:1px solid var(--border);border-radius:8px;backgroun
 .fw-port-tile--mgmt{background:#d1fae5;border-color:#6ee7b7;color:#065f46}
 .fw-port-detail .fw-meta{font-size:.6rem;color:#64748b}
 .fw-port-detail .fw-vlan{font-size:.6rem;color:#0f766e;font-family:Consolas,monospace}
-.gw-opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin:1.25rem 0}
+.gw-opt-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin:1.5rem 0}
 @media(max-width:900px){.gw-opt-grid{grid-template-columns:1fr}}
-.gw-opt-card{background:var(--card);border:2px solid var(--border);border-radius:12px;padding:1.15rem 1.25rem;height:100%}
-.gw-opt-card--a{border-color:#60a5fa;background:linear-gradient(180deg,#eff6ff 0%,#fff 100%)}
-.gw-opt-card--b{border-color:#fcd34d;background:linear-gradient(180deg,#fffbeb 0%,#fff 100%)}
-.gw-opt-card h3{margin:.2rem 0 .65rem;font-size:1.05rem;color:#1e3a8a}
-.gw-opt-card--b h3{color:#92400e}
-.gw-opt-card .gw-ip{font-family:Consolas,"Courier New",monospace;font-size:1.15rem;font-weight:700;margin:.35rem 0}
-.gw-opt-card ul{margin:.5rem 0 0;padding-left:1.15rem;font-size:.88rem;line-height:1.55}
-.gw-opt-card li{margin-bottom:.35rem}
-.gw-opt-tag{display:inline-block;font-size:.72rem;font-weight:600;padding:.12rem .45rem;border-radius:4px;margin-bottom:.4rem}
-.gw-opt-tag--rec{background:#dbeafe;color:#1d4ed8}
-.gw-opt-tag--alt{background:#fef3c7;color:#92400e}
+.gw-opt-card{background:var(--card);border:3px solid var(--border);border-radius:12px;padding:1.4rem 1.5rem;height:100%;box-shadow:0 4px 16px rgba(15,23,42,.08)}
+.gw-opt-card--a{border-color:#d97706;border-left:6px solid #d97706;background:linear-gradient(135deg,#fef3c7 0%,#fffbeb 30%,#fff 100%)}
+.gw-opt-card--b{border-color:#1d4ed8;border-left:6px solid #1d4ed8;background:linear-gradient(135deg,#dbeafe 0%,#eff6ff 30%,#fff 100%)}
+.gw-opt-card h3{margin:.2rem 0 .65rem;font-size:1.25rem;font-weight:800;color:#92400e;letter-spacing:.02em}
+.gw-opt-card--b h3{color:#1e3a8a}
+.gw-opt-card .gw-ip{font-family:Consolas,"Courier New",monospace;font-size:1.35rem;font-weight:800;margin:.35rem 0}
+.gw-opt-card ul{margin:.5rem 0 0;padding-left:1.25rem;font-size:.97rem;line-height:1.7;font-weight:500}
+.gw-opt-card li{margin-bottom:.4rem}
+.gw-opt-tag{display:inline-block;font-size:.82rem;font-weight:800;padding:.2rem .65rem;border-radius:6px;margin-bottom:.5rem;letter-spacing:.04em;text-transform:uppercase}
+.gw-opt-tag--rec{background:#d97706;color:#fff;box-shadow:0 2px 6px rgba(217,119,6,.3)}
+.gw-opt-tag--alt{background:#64748b;color:#fff;box-shadow:0 2px 6px rgba(100,116,139,.3)}
+.gw-opt-card .gw-badge-row{display:flex;flex-wrap:wrap;gap:.35rem;margin:.5rem 0}
+.gw-opt-badge{font-size:.7rem;font-weight:700;padding:.15rem .45rem;border-radius:4px;white-space:nowrap}
+.gw-opt-badge--good{background:#dcfce7;color:#166534;border:1px solid #86efac}
+.gw-opt-badge--warn{background:#fff7ed;color:#9a3412;border:1px solid #fdba74}
+.gw-opt-badge--info{background:#dbeafe;color:#1e40af;border:1px solid #93c5fd}
 
 .nic-table-wrap{border:1px solid #64748b}
 table.nic-table{border:1px solid #64748b}
 table.nic-table th,table.nic-table td{border:1px solid #94a3b8;padding:.5rem .65rem;vertical-align:middle}
 table.nic-table thead th{background:#e2e8f0;font-weight:600;text-align:center}
 table.nic-table .nic-merge-cab,table.nic-table .nic-merge-srv{background:#f8fafc;font-weight:600;text-align:center;vertical-align:middle}
+
+/* ── 阿里云 Nginx 代理架构 ── */
+.nginx-wrap{background:var(--card);border:3px solid #ea580c;border-left:8px solid #ea580c;border-radius:12px;padding:1.5rem 1.75rem;margin-bottom:0;box-shadow:0 4px 16px rgba(234,88,12,.1)}
+.nginx-wrap h2{color:#9a3412;border-bottom:2px solid #ea580c;font-size:1.35rem;padding-bottom:.5rem;margin:0 0 .75rem}
+.nginx-wrap .nginx-sub{font-size:.94rem;color:#334155;line-height:1.7;margin-bottom:1rem;font-weight:500}
+.nginx-cloud-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.85rem;margin:1rem 0}
+@media(max-width:800px){.nginx-cloud-grid{grid-template-columns:1fr}}
+.nginx-cloud-node{background:#fff7ed;border:2px solid #fdba74;border-radius:10px;padding:.85rem 1rem;text-align:center}
+.nginx-cloud-node strong{display:block;font-size:1.15rem;color:#ea580c;margin-bottom:.2rem}
+.nginx-cloud-node .nginx-ip{font-family:Consolas,monospace;font-size:.85rem;color:#64748b;margin:.15rem 0}
+.nginx-cloud-node .nginx-role{font-size:.72rem;background:#ea580c;color:#fff;display:inline-block;padding:.15rem .6rem;border-radius:4px;font-weight:700;margin-top:.3rem}
+.nginx-flow{display:flex;align-items:center;justify-content:center;gap:.5rem;margin:1.25rem 0;flex-wrap:wrap;font-size:.95rem;font-weight:700;color:#1a1d26}
+.nginx-flow-arrow{color:#ea580c;font-size:1.3rem}
+.nginx-route{position:relative;margin:1.25rem 0;padding:0}
+.nginx-route__entry{display:flex;justify-content:center;margin-bottom:0}
+.nginx-route__entry-node{background:linear-gradient(135deg,#1e293b,#334155);color:#fff;border:2px solid #64748b;border-radius:12px;padding:.85rem 2.5rem;text-align:center;box-shadow:0 4px 16px rgba(15,23,42,.15);min-width:260px}
+.nginx-route__entry-node strong{display:block;font-size:1.15rem;font-weight:800;letter-spacing:.04em}
+.nginx-route__entry-node .entry-desc{display:block;font-size:.8rem;opacity:.75;margin-top:.25rem;font-family:Consolas,monospace}
+.nginx-route__entry-node .entry-tag{display:inline-block;background:rgba(255,255,255,.12);padding:.15rem .6rem;border-radius:4px;font-size:.72rem;margin-top:.35rem;font-weight:500}
+.nginx-route__lines-upper{position:relative;height:45px}
+.nginx-route__lines-upper svg{position:absolute;inset:0;width:100%;height:100%}
+.nginx-route__clouds{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem}
+.nginx-route__lines{position:relative;height:60px}
+.nginx-route__lines svg{position:absolute;inset:0;width:100%;height:100%}
+.nginx-route__targets{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+@media(max-width:900px){.nginx-route__lines,.nginx-route__lines-upper{height:35px}}
+@media(max-width:700px){.nginx-route__targets{grid-template-columns:1fr}}
+.nginx-target-grid{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;margin:1rem 0}
+@media(max-width:700px){.nginx-target-grid{grid-template-columns:1fr}}
+.nginx-target{background:var(--card);border:2px solid #e2e8f0;border-radius:10px;padding:.9rem 1.1rem}
+.nginx-target--pri{border-color:#22c55e;border-left:6px solid #22c55e;background:#f0fdf4}
+.nginx-target--bak{border-color:#f97316;border-left:6px solid #f97316;background:#fff7ed}
+.nginx-target h4{font-size:1.05rem;margin:0 0 .35rem;display:flex;align-items:center;gap:.5rem;color:#1a1d26}
+.nginx-target h4 .dot{width:11px;height:11px;border-radius:50%;display:inline-block}
+.nginx-target--pri .dot{background:#22c55e;box-shadow:0 0 6px #22c55e}
+.nginx-target--bak .dot{background:#f97316;box-shadow:0 0 6px #f97316}
+.nginx-target .nginx-detail{font-size:.88rem;line-height:1.6;color:#334155}
+.nginx-target .nginx-detail code{font-family:Consolas,monospace;background:#f1f5f9;padding:.1rem .4rem;border-radius:3px;color:#0f172a}
+.nginx-failover{background:linear-gradient(90deg,#f0fdf4,#fff7ed);border:2px solid #f97316;border-radius:10px;padding:.9rem 1.2rem;margin-top:.85rem;font-size:.95rem;font-weight:700;text-align:center;line-height:1.65;color:#1a1d26}
+.nginx-failover strong{font-size:1.05rem;color:#ea580c}
+.nginx-failover code{font-family:Consolas,monospace;background:#fff7ed;padding:.1rem .4rem;border-radius:3px;color:#9a3412}
+.nginx-summary-card{background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:.85rem 1.1rem;margin-top:.75rem;font-size:.88rem;line-height:1.65;color:#334155}
+.nginx-summary-card ul{margin:.4rem 0 0 1.2rem;padding:0}
+.nginx-summary-card li{margin:.25rem 0}
+.nginx-alert-inline{background:#fef9c3;border-left:4px solid #eab308;padding:.5rem .85rem;border-radius:0 6px 6px 0;margin-top:.65rem;font-size:.88rem;font-weight:600;color:#854d0e}
+.nginx-alert-inline code{font-family:Consolas,monospace;background:#fef08a;padding:.1rem .35rem;border-radius:3px}
+
+/* ── 双模式并行运行 ── */
+.dual-mode-banner{background:linear-gradient(135deg,#eef2ff,#faf5ff);border:2px solid #818cf8;border-radius:10px;padding:.75rem 1rem;margin:.5rem 0;text-align:center;line-height:1.5}
+.dual-mode-banner > strong{font-size:.9rem;color:#4f46e5;display:block;margin-bottom:.5rem}
+.dual-mode-row{display:flex;align-items:center;justify-content:center;gap:.65rem;flex-wrap:wrap}
+.dual-mode-card{padding:.5rem .85rem;border-radius:8px;font-size:.82rem;line-height:1.55;text-align:center}
+.dual-mode-l3{background:#e0e7ff;border:2px solid #6366f1;color:#312e81}
+.dual-mode-l2{background:#f3f4f6;border:2px solid #9ca3af;color:#374151}
+.dual-mode-label{display:block;font-size:.68rem;font-weight:700;letter-spacing:.04em;margin-bottom:.15rem;text-transform:uppercase}
+.dual-mode-l3 .dual-mode-label{color:#4f46e5}
+.dual-mode-l2 .dual-mode-label{color:#6b7280}
+.dual-mode-plus{font-size:1.3rem;font-weight:800;color:#818cf8}
+
+.nginx-upstream-block{background:#1e293b;border-radius:10px;padding:1rem 1.25rem;margin:1rem 0;overflow-x:auto}
+.nginx-upstream-title{font-size:.9rem;font-weight:700;color:#f8fafc;margin-bottom:.35rem}
+.nginx-upstream-desc{font-size:.8rem;color:#94a3b8;margin-bottom:.75rem;line-height:1.5}
+.nginx-config-code{font-family:Consolas,"Courier New",monospace;font-size:.82rem;line-height:1.6;color:#e2e8f0;margin:0;padding:0;background:transparent;border:none;white-space:pre}
+.nginx-config-code .kw{color:#93c5fd}.nginx-config-code .cmt{color:#6b7280;font-style:italic}
+.nginx-config-code .pri{color:#86efac}.nginx-config-code .bak{color:#fdba74}
+
+/* ── H3C 脚本速查 ── */
+.h3c-scripts-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0}
+@media(max-width:900px){.h3c-scripts-grid{grid-template-columns:1fr}}
+.h3c-card{background:var(--card);border:2px solid #e2e8f0;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(15,23,42,.06)}
+.h3c-card h3{margin:0;padding:.55rem .9rem;font-size:.92rem;font-weight:700;color:#fff}
+.h3c-card--mgmt h3{background:linear-gradient(90deg,#1e40af,#3b82f6)}
+.h3c-card--vlan h3{background:linear-gradient(90deg,#7c3aed,#8b5cf6)}
+.h3c-card--view h3{background:linear-gradient(90deg,#059669,#10b981)}
+.h3c-card--diag h3{background:linear-gradient(90deg,#ea580c,#f97316)}
+.h3c-card--cfg h3{background:linear-gradient(90deg,#b45309,#d97706)}
+.h3c-card--nat h3{background:linear-gradient(90deg,#dc2626,#ef4444)}
+.h3c-card pre{margin:0;padding:.65rem .9rem;font-family:Consolas,"Courier New",monospace;font-size:.78rem;line-height:1.6;background:#f8fafc;color:#1e293b;overflow-x:auto;white-space:pre-wrap;word-break:break-all;border-top:1px solid #e2e8f0}
+.h3c-card pre .cmd{color:#1d4ed8;font-weight:600}
+.h3c-card pre .cmt{color:#6b7280;font-style:italic}
+.h3c-card pre .key{color:#0d9488}
+.h3c-card pre .val{color:#166534}
+.h3c-card pre .warn{color:#dc2626;font-weight:700}
+.h3c-card .h3c-desc{padding:.5rem .9rem;font-size:.82rem;color:#475569;background:#f8fafc;border-bottom:1px solid #e2e8f0;font-weight:500}
+.h3c-card .h3c-desc--danger{background:#fef2f2;color:#991b1b;border-left:4px solid #dc2626;font-weight:700}
+.h3c-card .h3c-desc--warn{background:#fffbeb;color:#92400e;border-left:4px solid #f59e0b;font-weight:700}
+.h3c-card .h3c-desc--safe{background:#f0fdf4;color:#166534;border-left:4px solid #22c55e;font-weight:700}
+.h3c-badge{display:inline-block;font-size:.68rem;font-weight:800;padding:.15rem .5rem;border-radius:4px;margin-right:.35rem;letter-spacing:.03em}
+.h3c-badge--danger{background:#dc2626;color:#fff}
+.h3c-badge--warn{background:#f59e0b;color:#fff}
+.h3c-badge--safe{background:#22c55e;color:#fff}
+.h3c-badge--edit{background:#7c3aed;color:#fff}
+
+nav.toc a.active{background:#eff6ff;color:var(--accent);font-weight:700;border-left:3px solid var(--accent);padding-left:.35rem}
+nav.toc a.past{color:var(--muted)}
+#back-to-top{position:fixed;bottom:2rem;right:2rem;width:44px;height:44px;border-radius:50%;background:var(--accent);color:#fff;border:none;cursor:pointer;font-size:1.2rem;box-shadow:0 2px 12px rgba(37,99,235,.35);opacity:0;transform:translateY(10px);transition:opacity .25s,transform .25s;z-index:999;display:flex;align-items:center;justify-content:center}
+#back-to-top.show{opacity:1;transform:translateY(0)}
+#back-to-top:hover{background:#1d4ed8;transform:translateY(-2px);box-shadow:0 4px 18px rgba(37,99,235,.45)}
+html{scroll-behavior:smooth}
+@media(hover:none){#back-to-top{bottom:1.2rem;right:1rem;width:40px;height:40px;font-size:1rem}}
 
 @media print{nav.toc{display:none}body{background:#fff}.layout{display:block}main{padding:0}.rack-fw,.rack-cabinet{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 </style>
@@ -322,11 +480,14 @@ table.nic-table .nic-merge-cab,table.nic-table .nic-merge-srv{background:#f8fafc
 <div class="layout">
 <nav class="toc">
 <h2>目录</h2>
+<div class="toc-list">
 <a href="#executive">汇报摘要</a>
+<a href="#nginx-proxy">阿里云 Nginx 代理</a>
 <a href="#gateway-options">网关方案（二选一）</a>
 <a href="#masterplan">总规划图</a>
 <a href="#fw-ports">防火墙接口</a>
 <a href="#sw48ports">48口端口预留</a>
+<a href="#ge-wiring">千兆端口接线图</a>
 <a href="#devices">设备清单</a>
 <a href="#vlan-dc">VLAN 规划</a>
 <a href="#mgmt-10">千兆 10 网管理</a>
@@ -350,14 +511,29 @@ table.nic-table .nic-merge-cab,table.nic-table .nic-merge-srv{background:#f8fafc
 <a href="#servers">服务器清单</a>
 <a href="#changes">配置变更与割接</a>
 <a href="#checklist">核对清单</a>
+<a href="#h3c-scripts">H3C 脚本速查</a>
+</div>
+<div class="toc-footer">北京易诚通 · shu_yw · v3.0</div>
 </nav>
 <main>
 <header class="doc-header">
-<h1>机房网络网关迁移改造文档</h1>
-<p class="meta">华为 USG6305E · C06/D03/D04 · 版本 3.0 · 2026-05-28</p>
+<div class="doc-header__top">
+  <span class="doc-header__company">北京易诚通信息技术有限公司</span>
+  <span class="doc-header__badge">网络运维部</span>
+</div>
+<h1>西信机房网络改造</h1>
+<div class="doc-header__meta-row">
+  <div class="doc-header__meta-item"><strong>项目范围</strong><span>华为 USG6305E 防火墙 · 千兆交换机（C06 / D03 / D04）· 万兆交换机 · 服务器群</span></div>
+  <div class="doc-header__meta-item"><strong>目标</strong><span>防火墙承接 B 组网关 / NAT · 西信电信新线路 XGE0/0/0 · 阿里云 Nginx 高可用代理</span></div>
+</div>
+<div class="doc-header__footer">
+  <span>文档版本 3.0</span>
+  <span>2026-05-29</span>
+  <span>作者：shu_yw</span>
+</div>
 </header>
 <section id="executive">
-<h2>汇报结论（领导速览）</h2>
+<h2>汇报结论</h2>
 <div class="exec-grid">
   <div class="exec-card">
     <h4>核心改造</h4>
@@ -384,30 +560,177 @@ table.nic-table .nic-merge-cab,table.nic-table .nic-merge-srv{background:#f8fafc
   </div>
 </div>
 </section>
+
+<!-- ═══════ 阿里云 Nginx 反向代理架构 ═══════ -->
+<section id="nginx-proxy">
+<div class="nginx-wrap">
+<h2>0.0 阿里云 Nginx 反向代理层 · 150 网络统一中转</h2>
+<p class="nginx-sub">所有 <strong style="color:#ea580c;font-size:1.05rem">182.140.150.0/24</strong> 公网业务流量，统一经<strong>广州、上海、北京</strong>三地阿里云 ECS 主机的 Nginx 反向代理进行中转调度，<strong style="color:#059669">ws6（主）</strong> → <strong style="color:#ea580c">回源 IP（备）</strong> 自动故障切换，保障业务高可用。</p>
+
+<div class="nginx-route">
+  <div class="nginx-route__entry">
+    <div class="nginx-route__entry-node">
+      <strong>用户访问入口</strong>
+      <span class="entry-desc">182.140.150.0/24</span>
+      <span class="entry-tag">公网流量 · 三地就近接入</span>
+    </div>
+  </div>
+  <div class="nginx-route__lines-upper">
+    <svg viewBox="0 0 900 45" preserveRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+      <!-- 用户入口 → 广州 -->
+      <line x1="450" y1="0" x2="150" y2="45" stroke="#64748b" stroke-width="2" marker-end="url(#arrowGray)"/>
+      <!-- 用户入口 → 上海 -->
+      <line x1="450" y1="0" x2="450" y2="45" stroke="#64748b" stroke-width="2" marker-end="url(#arrowGray)"/>
+      <!-- 用户入口 → 北京 -->
+      <line x1="450" y1="0" x2="750" y2="45" stroke="#64748b" stroke-width="2" marker-end="url(#arrowGray)"/>
+      <defs>
+        <marker id="arrowGray" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+  <div class="nginx-route__clouds">
+    <div class="nginx-cloud-node">
+      <strong>广州</strong>
+      <div class="nginx-ip">8.148.150.96</div>
+      <div class="nginx-role">Nginx 反向代理</div>
+    </div>
+    <div class="nginx-cloud-node">
+      <strong>上海</strong>
+      <div class="nginx-ip">47.100.55.110</div>
+      <div class="nginx-role">Nginx 反向代理</div>
+    </div>
+    <div class="nginx-cloud-node">
+      <strong>北京</strong>
+      <div class="nginx-ip">47.93.176.227</div>
+      <div class="nginx-role">Nginx 反向代理</div>
+    </div>
+  </div>
+  <div class="nginx-route__lines">
+    <svg viewBox="0 0 900 60" preserveRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+      <!-- 广州 → ws6 + 回源 -->
+      <line x1="150" y1="0" x2="225" y2="60" stroke="#22c55e" stroke-width="2.5" marker-end="url(#arrowG)"/>
+      <line x1="150" y1="0" x2="675" y2="60" stroke="#f97316" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrowO)"/>
+      <!-- 上海 → ws6 + 回源 -->
+      <line x1="450" y1="0" x2="225" y2="60" stroke="#22c55e" stroke-width="2.5" marker-end="url(#arrowG)"/>
+      <line x1="450" y1="0" x2="675" y2="60" stroke="#f97316" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrowO)"/>
+      <!-- 北京 → ws6 + 回源 -->
+      <line x1="750" y1="0" x2="225" y2="60" stroke="#22c55e" stroke-width="2.5" marker-end="url(#arrowG)"/>
+      <line x1="750" y1="0" x2="675" y2="60" stroke="#f97316" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arrowO)"/>
+      <defs>
+        <marker id="arrowG" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#22c55e"/>
+        </marker>
+        <marker id="arrowO" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#f97316"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+  <div class="nginx-route__targets">
+    <div class="nginx-target nginx-target--pri">
+      <h4><span class="dot"></span> 主节点 · ws6</h4>
+      <div class="nginx-detail">
+        公网 IP：<code>182.140.240.121</code>（经防火墙 XGE0/0/0 西信骨干出网）<br>
+        内网 IP：<code>10.0.0.16</code>（防火墙 DNAT 映射 80/443 → 10.0.0.16:80/443）<br>
+        阿里云 Nginx 通过公网 IP 直连 ws6，承载全部正常业务流量。
+      </div>
+    </div>
+    <div class="nginx-target nginx-target--bak">
+      <h4><span class="dot"></span> 备节点 · 回源 IP</h4>
+      <div class="nginx-detail">
+        回源 IP：<code>182.140.146.150</code>（不依赖西信新线，独立出网路径）<br>
+        ws6（182.140.240.121）全部不可用时，Nginx 自动切换至此回源地址。<br>
+        与主节点物理路径隔离，避免单点故障影响业务。
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nginx-upstream-block">
+  <div class="nginx-upstream-title">三地阿里云 ECS 统一 Nginx upstream 配置</div>
+  <div class="nginx-upstream-desc">以下配置部署在<strong>广州、上海、北京</strong>每台阿里云 ECS 的 Nginx 中。阿里云通过<strong style="color:#ea580c">公网 IP</strong> 直连机房节点，主备 <strong style="color:#ea580c">同在一个 upstream 块</strong>，任一云端节点独立工作即可对外服务。</div>
+  <pre class="nginx-config-code"><span class="kw">upstream</span> backend_150 {
+<span class="pri">    server 182.140.240.121 max_fails=3 fail_timeout=60s;</span>  <span class="cmt"># 主节点（西信骨干）</span>
+<span class="bak">    server 182.140.146.150 backup;</span>                         <span class="cmt"># 备节点（回源IP）</span>
+    keepalive 128;
+    keepalive_requests 10000;
+    keepalive_timeout 60s;
+}
+
+<span class="kw">server</span> {
+    listen 80;
+    listen 443 ssl;
+    server_name *.150-domain.com;
+
+    location / {
+        proxy_pass http://backend_150;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_next_upstream error timeout http_502 http_503 http_504;
+        proxy_next_upstream_tries 2;
+        proxy_connect_timeout 3s;
+    }
+}</pre>
+</div>
+
+<div class="nginx-failover">
+  <strong>故障自动切换：</strong>三地 Nginx 通过 <code>proxy_next_upstream</code> + <code>backup</code> 参数实现<br>
+  主节点 <code>182.140.240.121</code> 健康检查失败（超时 / HTTP 5xx）→ <strong style="color:#ea580c;font-size:1.05rem">自动</strong>转发到回源 IP <code>182.140.146.150</code> → 用户无感知
+</div>
+
+<div class="nginx-summary-card">
+  <strong style="font-size:.95rem;color:#9a3412">关键结论：ws6 网络不在线不影响 150 网段业务正常使用</strong>
+  <ul>
+    <li>三地阿里云 Nginx 通过<strong>公网 IP</strong> 分别连接主节点和回源 IP，<strong>物理路径隔离</strong>，任一链路中断均可自动切换。</li>
+    <li>Nginx 健康检查持续探测主节点 <code>182.140.240.121</code>，<strong>一旦不可达，自动将流量切到回源 IP <code>182.140.146.150</code></strong>。</li>
+    <li>回源 IP <strong style="color:#ea580c">不依赖西信新线路 XGE0/0/0</strong>——即使<strong>西信线路中断 + ws6 同时宕机</strong>，150 网段业务仍可正常对外服务。</li>
+    <li>因此：<strong style="color:#166534;font-size:.92rem">在配置 ws6 网络（西信新线 + 防火墙）的整个过程中，理论上 150 网段业务不受任何影响</strong>，运维人员可放心操作，无需担心业务中断。</li>
+  </ul>
+  <div class="nginx-alert-inline">
+    运维提示：割接前确认三地 Nginx 的 <code>upstream</code> 配置中 <code>backup</code> 参数及 <code>keepalive</code> 长连接已生效，并在割接窗口前手动执行一次健康检查验证。
+  </div>
+</div>
+
+</div>
+</section>
+
 <section id="gateway-options">
 <h2>0.1 防火墙业务网关方案（二选一）</h2>
-<p>迁移目标：由 <strong>华为 USG6305E</strong> 承接原 ws1（<span class="ip">10.0.0.11</span>）上的 B 组 NAT/网关职能；西信电信新线路经 <strong>XGE0/0/0</strong> 直连骨干，业务网经 <strong>GE0/0/7</strong> 接入 <span class="ip">10.0.0.0/24</span>（见 <a href="#ws6-line">0.2.3</a>、<a href="#fw-config-steps">0.2.4</a>）。以下两种方案<strong>择一实施</strong>；无论选哪种，<strong>ws1 的 Gb2 业务网卡均无需停机或拔线</strong>。</p>
+<p style="font-size:.95rem;line-height:1.7;font-weight:500">迁移目标：由 <strong>华为 USG6305E</strong> 承接原 ws1（<span class="ip">10.0.0.11</span>）上的 B 组 NAT/网关职能；西信电信新线路经 <strong>XGE0/0/0</strong> 直连骨干，业务网经 <strong>GE0/0/7</strong> 接入 <span class="ip">10.0.0.0/24</span>（见 <a href="#ws6-line">0.2.3</a>、<a href="#fw-config-steps">0.2.4</a>）。以下两种方案<strong>择一实施</strong>；无论选哪种，<strong style="color:#dc2626">ws1 的 Gb2 业务网卡均无需停机或拔线</strong>。</p>
 <div class="gw-opt-grid">
-  <div class="gw-opt-card gw-opt-card--a">
-    <span class="gw-opt-tag gw-opt-tag--rec">方案甲 · 推荐（割接量小）</span>
-    <h3>防火墙网关 = <span class="ip">10.0.0.11</span></h3>
-    <p class="gw-ip">10.0.0.11 / 24</p>
+  <div class="gw-opt-card gw-opt-card--b">
+    <span class="gw-opt-tag gw-opt-tag--rec">方案乙 · 推荐</span>
+    <h3>防火墙网关 = <span class="ip" style="font-size:1.4rem">10.0.0.254</span></h3>
+    <p class="gw-ip">10.0.0.254 / 24（独立新网关地址 · 与 .11 解耦）</p>
+    <div class="gw-badge-row">
+      <span class="gw-opt-badge gw-opt-badge--good">出口 IP 统一不变</span>
+      <span class="gw-opt-badge gw-opt-badge--good">保留 ws1 DNAT 热备</span>
+      <span class="gw-opt-badge gw-opt-badge--info">灰度可控·可随时退回</span>
+    </div>
     <ul>
-      <li>在防火墙 <strong>GE0/0/7</strong>（路由口，接 10.0.0.0/24 业务网）配置网关地址 <strong>10.0.0.11</strong>，承接原 ws1 DNAT/SNAT 能力。</li>
-      <li><strong>ws4、ws8、ws11~ws19</strong> 等走 ws1 NAT 的主机<strong>默认网关保持 10.0.0.11 不变</strong>，与现网一致，<strong>无需批量改 GATEWAY</strong>。</li>
-      <li><strong>ws1 Gb2</strong>（业务 <span class="ip">10.0.0.11</span>）<strong>保持启用</strong>；待防火墙策略验证通过后，再择机关闭 ws1 侧 NAT 进程/规则即可，<strong>不要求停网卡</strong>。</li>
-      <li>适合：希望割接当晚尽量少动服务器、回滚时仅切回 ws1 NAT 的场景。</li>
+      <li>在防火墙 <strong>GE0/0/7</strong>（路由模式）配置 LAN 地址 <strong style="font-size:1.05rem;color:#1d4ed8">10.0.0.254/24</strong>，作为 B 组全新业务网关。<strong style="color:#059669;font-size:.88rem">✓ 与 ws1 Gb2（.11）IP 不冲突，防火墙和 ws1 可以长期共存。</strong></li>
+      <li><strong style="font-size:.92rem;color:#1d4ed8">核心优势① 出口 IP 不变化：</strong>B 组主机经防火墙 <strong>XGE0/0/0（182.140.240.121）</strong> 统一 SNAT 出网后，<strong style="color:#059669">所有 B 组主机的公网出口 IP 全部统一为 182.140.240.121</strong>，不再经过 ws1 的 NAT IP，出口地址<strong>完全独立可控</strong>。</li>
+      <li><strong style="font-size:.92rem;color:#1d4ed8">核心优势② 保留 ws1 DNAT 网络：</strong>ws1 上的 DNAT/端口映射规则<strong style="color:#059669">可完整保留不动</strong>，作为<strong>热备回退通道</strong>。万一防火墙出问题，B 组主机<strong>随时可单台改回网关 .11</strong>，立即恢复走 ws1 旧路，<strong style="color:#dc2626">无需动防火墙任何配置</strong>。</li>
+      <li><strong style="font-size:.92rem;color:#1d4ed8">核心优势③ 灰度迁移零风险：</strong>ws4、ws8、ws11~ws19 共 11 台主机，<strong>逐台改网关为 .254 → 逐台验证 → 通过后再下一台</strong>。任何一台不通，单台改回 .11 即可恢复，<strong>不影响其他已切换主机</strong>。</li>
     </ul>
   </div>
-  <div class="gw-opt-card gw-opt-card--b">
-    <span class="gw-opt-tag gw-opt-tag--alt">方案乙 · 新网关地址</span>
-    <h3>防火墙网关 = <span class="ip">10.0.0.254</span></h3>
-    <p class="gw-ip">10.0.0.254 / 24</p>
+  <div class="gw-opt-card gw-opt-card--a">
+    <span class="gw-opt-tag gw-opt-tag--alt">方案甲 · 备选</span>
+    <h3>防火墙网关 = <span class="ip" style="font-size:1.4rem">10.0.0.11</span></h3>
+    <p class="gw-ip">10.0.0.11 / 24（直接抢占 ws1 网关地址）</p>
+    <div class="gw-badge-row">
+      <span class="gw-opt-badge gw-opt-badge--warn">IP 冲突风险</span>
+      <span class="gw-opt-badge gw-opt-badge--warn">无法热备共存</span>
+      <span class="gw-opt-badge gw-opt-badge--info" style="opacity:.7">需同步插线</span>
+    </div>
     <ul>
-      <li>在防火墙 <strong>GE0/0/7</strong>（路由模式）配置 LAN 地址 <strong>10.0.0.254/24</strong>，作为 B 组新业务网关。</li>
-      <li><strong>ws4、ws8、ws11~ws19</strong> 在<strong>后续割接步骤</strong>中分批将默认网关由 <span class="ip">10.0.0.11</span> 改为 <span class="ip">10.0.0.254</span>；可灰度、可回滚单台。</li>
-      <li><strong>ws1 Gb2 同样无需停用</strong>；在主机全部切至 .254 之前，ws1 与防火墙可短暂并存，注意避免双 NAT 冲突（先配防火墙、再改主机网关）。</li>
-      <li>适合：希望业务网关与 ws1 业务 IP（.11）解耦、长期由防火墙独占 .254 的场景。</li>
+      <li>在防火墙 <strong>GE0/0/7</strong> 配置 <strong style="font-size:1rem;color:#92400e">10.0.0.11/24</strong>，直接接管 ws1 网关地址。<strong style="color:#dc2626;font-size:.88rem">✗ 与 ws1 Gb2 的 .11 IP 冲突，两者不能同时在线。</strong></li>
+      <li><strong>ws4、ws8、ws11~ws19</strong> 默认网关<strong>保持 10.0.0.11 不变</strong>，服务器侧零改动。但这意味着<strong>必须确保 ws1 Gb2 先断开</strong>（或 ws1 整机关机），防火墙 GE0/0/7 再插线启用 .11，<strong style="color:#dc2626">存在操作时序窗口，切换期间服务中断</strong>。</li>
+      <li><strong style="color:#92400e">限制①</strong>：ws1 DNAT 网络<strong>必须被完全替换</strong>。一旦防火墙接管 .11，ws1 的所有 NAT 规则必须<strong>全部迁移到防火墙</strong>后才能工作，期间任何遗漏的 DNAT 端口都会中断。</li>
+      <li><strong style="color:#92400e">限制②</strong>：回滚需要<strong>关闭 GE0/0/7 → 重新启用 ws1 Gb2 和 NAT</strong>，操作步骤多、窗口长，不如方案乙单台改网关快。</li>
+      <li>适用：仅当<strong>必须在单次割接窗口内完成全部切换</strong>、且接受 ws1 完全下线的场景。</li>
     </ul>
   </div>
 </div>
@@ -421,12 +744,243 @@ table.nic-table .nic-merge-cab,table.nic-table .nic-merge-srv{background:#f8fafc
 <tr><td>割接复杂度</td><td>低（服务器侧零网关变更）</td><td>中（需分批改 11 台网关：ws4/ws8 + ws11~19）</td></tr>
 <tr><td>回滚</td><td>防火墙切回或恢复 ws1 NAT</td><td>单台改回网关 10.0.0.11</td></tr>
 </tbody></table></div>
-<div class="note"><strong>共同前提：</strong>线路 A（<strong>GE0/0/0 极云入网</strong> + GE0/0/1 公网桥）与 A 组公网服务器配置<strong>不变</strong>；<strong>XGE0/0/0</strong> 为西信电信 WAN，<strong>GE0/0/7</strong> 为 10.0.0.0/24 业务网关，与极云无关。ws6 等需走西信线时经策略路由从 <strong>XGE0/0/0</strong> SNAT 出网。选定方案后，下文「改造后」图示以<strong>方案乙</strong>为参考示例。</div>
+
+<!-- ═══════ 割接实施详细步骤 ═══════ -->
+<h3 style="margin-top:1.8rem;font-size:1.25rem;font-weight:800;color:#0f172a">割接实施详细步骤（方案乙 · 推荐 vs 方案甲 · 备选 对照）</h3>
+<p style="font-size:.92rem;font-weight:600;color:#64748b;margin-bottom:1rem">以下 7 步覆盖<strong>换线 → 配置 → 策略 → 转发 → 主机 → 验证 → 访问测试</strong>全流程。方案乙（推荐）为新网关 .254 模式，方案甲（备选）为抢占 ws1 .11 模式。</p>
+
+<div class="cols2">
+
+<!-- 方案乙（推荐） -->
+<div style="border:3px solid #1d4ed8;border-radius:12px;overflow:hidden;box-shadow:0 4px 16px rgba(29,78,216,.1)">
+  <div style="background:linear-gradient(135deg,#1d4ed8,#2563eb);color:#fff;padding:.8rem 1.2rem">
+    <strong style="font-size:1.2rem;letter-spacing:.03em">方案乙 · 10.0.0.254（推荐）</strong>
+    <span style="display:block;font-size:.82rem;opacity:.9;margin-top:.2rem">新网关独立地址 · ws1 DNAT 热备保留 · 可灰度平滑迁移</span>
+  </div>
+  <div style="padding:1rem 1.2rem;font-size:.92rem;line-height:1.8;font-weight:500">
+
+    <p style="margin:0 0 .7rem;padding:.4rem .7rem;background:#dbeafe;border-radius:6px;font-weight:700;font-size:.95rem;color:#1e40af">📍 第一步：物理接线（割接前完成）</p>
+    <ul style="margin:0 0 .9rem;padding-left:1.2rem;line-height:1.75">
+      <li><strong style="font-size:.95rem">① 西信光纤</strong> → 防火墙 <strong style="color:#5b21b6">XGE0/0/0</strong>（万兆光口），核对光模块类型（单模/多模），运营商标签「西信电信 182.140.240.121/25」</li>
+      <li><strong style="font-size:.95rem">② 千兆网线</strong> → 防火墙 <strong style="color:#2563eb">GE0/0/7</strong>，另一端接至三柜千兆交换机<strong style="color:#dc2626"> VLAN30 业务网 Access 口</strong>（Eth1/0/x，现场确认口编号后记录）</li>
+      <li><strong style="font-size:.95rem">③ 核对链路</strong>：XGE0/0/0 指示灯亮（光口 LINK/ACT）· GE0/0/7 指示灯亮（电口 LINK/ACT）</li>
+    </ul>
+
+    <p style="margin:0 0 .7rem;padding:.4rem .7rem;background:#dbeafe;border-radius:6px;font-weight:700;font-size:.95rem;color:#1e40af">📍 第二步：防火墙接口配置</p>
+    <ul style="margin:0 0 .9rem;padding-left:1.2rem;line-height:1.75">
+      <li><strong style="font-size:.95rem">① Web 登录</strong>：浏览器访问 <strong style="color:#059669">https://192.168.10.210:8443</strong>（MEth0/0/0 带外管理口，确保终端在 192.168.10.x 网段）</li>
+      <li><strong style="font-size:.95rem">② 备份配置</strong>：系统 → 配置文件管理 → 导出当前配置（<code>display current-configuration</code>），<strong style="color:#dc2626">割接前必须完成</strong></li>
+      <li><strong style="font-size:.95rem">③ 配置 XGE0/0/0</strong>：网络 → 接口 → XGE0/0/0 → 路由模式 → 安全域 <strong>untrust</strong> → IP <strong style="color:#5b21b6">182.140.240.121/25</strong> → 启用</li>
+      <li><strong style="font-size:.95rem">④ 配置 GE0/0/7</strong>：网络 → 接口 → GE0/0/7 → 路由模式 → 安全域 <strong>trust</strong> → IP <strong style="color:#1d4ed8;font-size:1.05rem">10.0.0.11/24</strong> → 启用</li>
+      <li><strong style="font-size:.95rem">⑤ 添加静态路由</strong>：到 10.0.0.0/24 的直连路由（自动生成），默认路由指向 <strong>182.140.240.1</strong>（仅 XGE0/0/0 侧）</li>
+    </ul>
+
+    <p style="margin:0 0 .7rem;padding:.4rem .7rem;background:#dbeafe;border-radius:6px;font-weight:700;font-size:.95rem;color:#1e40af">📍 第三步：防火墙安全策略</p>
+    <ul style="margin:0 0 .9rem;padding-left:1.2rem;line-height:1.75">
+      <li><strong style="font-size:.95rem">① 安全域检查</strong>：untrust（XGE0/0/0 + GE0/0/0）↔ trust（GE0/0/7 + GE0/0/1/2/3）</li>
+      <li><strong style="font-size:.95rem">② 策略规则</strong>：允许 trust → untrust（内网出公网）；允许 untrust → trust（按需 DNAT 白名单）</li>
+      <li><strong style="font-size:.95rem">③ ws6 专用策略</strong>：源 10.0.0.16/32 出接口限定 XGE0/0/0（策略路由），<strong style="color:#dc2626">禁止 ws6 从极云 GE0/0/0 出网</strong></li>
+      <li><strong style="font-size:.95rem">④ 策略路由</strong>：网络 → 策略路由 → 新建 → 匹配源 10.0.0.16 → 强制下一跳出接口 XGE0/0/0</li>
+    </ul>
+
+    <p style="margin:0 0 .7rem;padding:.4rem .7rem;background:#dcfce7;border-radius:6px;font-weight:700;font-size:.95rem;color:#166534">📍 第四步：NAT 转发配置（.254 独立地址 · 无 IP 冲突 · 可提前预配）</p>
+    <ul style="margin:0 0 .9rem;padding-left:1.2rem;line-height:1.75">
+      <li><strong style="font-size:.95rem">① SNAT（B 组出网）</strong>：策略 → NAT → 源 NAT → 源 trust → 目标 untrust → 源地址 10.0.0.0/24（B 组主机）→ 转换方式 <strong style="color:#1d4ed8">出接口地址（XGE0/0/0: 182.140.240.121）</strong></li>
+      <li><strong style="font-size:.95rem">② 迁移 ws1 DNAT 规则</strong>：在 ws1 上导出全部 NAT 规则清单 → 逐条录入防火墙（DNAT/端口映射/源地址转换），<strong style="color:#dc2626">逐条核对端口号与内网 IP 对应关系</strong></li>
+      <li><strong style="font-size:.95rem">③ ws6 端口映射</strong>：策略 → NAT → 目标 NAT → 公网 182.140.240.121:端口 → 映射到 10.0.0.16:端口（按实际业务端口配置）</li>
+      <li><strong style="font-size:.95rem">④ 优势</strong>：GE0/0/7 使用 <strong style="color:#059669">10.0.0.254</strong>（独立地址），<strong>与 ws1 Gb2 (10.0.0.11) 不冲突</strong>——防火墙和 ws1 可同时在线共存，NAT 规则可提前预配验证，无需掐秒插拔网线</li>
+    </ul>
+
+    <p style="margin:0 0 .7rem;padding:.4rem .7rem;background:#fffbeb;border-radius:6px;font-weight:700;font-size:.95rem;color:#92400e">📍 第五步：ws6 服务器 + B 组主机侧配置（方案乙关键：逐台灰度改网关）</p>
+    <ul style="margin:0 0 .9rem;padding-left:1.2rem;line-height:1.75">
+      <li><strong style="font-size:.95rem">① 停用 Gb1 公网 IP</strong>：在网络适配器中<strong>禁用或删除 Gb1 上的公网 IP 配置</strong>（182.140.240.121 将仅存在于防火墙）</li>
+      <li><strong style="font-size:.95rem">② 确认 Gb2 配置</strong>：IP <strong>10.0.0.16</strong> / 掩码 <strong>255.255.255.0</strong> / 默认网关改为 <strong style="color:#1d4ed8;font-size:1.05rem">10.0.0.254</strong> / DNS <strong>61.139.2.69</strong></li>
+      <li><strong style="font-size:.95rem">③ 刷新路由</strong>：<code>route print -4</code> 确认默认路由指向 10.0.0.254，无残留旧网关</li>
+      <li><strong style="font-size:.95rem">④ ws4/ws8 Gb1</strong>：默认网关从 10.0.0.11 改为 <strong style="color:#1d4ed8;font-size:1.05rem">10.0.0.254</strong>（C06 柜内两台，先改）</li>
+      <li><strong style="font-size:.95rem">⑤ ws11~ws19 Gb1</strong>：<strong style="color:#dc2626">分批逐台</strong>改网关为 10.0.0.254（ws11→ws12→...→ws19，每台改完 ping 通后再下一台）</li>
+      <li><strong style="font-size:.95rem">⑥ 改网关方法</strong>：Windows → 网络适配器 → IPv4 属性 → 默认网关改为 .254；Linux → 修改 <code>/etc/sysconfig/network-scripts/ifcfg-ethX</code> 或 <code>netplan</code> 中的 gateway</li>
+      <li><strong style="font-size:.95rem">⑦ ws1 Gb2</strong>：<strong style="color:#059669">保持 10.0.0.11 不变</strong>（防火墙 .254 与 ws1 .11 互不冲突，ws1 DNAT 作为热备保留）</li>
+    </ul>
+
+    <p style="margin:0 0 .7rem;padding:.4rem .7rem;background:#fff7ed;border-radius:6px;font-weight:700;font-size:.95rem;color:#9a3412">📍 第六步：网络连通性验证</p>
+    <ul style="margin:0 0 .9rem;padding-left:1.2rem;line-height:1.75">
+      <li><strong style="font-size:.95rem">① 防火墙侧</strong>：ping 182.140.240.1（运营商网关）→ ping 223.5.5.5（公网 DNS）→ 确认出网</li>
+      <li><strong style="font-size:.95rem">② B 组主机</strong>：ping 10.0.0.254（防火墙 GE0/0/7）→ 确认局域网通</li>
+      <li><strong style="font-size:.95rem">③ ws6 外网</strong>：从 ws6 ping 223.5.5.5 → <strong>确认经 XGE0/0/0 出网</strong>（tracert 检查路径不走极云线）</li>
+      <li><strong style="font-size:.95rem">④ ws4/ws8/ws11~ws19</strong>：已改网关为 10.0.0.254，逐台 ping 通外网确认正常</li>
+    </ul>
+
+    <p style="margin:0 0 .7rem;padding:.4rem .7rem;background:#f0fdf4;border-radius:6px;font-weight:700;font-size:.95rem;color:#065f46">📍 第七步：业务系统访问测试（逐台灰度）</p>
+    <ul style="margin:0 0 .9rem;padding-left:1.2rem;line-height:1.75">
+      <li><strong style="font-size:.95rem">① HTTP/HTTPS</strong>：从外网（手机 4G/5G）访问各 B 组服务的<strong>公网域名或 IP+端口</strong>，确认可正常响应</li>
+      <li><strong style="font-size:.95rem">② ws6 业务</strong>：通过 DNAT 映射的端口从公网访问 ws6 各服务，验证端口转发正确</li>
+      <li><strong style="font-size:.95rem">③ 逐台灰度</strong>：先验证 ws6 → 再 ws4/ws8 → 再 ws11~ws19，每台验证通过后再下一台</li>
+      <li><strong style="font-size:.95rem">④ ws1 NAT 下线</strong>：所有主机验证通过后，择机<strong>关闭 ws1 侧 NAT 进程/规则</strong>，观察 10 分钟无异常后割接完成</li>
+      <li><strong style="font-size:.95rem">⑤ 回滚</strong>：任一台主机异常 → <strong>单台改回网关 10.0.0.11</strong> 即可恢复（经 ws1 NAT 出网），无需动防火墙；ws1 作为热备全程在线</li>
+    </ul>
+
+    <div style="background:#dbeafe;border-radius:8px;padding:.7rem 1rem;margin-top:.5rem;font-weight:700;font-size:.9rem;color:#1e40af;text-align:center">
+      方案乙总耗时估算：约 <strong style="font-size:1.05rem">90~150 分钟</strong>（含逐台改 11 台网关 · 建议分两次割接窗口）
+    </div>
+
+  </div>
+</div>
+
+<!-- 方案甲（备选） -->
+<div style="border:3px solid #d97706;border-radius:12px;overflow:hidden;box-shadow:0 4px 16px rgba(217,119,6,.1)">
+  <div style="background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff;padding:.8rem 1.2rem">
+    <strong style="font-size:1.2rem;letter-spacing:.03em">方案甲 · 10.0.0.11（备选）</strong>
+    <span style="display:block;font-size:.82rem;opacity:.9;margin-top:.2rem">抢占 ws1 网关地址 · IP 冲突需同步切换 · 无法热备共存</span>
+  </div>
+  <div style="padding:1rem 1.2rem;font-size:.92rem;line-height:1.8;font-weight:500">
+
+    <p style="margin:0 0 .7rem;padding:.4rem .7rem;background:#fef3c7;border-radius:6px;font-weight:700;font-size:.95rem;color:#92400e">📍 第一步：物理接线（割接前完成）</p>
+    <ul style="margin:0 0 .9rem;padding-left:1.2rem;line-height:1.75">
+      <li><strong style="font-size:.95rem">① 西信光纤</strong> → 防火墙 <strong style="color:#5b21b6">XGE0/0/0</strong>（万兆光口），核对光模块类型（单模/多模）</li>
+      <li><strong style="font-size:.95rem">② 千兆网线</strong> → 防火墙 <strong style="color:#d97706">GE0/0/7</strong>，另一端接至三柜千兆交换机<strong style="color:#dc2626"> VLAN30 业务网 Access 口</strong></li>
+      <li><strong style="font-size:.95rem">③ 核对链路</strong>：XGE0/0/0 指示灯亮 · GE0/0/7 指示灯亮</li>
+    </ul>
+
+    <p style="margin:0 0 .7rem;padding:.4rem .7rem;background:#fef3c7;border-radius:6px;font-weight:700;font-size:.95rem;color:#92400e">📍 第二步：防火墙接口配置</p>
+    <ul style="margin:0 0 .9rem;padding-left:1.2rem;line-height:1.75">
+      <li><strong style="font-size:.95rem">① Web 登录</strong>：<strong style="color:#059669">https://192.168.10.210:8443</strong>（MEth0/0/0 带外管理）</li>
+      <li><strong style="font-size:.95rem">② 备份配置</strong>：导出当前配置（<code>display current-configuration</code>），<strong style="color:#dc2626">割接前必须完成</strong></li>
+      <li><strong style="font-size:.95rem">③ 配置 XGE0/0/0</strong>：路由模式 → 安全域 untrust → IP <strong style="color:#5b21b6">182.140.240.121/25</strong> → 启用</li>
+      <li><strong style="font-size:.95rem">④ 配置 GE0/0/7</strong>：路由模式 → 安全域 trust → IP <strong style="color:#d97706;font-size:1.05rem">10.0.0.11/24</strong> → 启用</li>
+      <li><strong style="font-size:.95rem">⑤ 静态路由</strong>：到 10.0.0.0/24 直连，默认路由指向 182.140.240.1</li>
+    </ul>
+
+    <p style="margin:0 0 .7rem;padding:.4rem .7rem;background:#fef3c7;border-radius:6px;font-weight:700;font-size:.95rem;color:#92400e">📍 第三步：防火墙安全策略</p>
+    <ul style="margin:0 0 .9rem;padding-left:1.2rem;line-height:1.75">
+      <li><strong style="font-size:.95rem">① 安全域检查</strong>：untrust ↔ trust</li>
+      <li><strong style="font-size:.95rem">② 策略规则</strong>：允许 trust→untrust；按需 DNAT 白名单</li>
+      <li><strong style="font-size:.95rem">③ ws6 策略路由</strong>：源 10.0.0.16/32 → 出接口强制 XGE0/0/0</li>
+      <li><strong style="font-size:.95rem">④ </strong>与方案乙的接口安全域策略、策略路由配置完全一致</li>
+    </ul>
+
+    <p style="margin:0 0 .7rem;padding:.4rem .7rem;background:#dcfce7;border-radius:6px;font-weight:700;font-size:.95rem;color:#166534">📍 第四步：NAT 转发配置（方案甲关键：抢占 .11 · 注意 IP 冲突 · 需掐秒同步切换）</p>
+    <ul style="margin:0 0 .9rem;padding-left:1.2rem;line-height:1.75">
+      <li><strong style="font-size:.95rem">① SNAT（B 组出网）</strong>：源 10.0.0.0/24（B 组主机）→ 转换方式 <strong style="color:#d97706">出接口地址（XGE0/0/0: 182.140.240.121）</strong></li>
+      <li><strong style="font-size:.95rem">② 迁移 ws1 DNAT 规则</strong>：逐条录入防火墙 DNAT/端口映射</li>
+      <li><strong style="font-size:.95rem">③ ws6 端口映射</strong>：182.140.240.121:端口 → 10.0.0.16:端口</li>
+      <li><strong style="font-size:.95rem">④ 注意</strong>：GE0/0/7 使用 <strong style="color:#dc2626">10.0.0.11（与 ws1 Gb2 IP 冲突！）</strong>——防火墙侧先配好但<strong>不接 GE0/0/7 网线</strong>，割接时刻需<strong>同步执行"关闭 ws1 Gb2→插线→启用 GE0/0/7"</strong>，操作窗口紧张</li>
+    </ul>
+
+    <p style="margin:0 0 .7rem;padding:.4rem .7rem;background:#fffbeb;border-radius:6px;font-weight:700;font-size:.95rem;color:#92400e">📍 第五步：ws6 服务器侧配置（方案甲优势：B 组主机网关不变！）</p>
+    <ul style="margin:0 0 .9rem;padding-left:1.2rem;line-height:1.75">
+      <li><strong style="font-size:.95rem">① 停用 Gb1 公网 IP</strong>：禁用或删除 Gb1 上的旧公网配置（182.140.240.121 将仅存在于防火墙）</li>
+      <li><strong style="font-size:.95rem">② ws6 Gb2</strong>：IP <strong>10.0.0.16</strong> / 掩码 255.255.255.0 / 默认网关 <strong style="color:#d97706;font-size:1.05rem">10.0.0.11</strong>（不变！） / DNS 61.139.2.69</li>
+      <li><strong style="font-size:.95rem">③ ws4/ws8/ws11~ws19</strong>：<strong style="color:#059669">默认网关保持 10.0.0.11，无需任何修改</strong>（这是方案甲最大优势——割接窗口最短）</li>
+      <li><strong style="font-size:.95rem">④ ws1 Gb2</strong>：<strong style="color:#dc2626">必须关闭或禁用</strong>（GE0/0/7 将占用 10.0.0.11），ws1 NAT 规则随之失效</li>
+      <li><strong style="font-size:.95rem">⑤ 割接时序</strong>：先关 ws1 Gb2 → 立即插 GE0/0/7 网线 → 启用接口 → 验证（<strong>三分钟内完成</strong>）</li>
+    </ul>
+
+    <p style="margin:0 0 .7rem;padding:.4rem .7rem;background:#fff7ed;border-radius:6px;font-weight:700;font-size:.95rem;color:#9a3412">📍 第六步：网络连通性验证（快速全量）</p>
+    <ul style="margin:0 0 .9rem;padding-left:1.2rem;line-height:1.75">
+      <li><strong style="font-size:.95rem">① 防火墙侧</strong>：ping 182.140.240.1 → ping 223.5.5.5 → 确认出网</li>
+      <li><strong style="font-size:.95rem">② ws6</strong>：ping 10.0.0.11（防火墙 GE0/0/7，与原 ws1 Gb2 同 IP）→ ping 223.5.5.5 → tracert 确认走 XGE0/0/0（非极云线）</li>
+      <li><strong style="font-size:.95rem">③ ws4/ws8/ws11~ws19</strong>：网关保持 10.0.0.11，<strong>全量并行 ping 外网</strong>确认正常（无需逐台等待，速度快）</li>
+      <li><strong style="font-size:.95rem">④ 每台验证项</strong>：ping 网关(.11) ✓ / ping 公网 DNS(223.5.5.5) ✓ / curl 访问业务端口 ✓</li>
+    </ul>
+
+    <p style="margin:0 0 .7rem;padding:.4rem .7rem;background:#f0fdf4;border-radius:6px;font-weight:700;font-size:.95rem;color:#065f46">📍 第七步：业务系统访问测试</p>
+    <ul style="margin:0 0 .9rem;padding-left:1.2rem;line-height:1.75">
+      <li><strong style="font-size:.95rem">① HTTP/HTTPS 外网访问</strong>：从外网（手机 4G/5G）访问各服务域名/端口</li>
+      <li><strong style="font-size:.95rem">② ws6 DNAT 端口</strong>：逐一验证端口转发正确</li>
+      <li><strong style="font-size:.95rem">③ 全量确认后</strong>：确认 ws1 NAT 已随 Gb2 关闭而失效，所有 B 组流量经防火墙出网</li>
+      <li><strong style="font-size:.95rem">④ 最终检查</strong>：<code>arp -a</code> 确认所有主机 ARP 表中 10.0.0.11 的 MAC 已变更为防火墙 GE0/0/7 的 MAC</li>
+      <li><strong style="font-size:.95rem">⑤ 回滚</strong>：关闭 GE0/0/7 → 重新启用 ws1 Gb2 + NAT 规则 → 逐台验证恢复；<strong>操作步骤多、窗口长</strong>，不如方案乙单台改网关便捷</li>
+    </ul>
+
+    <div style="background:#fef3c7;border-radius:8px;padding:.7rem 1rem;margin-top:.5rem;font-weight:700;font-size:.9rem;color:#92400e;text-align:center">
+      方案甲总耗时估算：约 <strong style="font-size:1.05rem">30~60 分钟</strong>（仅配防火墙 + 验证 · 不动机器网关 · 但需 ws1 完全下线）
+    </div>
+
+  </div>
+</div>
+
+</div>
+
+<!-- 方案差异速查表 -->
+<div class="table-wrap" style="margin-top:1.5rem"><table style="font-size:.9rem;font-weight:500">
+<thead><tr><th style="font-size:.92rem">步骤</th><th style="font-size:.92rem;background:#dbeafe;color:#1e40af">方案乙 · 推荐（.254）</th><th style="font-size:.92rem">方案甲 · 备选（.11）</th></tr></thead>
+<tbody>
+<tr><td style="font-weight:700">第一步·接线</td><td colspan="2" style="text-align:center">完全一致：XGE0/0/0 接西信光纤 + GE0/0/7 接 VLAN30 业务网</td></tr>
+<tr><td style="font-weight:700">第二步·接口</td><td>GE0/0/7 = <strong style="color:#1d4ed8;font-size:.9rem">10.0.0.254/24</strong></td><td>GE0/0/7 = <strong style="color:#d97706;font-size:.9rem">10.0.0.11/24</strong></td></tr>
+<tr><td style="font-weight:700">第三步·策略</td><td colspan="2" style="text-align:center">安全域 + ws6 策略路由 → XGE0/0/0，<strong>一致</strong></td></tr>
+<tr><td style="font-weight:700">第四步·NAT</td><td style="background:#f0fdf4"><strong style="color:#059669">✓ 无 IP 冲突</strong>：.254 独立地址，防火墙+ws1 可长期共存热备</td><td style="background:#fff5f5"><strong style="color:#dc2626">⚠ IP 冲突</strong>：GE0/0/7(.11) 与 ws1 Gb2(.11) 冲突，无法共存</td></tr>
+<tr><td style="font-weight:700">第五步·主机</td><td style="background:#fff7ed"><strong style="color:#92400e">逐台改网关 .254</strong>：11 台分批灰度</td><td style="background:#f0fdf4"><strong style="color:#059669">不改网关</strong>：ws4/8/11~19 保持 .11</td></tr>
+<tr><td style="font-weight:700">第六步·验证</td><td>逐台改 → 逐台验证（灰度安全）</td><td>一次切换全部验证（回滚窗口大）</td></tr>
+<tr><td style="font-weight:700">第七步·测试</td><td colspan="2" style="text-align:center">一致：HTTP/HTTPS + DNAT + 灰度 + ws1 NAT 下线</td></tr>
+<tr><td style="font-weight:700">ws1 DNAT</td><td style="background:#f0fdf4;font-weight:700;color:#059669">保留热备，随时可用</td><td style="background:#fff5f5;font-weight:700;color:#dc2626">必须全部迁移/停用</td></tr>
+<tr><td style="font-weight:700">耗时</td><td style="background:#dbeafe;font-weight:700;color:#1d4ed8;font-size:.92rem">90~150 分钟</td><td style="background:#fef3c7;font-weight:700;color:#d97706;font-size:.92rem">30~60 分钟</td></tr>
+<tr><td style="font-weight:700">回滚</td><td style="background:#f0fdf4">单台改回网关 .11 即恢复</td><td>关 GE0/0/7 → 恢复 ws1 NAT（多步）</td></tr>
+</tbody></table></div>
+
+<div class="note" style="font-size:.95rem;line-height:1.7;font-weight:500;background:#fff5f5;border-left:5px solid #dc2626;padding:1.2rem 1.4rem;margin:1.5rem 0">
+<strong style="color:#dc2626;font-size:1.1rem">⚠ 共同前提（改造底线，务必逐条核对）：</strong>
+<ul style="margin:.6rem 0 0 1.2rem;padding:0;list-style-type:'✓ '">
+  <li style="margin-bottom:.4rem"><strong style="color:#1e40af">线路 A 不动：</strong>GE0/0/0 极云入网 + GE0/0/1 公网透传桥 + A 组公网服务器（ws1/2/3/5/7、dev、dev-2）出网路径<strong style="color:#dc2626">完全不变</strong>。</li>
+  <li style="margin-bottom:.4rem"><strong style="color:#1e40af">XGE0/0/0</strong> = 西信电信 WAN（182.140.240.121/25），<strong style="color:#1e40af">GE0/0/7</strong> = 10.0.0.0/24 业务网关口，<strong style="color:#dc2626">两个口职责完全不同，切勿混插网线</strong>。</li>
+  <li style="margin-bottom:.4rem"><strong style="color:#dc2626">严禁</strong>在 GE0/0/7 上配置 182.140.240.x 地址，运营商网关 182.140.240.1 仅出现在 XGE0/0/0。</li>
+  <li style="margin-bottom:.4rem">ws6 需走西信线时，在防火墙上为源 10.0.0.16/32 配置<strong>策略路由</strong>，出接口 XGE0/0/0，并做 SNAT 为 182.140.240.121；<strong style="color:#dc2626">避免 ws6 从极云线路（GE0/0/0）意外出网</strong>。</li>
+  <li style="margin-bottom:.4rem">下文「改造配置步骤」以<strong>方案乙（.254）</strong>为 CLI 参考示例。方案甲仅需将 IP 替换为 10.0.0.11，其余步骤一致。</li>
+</ul>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0;font-size:.92rem">
+<div style="background:#fff5f5;border:2px solid #fecaca;border-radius:10px;padding:1rem 1.2rem">
+  <strong style="color:#dc2626;font-size:1rem;display:block;margin-bottom:.6rem">🔴 割接前必须核对（现场确认）</strong>
+  <ul style="margin:0;padding-left:1.1rem;line-height:1.7;font-weight:500">
+    <li>GE0/0/7 网线<strong>实际接在哪个交换机的哪个口</strong></li>
+    <li>10.0.0.0/24 内 <strong>所有主机 ARP 表 / 默认网关</strong> 当前值</li>
+    <li>ws1 侧 NAT 规则<strong>完整清单</strong>（dnat/SNAT/端口映射）</li>
+    <li>西信光纤<strong>是否已到位、光模块类型</strong>（单模/多模）</li>
+    <li><strong>182.140.240.121</strong> 是否已分配、可 ping、无 IP 冲突</li>
+    <li>防火墙当前配置<strong>完整备份</strong>（CLI: <code>display current-configuration</code>）</li>
+  </ul>
+</div>
+<div style="background:#fffbeb;border:2px solid #fcd34d;border-radius:10px;padding:1rem 1.2rem">
+  <strong style="color:#92400e;font-size:1rem;display:block;margin-bottom:.6rem">🟡 割接中注意（操作顺序）</strong>
+  <ul style="margin:0;padding-left:1.1rem;line-height:1.7;font-weight:500">
+    <li><strong>先配 XGE0/0/0 公网</strong>（ping 通运营商网关）</li>
+    <li><strong>再配 GE0/0/7 业务口</strong>（从 B 组主机 ping 通网关）</li>
+    <li><strong>方案乙：先配防火墙 .254，再分批改主机网关</strong></li>
+    <li>NAT/策略路由<strong>在接口通后配置</strong>，勿提前</li>
+    <li><strong style="color:#dc2626">方案乙特别注意</strong>：先配好防火墙侧 .254，确认 B 组主机能 ping 通 .254，再逐台改主机网关；改一台验证一台</li>
+    <li>割接窗口：建议<strong>分两次</strong>——第一次配防火墙接口+NAT，第二次改主机网关</li>
+    <li>ws1 NAT 在<strong>所有主机切完后</strong>再停，避免空窗</li>
+  </ul>
+</div>
+</div>
+
+<div style="background:#f0fdf4;border:2px solid #86efac;border-radius:10px;padding:1rem 1.2rem;margin:1rem 0;font-size:.92rem">
+  <strong style="color:#166534;font-size:1rem;display:block;margin-bottom:.6rem">🟢 回滚方案（出问题时执行）</strong>
+  <ul style="margin:0;padding-left:1.1rem;line-height:1.7;font-weight:500;columns:2;column-gap:2rem">
+    <li><strong>方案甲</strong>：防火墙切回或关闭 GE0/0/7 → 恢复 ws1 NAT</li>
+    <li><strong>方案乙</strong>：单台改回网关 10.0.0.11 → 恢复</li>
+    <li>若 XGE0/0/0 不通：回退西信线，ws6 暂走旧路</li>
+    <li>若 GE0/0/7 不通：检查物理接线、VLAN 放行、安全域</li>
+  </ul>
+</div>
 </section>
 <section id="masterplan">
 <h2>0. 总规划图（现网架构）</h2>
 <div class="panel">
-<p><strong>基础信息：</strong>防火墙 <strong>华为 USG6305E</strong>；机柜 <strong>C06、D03、D04</strong>。每柜：<strong>华为存储×1 + 万兆交换机×2 + 千兆交换机×1（48 口）</strong> + 多台服务器。万兆：<strong>C06/D04 各 12 口×2</strong>，<strong>D03 为 24 口×2</strong>；千兆 VLAN 划分：<strong>VLAN100</strong>(10.0.0.0/24 业务)、<strong>VLAN192</strong>(192.168.1.0/24 业务)、<strong>VLAN200</strong>(管理)、<strong>VLAN300</strong>(D03 开心私网)，VLAN 1 为默认。</p>
+<p><strong>基础信息：</strong>防火墙 <strong>华为 USG6305E</strong>（8×GE + 2×WAN + 2×XGE，部署于 <strong>C06 机柜</strong>）；机柜 <strong>C06、D03、D04</strong>。每柜标配：<strong>华为存储×1 + 万兆交换机×2 + 千兆交换机×1（H3C 48 口 GE1/0/1~52）</strong> + 多台服务器。万兆交换机：<strong>C06/D04 各 12 口×2</strong>（末口 14 Trunk），<strong>D03 为 24 口×2</strong>（末口 24 Trunk）。</p>
+<p><strong>千兆 VLAN 规划（现网实际配置）：</strong></p>
+<div class="table-wrap" style="margin:.4rem 0 .6rem">
+<table style="font-size:.85rem">
+<thead><tr><th>VLAN ID</th><th>网段</th><th>用途</th><th>C06 端口</th><th>D03 端口</th><th>D04 端口</th></tr></thead>
+<tbody>
+<tr><td style="font-weight:700;color:#1e40af">VLAN 100</td><td>10.0.0.0/24</td><td>内网业务</td><td>GE1/0/1-16（UP 10 / DOWN 6）</td><td>GE1/0/1-12（UP 2 / DOWN 10）</td><td>GE1/0/1-16（UP 9 / DOWN 7）</td></tr>
+<tr><td style="font-weight:700;color:#d97706">VLAN 192</td><td>192.168.1.0/24</td><td>内网业务</td><td>GE1/0/17-26,32（UP 10 / DOWN 1）</td><td>GE1/0/13-24（UP 2 / DOWN 10）</td><td>GE1/0/17-26,29-30,32（UP 8 / DOWN 5）</td></tr>
+<tr><td style="font-weight:700;color:#059669">VLAN 200</td><td>192.168.10.0/24</td><td>管理网段</td><td>GE1/0/27-30,45-46（UP 6 / DOWN 0）</td><td>GE1/0/25-36（UP 2 / DOWN 10）</td><td>GE1/0/27-28（UP 2 / DOWN 0）</td></tr>
+<tr><td style="font-weight:700;color:#7c3aed">VLAN 300</td><td>192.168.20.0/24</td><td>开心私网</td><td style="color:#94a3b8">— 未配置 —</td><td>GE1/0/37-44（UP 3 / DOWN 5）</td><td style="color:#94a3b8">— 未配置 —</td></tr>
+<tr><td style="font-weight:700;color:#64748b">VLAN 1</td><td>—</td><td>默认 / 公网</td><td>GE1/0/33-44,47-52（UP 9 / DOWN 9）</td><td>GE1/0/45-47,49-52（DOWN 7）</td><td>GE1/0/33-47,49-52（UP 2 / DOWN 17）</td></tr>
+</tbody></table></div>
+<p><strong>Trunk 互联链路：</strong>C06 GE1/0/31 ↔ D04 GE1/0/31（PVID 192，允许 VLAN 1,100,192,200）；D03 GE1/0/48 ↑ 上联上级交换机（PVID 192，允许 VLAN 1,10,100,192,200）；D04 GE1/0/48 预留 Trunk（PVID 192，允许 VLAN 1,100,192,200）。</p>
+<p><strong>端口使用汇总：</strong>C06 共 36 UP / 16 DOWN（含 1 Trunk）；D03 共 10 UP / 42 DOWN（含 1 Trunk，大量预留）；D04 共 23 UP / 29 DOWN（含 2 Trunk）。<strong>服务器分布：</strong>C06（ws1~ws8 + dev，9 台）、D03（ws18~ws19，2 台）、D04（ws11~ws17 + dev-2，8 台）。</p>
 <div class="diagram-wrap">
 <div class="rack-room">
     <div class="topo-canvas">
@@ -1225,38 +1779,42 @@ table.nic-table .nic-merge-cab,table.nic-table .nic-merge-srv{background:#f8fafc
     <span><strong>开发机</strong>：dev 业务 <span class="ip">10.0.0.1</span> · dev-2 业务 <span class="ip">10.0.0.19</span>（与编号规则不同，以现网为准）</span>
   </div>
   <div class="rack-legend-detail">
-    <h4>三柜现网构成（与上图 U 位、交换机端口一致）</h4>
+    <h4>三柜现网构成（与上面端口图完全一致）</h4>
     <div class="cab-grid">
-      <div class="cab-card">
-        <b>机柜 C06</b> · 9 台服务器 + 存储 A
+      <div class="cab-card" style="border-left:4px solid #2563eb">
+        <b>机柜 C06</b> · 9 台服务器 + 存储 A + <b style="color:#dc2626">防火墙 USG6305E</b>
         <ul>
-          <li><strong>千兆 48 口</strong>：VLAN 分区 1–47；<code>48</code> 末口柜间 Trunk，<code>47</code> 可上联 USG</li>
+          <li><strong>千兆 48 口</strong>：VLAN100(1-16) / VLAN192(17-26,32) / VLAN200(27-30,45-46) / VLAN1(33-44,47-52)</li>
+          <li style="background:#f5f3ff;border-radius:3px;padding:.1rem .3rem"><strong>Trunk</strong>：<code>GE1/0/31</code> ⟷ <b>D04 GE1/0/31</b>（PVID 192，1,100,192,200）</li>
           <li><strong>万兆 12+12</strong>：柜内 #1↔#2 用<strong>口 14</strong> Trunk（末口）；<span class="ip">192.168.2/3.x</span></li>
           <li><strong>公网</strong>：ws1（DNAT）、ws2/3/5/7、dev（<span class="ip">182.140.146.x</span>）</li>
           <li><strong>西信线 / ws6</strong>：公网 <span class="ip">182.140.240.121</span> 在防火墙 XGE0/0/0；ws6 内网 <span class="ip">10.0.0.16</span>，网关 GE0/0/7</li>
           <li><strong>内网</strong>：ws4 <span class="ip">.14</span>、ws8 <span class="ip">.18</span>（网关 <span class="ip">10.0.0.11</span>）</li>
-          <li><strong>dev</strong>：业务 <span class="ip">10.0.0.1</span>、10网 <span class="ip">192.168.10.19</span>（Gb4）</li>
+          <li><strong>dev</strong>：业务 <span class="ip">10.0.0.1</span>、10网 <span class="ip">192.168.10.19</span></li>
         </ul>
       </div>
-      <div class="cab-card">
-        <b>机柜 D03</b> · 2 台 B 组 + 存储 C
+      <div class="cab-card" style="border-left:4px solid #f59e0b">
+        <b>机柜 D03</b> · 2 台服务器 + 存储 C
         <ul>
-          <li><strong>千兆</strong>：<code>48</code> 柜间 Trunk（末口），<code>47</code> 上联 USG（GE0/0/3 等）；无本柜公网 Gb1</li>
+          <li><strong>千兆 48 口</strong>：VLAN100(1-12) / VLAN192(13-24) / VLAN200(25-36) / VLAN300(37-44) / VLAN1(45-47,49-52)</li>
+          <li style="background:#f5f3ff;border-radius:3px;padding:.1rem .3rem"><strong>Trunk</strong>：<code>GE1/0/48</code> ↑ <b>上联上级交换机</b>（PVID 192，1,10,100,192,200）</li>
           <li><strong>万兆 24+24</strong>：ws18/ws19 + 存储 C；柜内 #1↔#2 用<strong>口 24</strong> Trunk（末口）</li>
-          <li><strong>ws18 / ws19</strong>：业务 <span class="ip">10.0.0.29 / .30</span>，开心专线 <span class="ip">192.168.20.29 / .30</span>（VLAN20）</li>
+          <li><strong>ws18 / ws19</strong>：业务 <span class="ip">10.0.0.29 / .30</span>，开心私网 <span class="ip">192.168.20.29 / .30</span>（VLAN300）</li>
+          <li style="color:#94a3b8">注：42/52 口 DOWN，大量端口预留，公网 VLAN1 全部 DOWN</li>
         </ul>
       </div>
-      <div class="cab-card">
+      <div class="cab-card" style="border-left:4px solid #10b981">
         <b>机柜 D04</b> · 8 台（ws11~17 + dev-2）+ 存储 B
         <ul>
-          <li><strong>千兆</strong>：<code>48</code> Trunk（末口），<code>47</code> 上联 USG；dev-2 公网 <code>Eth1/0/1</code></li>
+          <li><strong>千兆 48 口</strong>：VLAN100(1-16) / VLAN192(17-26,29-30,32) / VLAN200(27-28) / VLAN1(33-47,49-52)</li>
+          <li style="background:#f5f3ff;border-radius:3px;padding:.1rem .3rem"><strong>Trunk</strong>：<code>GE1/0/31</code> ⟷ <b>C06 GE1/0/31</b>；<code>GE1/0/48</code> 预留 Trunk（PVID 192，1,100,192,200）</li>
           <li><strong>万兆 12+12</strong>：ws11~17、dev-2、存储 B；柜内 Trunk=<strong>口 14</strong>（末口）</li>
-          <li><strong>B 组</strong>：ws11~17 业务 <span class="ip">10.0.0.22~28</span>，ws12 <span class="ip">.23</span></li>
+          <li><strong>B 组</strong>：ws11~17 业务 <span class="ip">10.0.0.22~28</span>，网关 <span class="ip">10.0.0.11</span></li>
           <li><strong>dev-2</strong>：公网 <span class="ip">182.140.146.146</span>，业务 <span class="ip">10.0.0.19</span></li>
         </ul>
       </div>
     </div>
-    <p class="small" style="margin:0"><strong>交换机 Trunk：</strong>千兆 48 口末口 <code>48</code>=柜间 Trunk；万兆 12 口末口 <code>14</code>、24 口末口 <code>24</code>（柜内 #1↔#2）。<strong>IP 例外：</strong>dev=<span class="ip">10.0.0.1</span>，dev-2=<span class="ip">10.0.0.19</span>。</p>
+    <p class="small" style="margin:0"><strong>Trunk 连线：</strong><b style="color:#6366f1">C06:31 ⟷ D04:31</b>（柜间骨干，PVID 192）；<b style="color:#6366f1">D03:48 ↑</b> 上联；<b style="color:#6366f1">D04:48</b> 预留 Trunk。万兆末口规则：12 口用口 14、24 口用口 24 作柜内 #1↔#2 Trunk。<strong>C06 口 48</strong> 描述 4F-C06-g/1（VLAN1，Access）。<strong>IP 例外：</strong>dev=<span class="ip">10.0.0.1</span>，dev-2=<span class="ip">10.0.0.19</span>。</p>
   </div>
 </div>
 <p class="diagram-caption">顶部 SVG 为<strong>线缆与分区示意</strong>。交换机互联：<strong>千兆 Eth48</strong> 柜间 Trunk（末口）；万兆 <strong>12 口用 14</strong>、<strong>24 口用 24</strong> 作柜内 #1↔#2 Trunk（均为末口）。改造后 <strong>XGE0/0/0</strong> 接西信骨干、<strong>GE0/0/7</strong> 接 10.0.0.0/24。详见 <a href="#sw48ports">48 口预留</a>。文档版本 <strong>3.0</strong>。</p>
@@ -1339,6 +1897,269 @@ table.nic-table .nic-merge-cab,table.nic-table .nic-merge-srv{background:#f8fafc
 <p class="note">防火墙与 3 个机柜千兆交换机星形互联。万兆网络与业务网络分离，存储走独立 10G 平面。</p>
 </section>
 
+<section id="ge-wiring">
+<h2>0.0.1 千兆端口接线图（按交换机端口逐口标注）</h2>
+<p>以三机柜千兆交换机（48 电口 + 4 光口 + 1 管理口）为中心，标注每口接线去向：<strong>服务器网卡 → 交换机口 → VLAN → IP</strong>。端口范围根据现网 H3C 配置整理，颜色与上方端口图一致。<strong>口 49~52</strong> 为预留电口，当前全部 DOWN。</p>
+
+<div class="ge-wiring-grid">
+
+<!-- ===== 机柜 C06 ===== -->
+<div class="ge-wiring-cab ge-wiring-cab--c06">
+  <div class="ge-wiring-title"><span>C06 千兆交换机</span><small>9 服务器 + 防火墙 USG6305E</small></div>
+  <div class="ge-wiring-mgmt-strip">
+    <span class="mgmt-label">管理口</span><span class="mgmt-port mgmt-port--idle">Console</span>
+    <span class="mgmt-label">光口</span><span class="mgmt-port mgmt-port--sfp">SFP1 · 未用</span><span class="mgmt-port mgmt-port--sfp">SFP2 · 未用</span><span class="mgmt-port mgmt-port--sfp">SFP3 · 未用</span><span class="mgmt-port mgmt-port--sfp">SFP4 · 未用</span>
+  </div>
+  <div class="ge-wiring-body">
+
+    <!-- VLAN100 业务 -->
+    <div class="ge-wiring-vlan-group">
+      <div class="ge-wiring-vlan-title" style="color:#2563eb"><span class="vlan-dot vlan-dot--v100"></span>VLAN100 · 10.0.0.0/24 · 内网业务</div>
+      <table class="ge-wiring-table"><thead><tr><th>端口</th><th>服务器</th><th>网卡</th><th>IP</th><th>状态</th></tr></thead><tbody>
+        <tr class="row-v100"><td class="td-port">GE1/0/1</td><td class="td-device">ws1</td><td>Gb2</td><td class="td-ip">10.0.0.11</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v100"><td class="td-port">GE1/0/2</td><td class="td-device">ws2</td><td>Gb2</td><td class="td-ip">10.0.0.12</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v100"><td class="td-port">GE1/0/3</td><td class="td-device">ws3</td><td>Gb2</td><td class="td-ip">10.0.0.13</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v100"><td class="td-port">GE1/0/4</td><td class="td-device">ws5</td><td>Gb2</td><td class="td-ip">10.0.0.15</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v100"><td class="td-port">GE1/0/5</td><td class="td-device">ws6</td><td>Gb2</td><td class="td-ip">10.0.0.16</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v100"><td class="td-port">GE1/0/6</td><td class="td-device">ws7</td><td>Gb2</td><td class="td-ip">10.0.0.17</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v100"><td class="td-port">GE1/0/7</td><td class="td-device">dev</td><td>Gb2</td><td class="td-ip">10.0.0.1</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v100"><td class="td-port">GE1/0/8</td><td class="td-device">ws4</td><td>Gb1</td><td class="td-ip">10.0.0.14</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v100"><td class="td-port">GE1/0/9</td><td class="td-device">ws8</td><td>Gb1</td><td class="td-ip">10.0.0.18</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v100 row-down"><td class="td-port">GE1/0/10~15</td><td class="td-range" colspan="3">空闲 · 预留业务口</td><td class="td-st st-down">DOWN</td></tr>
+        <tr class="row-v100"><td class="td-port">GE1/0/16</td><td class="td-range" colspan="3">业务 · 已占用（UP）</td><td class="td-st st-up">UP</td></tr>
+      </tbody></table>
+    </div>
+
+    <!-- VLAN192 管理 -->
+    <div class="ge-wiring-vlan-group">
+      <div class="ge-wiring-vlan-title" style="color:#d97706"><span class="vlan-dot vlan-dot--v192"></span>VLAN192 · 192.168.1.0/24 · 服务器管理 Gb3</div>
+      <table class="ge-wiring-table"><thead><tr><th>端口</th><th>服务器</th><th>网卡</th><th>IP</th><th>状态</th></tr></thead><tbody>
+        <tr class="row-v192"><td class="td-port">GE1/0/17</td><td class="td-device">ws1</td><td>Gb3</td><td class="td-ip">192.168.1.11</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v192"><td class="td-port">GE1/0/18</td><td class="td-device">ws2</td><td>Gb3</td><td class="td-ip">192.168.1.12</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v192"><td class="td-port">GE1/0/19</td><td class="td-device">ws3</td><td>Gb3</td><td class="td-ip">192.168.1.13</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v192"><td class="td-port">GE1/0/20</td><td class="td-device">ws4</td><td>Gb3</td><td class="td-ip">192.168.1.14</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v192"><td class="td-port">GE1/0/21</td><td class="td-device">ws5</td><td>Gb3</td><td class="td-ip">192.168.1.15</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v192"><td class="td-port">GE1/0/22</td><td class="td-device">ws6</td><td>Gb3</td><td class="td-ip">192.168.1.16</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v192"><td class="td-port">GE1/0/23</td><td class="td-device">ws7</td><td>Gb3</td><td class="td-ip">192.168.1.17</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v192"><td class="td-port">GE1/0/24</td><td class="td-device">ws8</td><td>Gb3</td><td class="td-ip">192.168.1.18</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v192"><td class="td-port">GE1/0/25</td><td class="td-device">dev</td><td>Gb3</td><td class="td-ip">192.168.1.1</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v192"><td class="td-port">GE1/0/26</td><td class="td-device">—（100M）</td><td>—</td><td class="td-ip">预留</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v192 row-down"><td class="td-port">GE1/0/32</td><td class="td-range" colspan="3">空闲</td><td class="td-st st-down">DOWN</td></tr>
+      </tbody></table>
+    </div>
+
+    <!-- VLAN200 10网管理 -->
+    <div class="ge-wiring-vlan-group">
+      <div class="ge-wiring-vlan-title" style="color:#059669"><span class="vlan-dot vlan-dot--v200"></span>VLAN200 · 192.168.10.0/24 · 千兆 10 网 / 管理</div>
+      <table class="ge-wiring-table"><thead><tr><th>端口</th><th>设备</th><th>网卡</th><th>IP</th><th>状态</th></tr></thead><tbody>
+        <tr class="row-v200"><td class="td-port">GE1/0/27</td><td class="td-device">ws5</td><td>Gb4</td><td class="td-ip">192.168.10.15</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v200"><td class="td-port">GE1/0/28</td><td class="td-device">ws7</td><td>Gb4</td><td class="td-ip">192.168.10.17</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v200"><td class="td-port">GE1/0/29</td><td class="td-device">dev</td><td>Gb4</td><td class="td-ip">192.168.10.19</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v200"><td class="td-port">GE1/0/30</td><td class="td-device">—</td><td>—</td><td class="td-ip">192.168.10.x</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v200"><td class="td-port">GE1/0/45</td><td class="td-device">—</td><td>—</td><td class="td-ip">192.168.10.x</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v200"><td class="td-port">GE1/0/46</td><td class="td-device">—</td><td>—</td><td class="td-ip">192.168.10.x</td><td class="td-st st-up">UP</td></tr>
+      </tbody></table>
+    </div>
+
+    <!-- Trunk -->
+    <div class="ge-wiring-vlan-group">
+      <div class="ge-wiring-vlan-title" style="color:#6366f1"><span class="vlan-dot vlan-dot--trunk"></span>Trunk · 柜间互联</div>
+      <table class="ge-wiring-table"><thead><tr><th>端口</th><th>对端</th><th>PVID</th><th>允许 VLAN</th><th>状态</th></tr></thead><tbody>
+        <tr class="row-trunk"><td class="td-port">GE1/0/31</td><td class="td-device">⟷ D04 GE1/0/31</td><td>192</td><td class="td-ip">1,100,192,200</td><td class="td-st st-trunk">Trunk</td></tr>
+      </tbody></table>
+    </div>
+
+    <!-- VLAN1 公网 -->
+    <div class="ge-wiring-vlan-group">
+      <div class="ge-wiring-vlan-title" style="color:#64748b"><span class="vlan-dot vlan-dot--v1"></span>VLAN1 · 默认 / 公网 · 182.140.146.x</div>
+      <table class="ge-wiring-table"><thead><tr><th>端口</th><th>服务器</th><th>网卡</th><th>IP</th><th>状态</th></tr></thead><tbody>
+        <tr class="row-v1"><td class="td-port">GE1/0/33</td><td class="td-device">ws1</td><td>Gb1</td><td class="td-ip">182.140.146.150</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v1"><td class="td-port">GE1/0/34</td><td class="td-device">ws2</td><td>Gb1</td><td class="td-ip">182.140.146.154</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v1"><td class="td-port">GE1/0/35</td><td class="td-device">ws3</td><td>Gb1</td><td class="td-ip">182.140.146.155</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v1"><td class="td-port">GE1/0/36</td><td class="td-device">ws5</td><td>Gb1</td><td class="td-ip">182.140.146.156</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v1"><td class="td-port">GE1/0/37</td><td class="td-device">ws6</td><td>Gb1</td><td class="td-ip">公网·改造后停用</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v1"><td class="td-port">GE1/0/38</td><td class="td-device">ws7</td><td>Gb1</td><td class="td-ip">182.140.146.152</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v1"><td class="td-port">GE1/0/39</td><td class="td-device">dev</td><td>Gb1</td><td class="td-ip">182.140.146.140</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v1 row-down"><td class="td-port">GE1/0/40</td><td class="td-range" colspan="3">空闲</td><td class="td-st st-down">DOWN</td></tr>
+        <tr class="row-v1"><td class="td-port">GE1/0/41</td><td class="td-range" colspan="3">公网 · 预留（UP）</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v1 row-down"><td class="td-port">GE1/0/42~44</td><td class="td-range" colspan="3">空闲</td><td class="td-st st-down">DOWN</td></tr>
+        <tr class="row-v1 row-down"><td class="td-port">GE1/0/47</td><td class="td-range" colspan="3">空闲</td><td class="td-st st-down">DOWN</td></tr>
+        <tr class="row-v1"><td class="td-port">GE1/0/48</td><td class="td-device">4F-C06-g/1</td><td>—</td><td class="td-ip">VLAN1 Access</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v1 row-down"><td class="td-port">GE1/0/49~52</td><td class="td-range" colspan="3">空闲</td><td class="td-st st-down">DOWN</td></tr>
+      </tbody></table>
+    </div>
+
+  </div>
+  <div class="ge-wiring-stats">
+    <span class="st-up-c">UP 36</span><span class="st-down-c">DOWN 16</span><span class="st-trunk-c">Trunk 1</span>
+    <span>光口 4 · 管理口 1</span>
+  </div>
+</div>
+
+<!-- ===== 机柜 D03 ===== -->
+<div class="ge-wiring-cab ge-wiring-cab--d03">
+  <div class="ge-wiring-title"><span>D03 千兆交换机</span><small>2 服务器 · ws18~ws19</small></div>
+  <div class="ge-wiring-mgmt-strip">
+    <span class="mgmt-label">管理口</span><span class="mgmt-port mgmt-port--idle">Console</span>
+    <span class="mgmt-label">光口</span><span class="mgmt-port mgmt-port--sfp">SFP1 · 未用</span><span class="mgmt-port mgmt-port--sfp">SFP2 · 未用</span><span class="mgmt-port mgmt-port--sfp">SFP3 · 未用</span><span class="mgmt-port mgmt-port--sfp">SFP4 · 未用</span>
+  </div>
+  <div class="ge-wiring-body">
+
+    <!-- VLAN100 -->
+    <div class="ge-wiring-vlan-group">
+      <div class="ge-wiring-vlan-title" style="color:#2563eb"><span class="vlan-dot vlan-dot--v100"></span>VLAN100 · 10.0.0.0/24 · 内网业务</div>
+      <table class="ge-wiring-table"><thead><tr><th>端口</th><th>服务器</th><th>网卡</th><th>IP</th><th>状态</th></tr></thead><tbody>
+        <tr class="row-v100"><td class="td-port">GE1/0/1</td><td class="td-device">ws18</td><td>Gb1</td><td class="td-ip">10.0.0.29</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v100"><td class="td-port">GE1/0/2</td><td class="td-device">ws19</td><td>Gb1</td><td class="td-ip">10.0.0.30</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v100 row-down"><td class="td-port">GE1/0/3~12</td><td class="td-range" colspan="3">空闲 · 预留业务口</td><td class="td-st st-down">DOWN</td></tr>
+      </tbody></table>
+    </div>
+
+    <!-- VLAN192 -->
+    <div class="ge-wiring-vlan-group">
+      <div class="ge-wiring-vlan-title" style="color:#d97706"><span class="vlan-dot vlan-dot--v192"></span>VLAN192 · 192.168.1.0/24 · 服务器管理</div>
+      <table class="ge-wiring-table"><thead><tr><th>端口</th><th>服务器</th><th>网卡</th><th>IP</th><th>状态</th></tr></thead><tbody>
+        <tr class="row-v192"><td class="td-port">GE1/0/13</td><td class="td-device">ws18</td><td>Gb3</td><td class="td-ip">192.168.1.29</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v192"><td class="td-port">GE1/0/14</td><td class="td-device">ws19</td><td>Gb3</td><td class="td-ip">192.168.1.30</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v192 row-down"><td class="td-port">GE1/0/15~24</td><td class="td-range" colspan="3">空闲 · 预留管理口</td><td class="td-st st-down">DOWN</td></tr>
+      </tbody></table>
+    </div>
+
+    <!-- VLAN200 -->
+    <div class="ge-wiring-vlan-group">
+      <div class="ge-wiring-vlan-title" style="color:#059669"><span class="vlan-dot vlan-dot--v200"></span>VLAN200 · 192.168.10.0/24 · 千兆 10 网</div>
+      <table class="ge-wiring-table"><thead><tr><th>端口</th><th>设备</th><th>网卡</th><th>IP</th><th>状态</th></tr></thead><tbody>
+        <tr class="row-v200"><td class="td-port">GE1/0/27</td><td class="td-device">ws18 Gb3·管理</td><td>Gb3</td><td class="td-ip">管理接入</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v200"><td class="td-port">GE1/0/28</td><td class="td-device">ws19 Gb3·管理</td><td>Gb3</td><td class="td-ip">管理接入</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v200 row-down"><td class="td-port">GE1/0/25~26,29~36</td><td class="td-range" colspan="3">空闲 · 预留管理口</td><td class="td-st st-down">DOWN</td></tr>
+      </tbody></table>
+    </div>
+
+    <!-- VLAN300 -->
+    <div class="ge-wiring-vlan-group">
+      <div class="ge-wiring-vlan-title" style="color:#7c3aed"><span class="vlan-dot vlan-dot--v300"></span>VLAN300 · 192.168.20.0/24 · 开心私网</div>
+      <table class="ge-wiring-table"><thead><tr><th>端口</th><th>服务器</th><th>网卡</th><th>IP</th><th>状态</th></tr></thead><tbody>
+        <tr class="row-v300"><td class="td-port">GE1/0/37</td><td class="td-device">ws18</td><td>Gb4</td><td class="td-ip">192.168.20.29</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v300"><td class="td-port">GE1/0/38</td><td class="td-device">ws19</td><td>Gb4</td><td class="td-ip">192.168.20.30</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v300 row-down"><td class="td-port">GE1/0/39~42</td><td class="td-range" colspan="3">空闲</td><td class="td-st st-down">DOWN</td></tr>
+        <tr class="row-v300"><td class="td-port">GE1/0/43</td><td class="td-device">开心·预留</td><td>Gb4</td><td class="td-ip">—（UP）</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v300 row-down"><td class="td-port">GE1/0/44</td><td class="td-range" colspan="3">空闲</td><td class="td-st st-down">DOWN</td></tr>
+      </tbody></table>
+    </div>
+
+    <!-- Trunk -->
+    <div class="ge-wiring-vlan-group">
+      <div class="ge-wiring-vlan-title" style="color:#6366f1"><span class="vlan-dot vlan-dot--trunk"></span>Trunk · 上联</div>
+      <table class="ge-wiring-table"><thead><tr><th>端口</th><th>对端</th><th>PVID</th><th>允许 VLAN</th><th>状态</th></tr></thead><tbody>
+        <tr class="row-trunk"><td class="td-port">GE1/0/48</td><td class="td-device">↑ 上联上级交换机</td><td>192</td><td class="td-ip">1,10,100,192,200</td><td class="td-st st-trunk">Trunk</td></tr>
+      </tbody></table>
+    </div>
+
+    <!-- VLAN1 公网 -->
+    <div class="ge-wiring-vlan-group">
+      <div class="ge-wiring-vlan-title" style="color:#64748b"><span class="vlan-dot vlan-dot--v1"></span>VLAN1 · 默认 / 公网</div>
+      <table class="ge-wiring-table"><thead><tr><th>端口</th><th>设备</th><th></th><th></th><th>状态</th></tr></thead><tbody>
+        <tr class="row-v1 row-down"><td class="td-port">GE1/0/45~47,49~52</td><td class="td-range" colspan="3">空闲 · 本柜无公网服务器</td><td class="td-st st-down">DOWN</td></tr>
+      </tbody></table>
+    </div>
+
+  </div>
+  <div class="ge-wiring-stats">
+    <span class="st-up-c">UP 10</span><span class="st-down-c">DOWN 42</span><span class="st-trunk-c">Trunk 1</span>
+    <span>光口 4 · 管理口 1</span>
+  </div>
+</div>
+
+<!-- ===== 机柜 D04 ===== -->
+<div class="ge-wiring-cab ge-wiring-cab--d04">
+  <div class="ge-wiring-title"><span>D04 千兆交换机</span><small>8 服务器 · ws11~ws17 + dev-2</small></div>
+  <div class="ge-wiring-mgmt-strip">
+    <span class="mgmt-label">管理口</span><span class="mgmt-port mgmt-port--idle">Console</span>
+    <span class="mgmt-label">光口</span><span class="mgmt-port mgmt-port--sfp">SFP1 · 未用</span><span class="mgmt-port mgmt-port--sfp">SFP2 · 未用</span><span class="mgmt-port mgmt-port--sfp">SFP3 · 未用</span><span class="mgmt-port mgmt-port--sfp">SFP4 · 未用</span>
+  </div>
+  <div class="ge-wiring-body">
+
+    <!-- VLAN100 -->
+    <div class="ge-wiring-vlan-group">
+      <div class="ge-wiring-vlan-title" style="color:#2563eb"><span class="vlan-dot vlan-dot--v100"></span>VLAN100 · 10.0.0.0/24 · 内网业务</div>
+      <table class="ge-wiring-table"><thead><tr><th>端口</th><th>服务器</th><th>网卡</th><th>IP</th><th>状态</th></tr></thead><tbody>
+        <tr class="row-v100 row-down"><td class="td-port">GE1/0/1</td><td class="td-range" colspan="3">空闲</td><td class="td-st st-down">DOWN</td></tr>
+        <tr class="row-v100"><td class="td-port">GE1/0/2</td><td class="td-device">ws11</td><td>Gb1</td><td class="td-ip">10.0.0.22</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v100"><td class="td-port">GE1/0/3</td><td class="td-device">ws12</td><td>Gb1</td><td class="td-ip">10.0.0.23</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v100"><td class="td-port">GE1/0/4</td><td class="td-device">ws13</td><td>Gb1</td><td class="td-ip">10.0.0.24</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v100"><td class="td-port">GE1/0/5</td><td class="td-device">ws14</td><td>Gb1</td><td class="td-ip">10.0.0.25</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v100"><td class="td-port">GE1/0/6</td><td class="td-device">ws15</td><td>Gb1</td><td class="td-ip">10.0.0.26</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v100"><td class="td-port">GE1/0/7</td><td class="td-device">ws16</td><td>Gb1</td><td class="td-ip">10.0.0.27</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v100"><td class="td-port">GE1/0/8</td><td class="td-device">ws17</td><td>Gb1</td><td class="td-ip">10.0.0.28</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v100 row-down"><td class="td-port">GE1/0/9</td><td class="td-range" colspan="3">空闲</td><td class="td-st st-down">DOWN</td></tr>
+        <tr class="row-v100"><td class="td-port">GE1/0/10</td><td class="td-device">dev-2</td><td>Gb1</td><td class="td-ip">182.140.146.146</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v100"><td class="td-port">GE1/0/11</td><td class="td-device">dev-2</td><td>Gb2</td><td class="td-ip">10.0.0.19</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v100 row-down"><td class="td-port">GE1/0/12~16</td><td class="td-range" colspan="3">空闲 · 预留业务口</td><td class="td-st st-down">DOWN</td></tr>
+      </tbody></table>
+    </div>
+
+    <!-- VLAN192 -->
+    <div class="ge-wiring-vlan-group">
+      <div class="ge-wiring-vlan-title" style="color:#d97706"><span class="vlan-dot vlan-dot--v192"></span>VLAN192 · 192.168.1.0/24 · 服务器管理 Gb3</div>
+      <table class="ge-wiring-table"><thead><tr><th>端口</th><th>服务器</th><th>网卡</th><th>IP</th><th>状态</th></tr></thead><tbody>
+        <tr class="row-v192 row-down"><td class="td-port">GE1/0/17</td><td class="td-range" colspan="3">空闲</td><td class="td-st st-down">DOWN</td></tr>
+        <tr class="row-v192"><td class="td-port">GE1/0/18</td><td class="td-device">ws11</td><td>Gb3</td><td class="td-ip">192.168.1.22</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v192"><td class="td-port">GE1/0/19</td><td class="td-device">ws12</td><td>Gb3</td><td class="td-ip">192.168.1.23</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v192"><td class="td-port">GE1/0/20</td><td class="td-device">ws13</td><td>Gb3</td><td class="td-ip">192.168.1.24</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v192"><td class="td-port">GE1/0/21</td><td class="td-device">ws14</td><td>Gb3</td><td class="td-ip">192.168.1.25</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v192"><td class="td-port">GE1/0/22</td><td class="td-device">ws15</td><td>Gb3</td><td class="td-ip">192.168.1.26</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v192"><td class="td-port">GE1/0/23</td><td class="td-device">ws16</td><td>Gb3</td><td class="td-ip">192.168.1.27</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v192"><td class="td-port">GE1/0/24</td><td class="td-device">ws17</td><td>Gb3</td><td class="td-ip">192.168.1.28</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v192"><td class="td-port">GE1/0/25</td><td class="td-device">dev-2</td><td>Gb3</td><td class="td-ip">192.168.1.19</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v192 row-down"><td class="td-port">GE1/0/26</td><td class="td-range" colspan="3">空闲</td><td class="td-st st-down">DOWN</td></tr>
+        <tr class="row-v192 row-down"><td class="td-port">GE1/0/29~30</td><td class="td-range" colspan="3">空闲</td><td class="td-st st-down">DOWN</td></tr>
+        <tr class="row-v192 row-down"><td class="td-port">GE1/0/32</td><td class="td-range" colspan="3">空闲</td><td class="td-st st-down">DOWN</td></tr>
+      </tbody></table>
+    </div>
+
+    <!-- VLAN200 -->
+    <div class="ge-wiring-vlan-group">
+      <div class="ge-wiring-vlan-title" style="color:#059669"><span class="vlan-dot vlan-dot--v200"></span>VLAN200 · 192.168.10.0/24 · 千兆 10 网</div>
+      <table class="ge-wiring-table"><thead><tr><th>端口</th><th>设备</th><th></th><th>IP</th><th>状态</th></tr></thead><tbody>
+        <tr class="row-v200"><td class="td-port">GE1/0/27</td><td class="td-device">管理接入</td><td>—</td><td class="td-ip">192.168.10.x</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v200"><td class="td-port">GE1/0/28</td><td class="td-device">管理接入</td><td>—</td><td class="td-ip">192.168.10.x</td><td class="td-st st-up">UP</td></tr>
+      </tbody></table>
+    </div>
+
+    <!-- Trunk -->
+    <div class="ge-wiring-vlan-group">
+      <div class="ge-wiring-vlan-title" style="color:#6366f1"><span class="vlan-dot vlan-dot--trunk"></span>Trunk · 柜间互联 / 预留</div>
+      <table class="ge-wiring-table"><thead><tr><th>端口</th><th>对端</th><th>PVID</th><th>允许 VLAN</th><th>状态</th></tr></thead><tbody>
+        <tr class="row-trunk"><td class="td-port">GE1/0/31</td><td class="td-device">⟷ C06 GE1/0/31</td><td>192</td><td class="td-ip">1,100,192,200</td><td class="td-st st-trunk">Trunk</td></tr>
+        <tr class="row-trunk"><td class="td-port">GE1/0/48</td><td class="td-device">预留 Trunk</td><td>192</td><td class="td-ip">1,100,192,200</td><td class="td-st st-trunk">Trunk</td></tr>
+      </tbody></table>
+    </div>
+
+    <!-- VLAN1 公网 -->
+    <div class="ge-wiring-vlan-group">
+      <div class="ge-wiring-vlan-title" style="color:#64748b"><span class="vlan-dot vlan-dot--v1"></span>VLAN1 · 默认 / 公网</div>
+      <table class="ge-wiring-table"><thead><tr><th>端口</th><th>服务器</th><th></th><th>IP</th><th>状态</th></tr></thead><tbody>
+        <tr class="row-v1 row-down"><td class="td-port">GE1/0/33</td><td class="td-range" colspan="3">空闲</td><td class="td-st st-down">DOWN</td></tr>
+        <tr class="row-v1"><td class="td-port">GE1/0/34</td><td class="td-device">—</td><td>—</td><td class="td-ip">公网·预留（UP）</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v1 row-down"><td class="td-port">GE1/0/35~44</td><td class="td-range" colspan="3">空闲</td><td class="td-st st-down">DOWN</td></tr>
+        <tr class="row-v1"><td class="td-port">GE1/0/45</td><td class="td-device">—</td><td>—</td><td class="td-ip">公网·预留（UP）</td><td class="td-st st-up">UP</td></tr>
+        <tr class="row-v1 row-down"><td class="td-port">GE1/0/46~47,49~52</td><td class="td-range" colspan="3">空闲</td><td class="td-st st-down">DOWN</td></tr>
+      </tbody></table>
+    </div>
+
+  </div>
+  <div class="ge-wiring-stats">
+    <span class="st-up-c">UP 23</span><span class="st-down-c">DOWN 29</span><span class="st-trunk-c">Trunk 2</span>
+    <span>光口 4 · 管理口 1</span>
+  </div>
+</div>
+
+</div>
+
+<p class="diagram-caption"><strong>千兆端口接线图说明：</strong>① 每机柜交换机 48 电口 + 4 光口（SFP，当前未用）+ 1 Console 管理口。② 端口颜色：<span style="color:#2563eb">●</span> VLAN100 业务 <span style="color:#d97706">●</span> VLAN192 管理 <span style="color:#059669">●</span> VLAN200 10网 <span style="color:#7c3aed">●</span> VLAN300 开心 <span style="color:#94a3b8">●</span> VLAN1 公网。③ Trunk 行紫色高亮（柜间骨干 / 上联）。④ <strong>口 49~52</strong> 为预留电口，全 DOWN。⑤ 端口分布依据现网 H3C <code>dis interface brief</code> 实测数据。</p>
+
+</section>
+
 <section id="devices">
 <h2>0.1 设备清单汇总</h2>
 <div class="table-wrap"><table>
@@ -1406,6 +2227,23 @@ table.nic-table .nic-merge-cab,table.nic-table .nic-merge-srv{background:#f8fafc
 
 <section id="ws6-line">
 <h2>0.2.3 ws6 西信机房新线路（防火墙承接）</h2>
+<div class="dual-mode-banner">
+  <strong>双模式并行运行</strong>
+  <div class="dual-mode-row">
+    <div class="dual-mode-card dual-mode-l3">
+      <span class="dual-mode-label">三层交换（路由模式）</span>
+      <strong>ws6</strong> · 经防火墙 <strong>XGE0/0/0</strong> 西信骨干出网<br>
+      公网 <span class="ip">182.140.240.121</span> → DNAT → 内网 <span class="ip">10.0.0.16</span>
+    </div>
+    <span class="dual-mode-plus">+</span>
+    <div class="dual-mode-card dual-mode-l2">
+      <span class="dual-mode-label">二层交换（透明模式）</span>
+      <strong>ws1</strong> · 保持现有二层转发，不做路由<br>
+      继续承担 DNAT / 端口映射，作为热备回退通道
+    </div>
+  </div>
+  <p style="margin:.4rem 0 0;font-size:.78rem;opacity:.85">两种模式同时在线运行，互为冗余。ws6 三层路由承载主流量，ws1 二层交换随时可接管。</p>
+</div>
 <p><strong>改造后 ws6 不再在网卡上配置公网 IP</strong>：公网地址 <span class="ip"><strong>182.140.240.121/25</strong></span> 配置在防火墙 <strong>XGE0/0/0</strong>（西信电信机房光纤/网线 · 直连骨干）；ws6 仅保留内网 <span class="ip">10.0.0.16</span>（Gb2 · VLAN30），默认网关指向 <strong>GE0/0/7</strong> 上的 <span class="ip">10.0.0.11</span> 或 <span class="ip">10.0.0.254</span>，经防火墙 <strong>SNAT/DNAT（端口转发）</strong> 出入公网。详细步骤见 <a href="#fw-config-steps">0.2.4 防火墙改造配置步骤</a>。</p>
 <div class="flow-mini fw-config" style="margin-top:.75rem">
   <span>互联网</span><span class="arr">→</span>
@@ -2219,10 +3057,546 @@ interface GigabitEthernet0/0/7
 <li>启用路由口后公网组仍可达</li>
 </ul>
 </section>
+<section id="h3c-scripts">
+<h2>12. H3C 交换机运维工具与脚本速查</h2>
+<p style="font-size:.9rem;font-weight:500;color:#475569;margin-bottom:1rem">以下涵盖<strong> WinSCP / SSH 连接步骤</strong>及 <strong>H3C Comware 交换机</strong> CLI 常用脚本（三柜千兆交换机，管理地址见 <strong>192.168.10.x</strong> 网段）。<strong>标注 ⚠ 的命令请在割接窗口内谨慎操作。</strong></p>
+
+<!-- ═══ 运维工具连接 ═══ -->
+<h3 style="font-size:1.05rem;margin:1.3rem 0 .7rem;color:#0f172a;border-bottom:2px solid #2563eb;padding-bottom:.3rem">12.1 运维工具连接（WinSCP · SSH · Console）</h3>
+
+<div class="h3c-scripts-grid">
+
+<!-- WinSCP -->
+<div class="h3c-card h3c-card--cfg">
+<h3><span class="h3c-badge h3c-badge--safe">● 安全</span> WinSCP 连接交换机 · 详细步骤</h3>
+<div class="h3c-desc h3c-desc--safe">● 通过 SCP/TFTP 传输配置文件、固件。<strong>下载/备份文件 = 安全只读</strong>；上传(.cfg/.ipe)仅割接窗口执行。Windows 下首选。</div>
+<pre><span class="cmt"># ═══ 第一步：确认交换机管理 IP ═══</span>
+# 三台交换机管理 IP（192.168.10.x 网段），先 ping 确认可达：
+<span class="cmd">ping 192.168.10.2</span>       <span class="cmt"># C06 柜交换机（示例，实际请按现场 IP）</span>
+<span class="cmd">ping 192.168.10.3</span>       <span class="cmt"># D03 柜交换机</span>
+<span class="cmd">ping 192.168.10.4</span>       <span class="cmt"># D04 柜交换机</span>
+
+<span class="cmt"># ═══ 第二步：WinSCP 创建会话 ═══</span>
+# ① 打开 WinSCP → 点击「新建会话」
+# ② 填写参数：
+   文件协议：  <span class="key">SCP</span>（推荐 SCP，不支持则选 SFTP）
+   主机名：    <span class="key">192.168.10.2</span>（C06 柜交换机管理 IP）
+   端口号：    <span class="key">22</span>
+   用户名：    <span class="key">admin</span>
+   密码：      <span class="key">********</span>
+# ③ 保存会话名：<span class="val">H3C-C06-千兆交换机</span>
+
+<span class="cmt"># ═══ 第三步：配置文件备份（最重要！）═══</span>
+<span class="cmt"># 交换机关键文件路径：</span>
+#   flash:/startup.cfg          <span class="cmt">→ 启动配置（直接拖回本机）</span>
+#   flash:/startup.cfg.bak      <span class="cmt">→ 启动配置自动备份</span>
+#   flash:/logfile/             <span class="cmt">→ 日志文件目录</span>
+# 操作：右侧找到 startup.cfg → 拖到左侧本机目录 → 重命名加日期
+# 例如：C06-startup-20260529-before.cfg
+
+<span class="cmt"># ═══ 第四步：批量备份三台交换机（推荐脚本）═══</span>
+# 在 Windows 上创建 .bat 批处理文件：
+<span class="cmt"># @echo off</span>
+<span class="cmt"># echo 备份 C06 交换机...</span>
+<span class="cmt"># winscp.com /command "open scp://admin:密码@192.168.10.2" "get /startup.cfg D:\backup\C06-startup-%date:~0,10%.cfg" "exit"</span>
+<span class="cmt"># echo 备份 D03 交换机...</span>
+<span class="cmt"># winscp.com /command "open scp://admin:密码@192.168.10.3" "get /startup.cfg D:\backup\D03-startup-%date:~0,10%.cfg" "exit"</span>
+<span class="cmt"># echo 备份 D04 交换机...</span>
+<span class="cmt"># winscp.com /command "open scp://admin:密码@192.168.10.4" "get /startup.cfg D:\backup\D04-startup-%date:~0,10%.cfg" "exit"</span></pre>
+</div>
+
+<!-- SSH 连接 -->
+<div class="h3c-card h3c-card--mgmt">
+<h3><span class="h3c-badge h3c-badge--safe">● 安全</span> SSH / Console 连接交换机</h3>
+<div class="h3c-desc h3c-desc--safe">● Putty、SecureCRT、Xshell 连接交换机 CLI。连接操作不影响设备；<strong>system-view 进入配置模式后才可修改</strong>。</div>
+<pre><span class="cmt"># ═══ 方式一：SSH 连接（推荐）═══</span>
+# 三柜交换机管理 IP（按实际填写）：
+# C06 柜：     <span class="key">192.168.10.2</span>  (示例)
+# D03 柜：     <span class="key">192.168.10.3</span>  (示例)
+# D04 柜：     <span class="key">192.168.10.4</span>  (示例)
+  端口：      <span class="key">22</span>  /  用户名：<span class="key">admin</span>
+
+<span class="cmt"># Putty 割接必备设置：</span>
+# ① Connection → Seconds between keepalives → <span class="key">30</span>
+#    （防止长时间无操作被交换机踢下线）
+# ② Window → Lines of scrollback → <span class="key">99999</span>
+#    （命令输出多时防止回滚截断）
+# ③ Session → Logging → Printable output
+#    → 日志路径 D:\logs\h3c-sw-C06-&Y-&M-&D.log
+#    （自动记录所有操作，割接取证必备！）
+# ④ 保存三个会话：H3C-C06 / H3C-D03 / H3C-D04
+
+<span class="cmt"># ═══ 方式二：Console 串口直连 ═══</span>
+<span class="cmt"># 网络不通时使用，需要 Console 线 + USB 转串口：</span>
+  连接类型：  <span class="key">Serial</span>
+  串口号：    <span class="key">COM3</span>（设备管理器→端口 查看）
+  波特率：    <span class="key">9600</span>  /  数据位：<span class="key">8</span>  /  停止位：<span class="key">1</span>
+  校验位：    <span class="key">None</span>  /  流控：<span class="key">None</span>
+
+<span class="cmt"># ═══ 登录后基本操作 ═══</span>
+<span class="cmd">screen-length disable</span>         <span class="cmt"># 关闭分页（输出不暂停）</span>
+<span class="cmd">system-view</span>                   <span class="cmt"># 进入配置模式 sys</span>
+<span class="cmd">quit</span>                          <span class="cmt"># 退回上一级</span>
+<span class="cmd">return</span>                        <span class="cmt"># 直接退回用户视图</span>
+<span class="cmd">display clock</span>                 <span class="cmt"># 确认系统时间（NTP 同步）</span>
+<span class="cmd">display device</span>                <span class="cmt"># 确认设备型号与运行时长</span></pre>
+</div>
+
+</div>
+
+<!-- 运维常用功能 -->
+<h3 style="font-size:1.05rem;margin:1.3rem 0 .7rem;color:#0f172a;border-bottom:2px solid #7c3aed;padding-bottom:.3rem">12.2 运维常用功能脚本</h3>
+
+<div class="h3c-scripts-grid">
+
+<!-- 配置导入导出 -->
+<div class="h3c-card h3c-card--view">
+<h3><span class="h3c-badge h3c-badge--warn">▲ 修改</span> 配置备份与恢复</h3>
+<div class="h3c-desc h3c-desc--warn">▲ 备份配置（安全）；<strong>恢复/替换配置会覆盖当前运行配置</strong>，仅回退时执行。</div>
+<pre><span class="cmt"># ═══ 方法一：WinSCP 直接拖拽（推荐）═══</span>
+# → 详见 12.1，flash:/startup.cfg 拖到本机即可
+
+<span class="cmt"># ═══ 方法二：TFTP 备份 ═══</span>
+<span class="cmt"># 前提：本机开 TFTP 服务（Tftpd64.exe），监听 192.168.10.x</span>
+<span class="cmd">tftp 192.168.10.99 put startup.cfg</span>
+
+<span class="cmt"># ═══ 方法三：CLI 全量显示 → 复制粘贴 ═══</span>
+<span class="cmd">display current-configuration</span>    <span class="cmt"># 全量配置（Putty 日志自动记录）</span>
+<span class="cmd">display saved-configuration</span>      <span class="cmt"># 已保存配置</span>
+<span class="cmd">display current-configuration diff</span>  <span class="cmt"># 运行 vs 已保存的差异</span>
+
+<span class="cmt"># ═══ 恢复配置（⚠ 不可逆！）═══</span>
+<span class="cmt">### 执行前务必用 WinSCP 先备份当前 startup.cfg！###</span>
+<span class="warn">configuration replace file flash:/backup.cfg</span>  <span class="cmt">### ⚠ 替换配置 ###</span></pre>
+</div>
+
+<!-- 固件升级 -->
+<div class="h3c-card h3c-card--nat">
+<h3><span class="h3c-badge h3c-badge--danger">⚠ 高危</span> 固件升级</h3>
+<div class="h3c-desc h3c-desc--danger">⚠ 上传 .ipe 固件 → 指定启动文件 → <strong>reboot（业务中断 3~5 分钟）</strong>。必须割接窗口！</div>
+<pre><span class="cmt"># ═══ 升级前 ═══</span>
+<span class="cmd">display version</span>                  <span class="cmt"># 记录当前版本号</span>
+<span class="cmd">save force</span>
+<span class="cmd">copy startup.cfg backup-before-upgrade.cfg</span>
+# WinSCP 把 backup-before-upgrade.cfg + startup.cfg 都拖回本机！
+
+<span class="cmt"># ═══ 上传固件 ═══</span>
+<span class="cmt"># WinSCP 拖 .ipe 文件到 flash:/，或 TFTP：</span>
+<span class="cmd">tftp 192.168.10.99 get S5820V2-CMW710-R2612.ipe</span>
+<span class="cmd">dir flash:/ | include .ipe</span>       <span class="cmt"># 确认文件大小正确</span>
+
+<span class="cmt"># ═══ 指定启动文件 ═══</span>
+<span class="cmd">boot-loader file flash:/S5820V2-CMW710-R2612.ipe main</span>
+<span class="cmd">display boot-loader</span>             <span class="cmt"># 确认下次启动的系统</span>
+
+<span class="cmt"># ═══ 重启（⚠ 业务中断！）═══</span>
+<span class="warn">reboot</span>                           <span class="cmt">### ⚠ 确认执行！###</span>
+<span class="cmd">display version</span>                  <span class="cmt"># 重启后验证</span></pre>
+</div>
+
+<!-- 账号与权限 -->
+<div class="h3c-card h3c-card--vlan">
+<h3><span class="h3c-badge h3c-badge--edit">◆ 修改</span> 账号管理与安全</h3>
+<div class="h3c-desc h3c-desc--warn">▲ 创建/修改账号。<strong>误改可能导致自己被锁定</strong>，务必保留一个已登录会话。</div>
+<pre><span class="cmt"># ═══ 创建只读账号（巡检用）═══</span>
+<span class="cmd">local-user ops-ro class manage</span>
+<span class="cmd">password simple OpsReadOnly@2026</span>
+<span class="cmd">service-type ssh telnet terminal</span>
+<span class="cmd">authorization-attribute user-role guest</span>  <span class="cmt"># guest = 只读</span>
+
+<span class="cmt"># ═══ 优化 VTY 安全 ═══</span>
+<span class="cmd">user-interface vty 0 4</span>
+<span class="cmd">authentication-mode scheme</span>          <span class="cmt"># AAA 认证</span>
+<span class="cmd">protocol inbound ssh</span>                <span class="cmt"># 仅允许 SSH</span>
+<span class="cmd">idle-timeout 10</span>                     <span class="cmt"># 10 分钟无操作退出</span>
+
+<span class="cmd">display local-user</span>                   <span class="cmt"># 查看所有账号</span>
+<span class="cmd">display users</span>                       <span class="cmt"># 当前在线用户</span></pre>
+</div>
+
+<!-- 日志 -->
+<div class="h3c-card h3c-card--diag">
+<h3><span class="h3c-badge h3c-badge--edit">◆ 修改</span> 日志与告警</h3>
+<div class="h3c-desc h3c-desc--warn">▲ 配置日志服务器；<strong>terminal debugging 会大量消耗 CPU</strong>，生产慎用。</div>
+<pre><span class="cmt"># ═══ Syslog 外发 ═══</span>
+<span class="cmd">info-center enable</span>
+<span class="cmd">info-center loghost 192.168.10.88 facility local5</span>
+
+<span class="cmt"># ═══ 查看本地日志缓冲 ═══</span>
+<span class="cmd">display logbuffer size 200</span>          <span class="cmt"># 最近 200 条</span>
+<span class="cmd">display logbuffer reverse</span>          <span class="cmt"># 倒序查看</span>
+<span class="cmd">display logbuffer | include down</span>   <span class="cmt"># 过滤「端口 down」</span>
+<span class="cmd">display logbuffer | include STP</span>    <span class="cmt"># 生成树状态变化</span>
+<span class="cmd">display logbuffer | include error</span>  <span class="cmt"># 错误日志</span>
+
+<span class="cmt"># ═══ 割接实时日志 ═══</span>
+<span class="cmd">terminal monitor</span>      <span class="cmt"># 开启终端实时输出</span>
+<span class="cmd">terminal logging level 5</span>   <span class="cmt"># 5=notification</span>
+# Ctrl+C 可随时停止实时输出</pre>
+</div>
+
+</div>
+
+<div class="h3c-scripts-grid">
+
+<!-- 定时任务 -->
+<div class="h3c-card h3c-card--view">
+<h3><span class="h3c-badge h3c-badge--edit">◆ 修改</span> 定时任务与自动化</h3>
+<div class="h3c-desc h3c-desc--warn">▲ 配置定时保存/备份。<strong>scheduler 中误写 reboot 将定时导致业务中断</strong>。</div>
+<pre><span class="cmt"># ═══ 定时保存配置（每日 02:00）═══</span>
+<span class="cmd">scheduler job save-config-daily</span>
+<span class="cmd">command 1 save force</span>
+<span class="cmd">quit</span>
+<span class="cmd">scheduler schedule save-daily</span>
+<span class="cmd">job save-config-daily</span>
+<span class="cmd">time repeating at 02:00</span>
+<span class="cmd">quit</span>
+
+<span class="cmd">display scheduler job</span>        <span class="cmt"># 查看定时任务</span>
+<span class="cmd">display scheduler schedule</span>  <span class="cmt"># 查看定时计划</span>
+
+<span class="cmt"># ═══ 批量端口 Ping 巡检 ═══</span>
+<span class="cmd">ping 10.0.0.11</span>    <span class="cmt"># ws1</span>
+<span class="cmd">ping 10.0.0.13</span>    <span class="cmt"># ws3</span>
+<span class="cmd">ping 10.0.0.16</span>    <span class="cmt"># ws6</span>
+<span class="cmd">ping 192.168.10.2</span> <span class="cmt"># C06 交换机</span>
+<span class="cmd">ping 192.168.10.3</span> <span class="cmt"># D03 交换机</span>
+<span class="cmd">ping 192.168.10.4</span> <span class="cmt"># D04 交换机</span></pre>
+</div>
+
+<!-- 性能 -->
+<div class="h3c-card h3c-card--nat">
+<h3><span class="h3c-badge h3c-badge--warn">▲ 注意</span> 性能监控</h3>
+<div class="h3c-desc h3c-desc--warn">▲ 查看 CPU/内存/端口流量（安全只读）；<strong>storm-constrain 限速命令会修改配置</strong>。</div>
+<pre><span class="cmt"># ═══ 系统资源 ═══</span>
+<span class="cmd">display cpu-usage</span>              <span class="cmt"># CPU 实时使用率</span>
+<span class="cmd">display memory-usage</span>           <span class="cmt"># 内存使用率</span>
+<span class="cmd">display device temperature</span>     <span class="cmt"># 温度（防过热）</span>
+<span class="cmd">display power</span>                  <span class="cmt"># 电源状态</span>
+<span class="cmd">display fan</span>                    <span class="cmt"># 风扇状态</span>
+<span class="cmd">display environment</span>            <span class="cmt"># 环境信息汇总</span>
+
+<span class="cmt"># ═══ 端口流量 ═══</span>
+<span class="cmd">display interface brief | include UP</span>     <span class="cmt"># 仅看 UP 口</span>
+<span class="cmd">display counters rate inbound interface</span>  <span class="cmt"># 各端口入方向速率</span>
+<span class="cmd">display interface GigabitEthernet1/0/31 | include rate</span>  <span class="cmt"># Trunk 口速率</span>
+
+<span class="cmt"># ═══ 带宽使用 Top ═══</span>
+<span class="cmd">display counters rate inbound | sort -r | head 5</span>  <span class="cmt"># 入方向 Top5</span></pre>
+</div>
+
+</div>
+
+<!-- H3C 交换机 CLI -->
+<h3 style="font-size:1.05rem;margin:1.3rem 0 .7rem;color:#0f172a;border-bottom:2px solid #ea580c;padding-bottom:.3rem">12.3 交换机 CLI 配置脚本</h3>
+
+<div class="h3c-scripts-grid">
+
+<!-- VLAN 划分 -->
+<div class="h3c-card h3c-card--vlan">
+<h3><span class="h3c-badge h3c-badge--edit">◆ 修改</span> 一、VLAN 创建与端口划分</h3>
+<div class="h3c-desc h3c-desc--warn">▲ <strong>修改 Trunk 允许列表前务必 display 确认当前配置</strong>，误操作可能中断跨柜通信。</div>
+<pre># 批量创建 VLAN（三柜交换机统一配置）
+<span class="cmd">vlan 10</span>
+<span class="cmd">name VLAN10-Public</span>
+<span class="cmd">vlan 30</span>
+<span class="cmd">name VLAN30-Biz</span>
+<span class="cmd">vlan 100</span>
+<span class="cmd">name VLAN100-Public</span>
+<span class="cmd">vlan 200</span>
+<span class="cmd">name VLAN200-192.168.1.0</span>
+<span class="cmd">vlan 300</span>
+<span class="cmd">name VLAN300-192.168.20.0</span>
+
+# Access 口（服务器接入）
+<span class="cmd">interface GigabitEthernet1/0/1</span>
+<span class="cmd">port link-type access</span>
+<span class="cmd">port access vlan 10</span>
+<span class="cmd">quit</span>
+
+# Trunk 口（三柜级联 — 放行所有 VLAN）
+<span class="cmt"># C06:GE1/0/31 ↔ D04:GE1/0/31</span>
+<span class="cmd">interface GigabitEthernet1/0/31</span>
+<span class="cmd">port link-type trunk</span>
+<span class="cmd">port trunk permit vlan 1 10 30 100 200 300</span>
+<span class="cmd">quit</span></pre>
+</div>
+
+<!-- 查看状态 -->
+<div class="h3c-card h3c-card--view">
+<h3><span class="h3c-badge h3c-badge--safe">● 安全</span> 二、状态查看（只读）</h3>
+<div class="h3c-desc h3c-desc--safe">● 全部只读命令，不会修改任何配置，日常巡检可放心执行。</div>
+<pre># 接口状态
+<span class="cmd">display interface brief</span>              <span class="cmt"># 所有端口 UP/DOWN 一览</span>
+<span class="cmd">display interface brief | include UP</span>  <span class="cmt"># 仅看 UP 端口</span>
+<span class="cmd">display interface brief | include DOWN</span><span class="cmt"># 仅看 DOWN 端口</span>
+<span class="cmd">display interface brief description</span>  <span class="cmt"># 端口 + 描述文字</span>
+
+# VLAN 信息
+<span class="cmd">display vlan all</span>                      <span class="cmt"># 所有 VLAN 及端口归属</span>
+<span class="cmd">display vlan 30</span>                       <span class="cmt"># 看 VLAN30 有哪些端口</span>
+<span class="cmd">display port trunk</span>                    <span class="cmt"># 所有 Trunk 口及允许 VLAN</span>
+
+# MAC 地址表（定位设备插在哪个口）
+<span class="cmd">display mac-address</span>                    <span class="cmt"># 完整 MAC 表</span>
+<span class="cmd">display mac-address vlan 30</span>           <span class="cmt"># VLAN30 下所有 MAC</span>
+<span class="cmd">display mac-address | include 3c8c</span>    <span class="cmt"># 按 MAC 前缀查找</span>
+<span class="cmd">display mac-address count</span>            <span class="cmt"># 各 VLAN MAC 数量统计</span>
+
+# ARP 表
+<span class="cmd">display arp</span>                           <span class="cmt"># 全部 ARP</span>
+<span class="cmd">display arp vlan 30</span>                   <span class="cmt"># 仅 VLAN30 的 ARP</span>
+
+# 端口统计
+<span class="cmd">display interface GigabitEthernet1/0/31</span> <span class="cmt"># 单口详情（错包/丢包）</span>
+<span class="cmd">display counters rate inbound interface</span> <span class="cmt"># 各口实时速率</span></pre>
+</div>
+
+<!-- STP / LACP -->
+<div class="h3c-card h3c-card--mgmt">
+<h3><span class="h3c-badge h3c-badge--safe">● 安全</span> 三、STP / LACP / LLDP 查看</h3>
+<div class="h3c-desc h3c-desc--safe">● 查看生成树状态、链路聚合、邻居发现。<strong>全部只读</strong>，定位环路/链路问题必备。</div>
+<pre># STP 生成树（防环路·关键！）
+<span class="cmd">display stp brief</span>                        <span class="cmt"># 各端口 STP 状态（哪个口是根/阻塞）</span>
+<span class="cmd">display stp abnormal-interface</span>           <span class="cmt"># 异常端口（TC 频繁/震荡）</span>
+<span class="cmd">display stp history</span>                      <span class="cmt"># STP 拓扑变更历史</span>
+<span class="cmd">display stp region-configuration</span>          <span class="cmt"># MSTP 域配置</span>
+
+# LACP 链路聚合
+<span class="cmd">display link-aggregation summary</span>           <span class="cmt"># 聚合组状态</span>
+<span class="cmd">display link-aggregation verbose</span>           <span class="cmt"># 聚合组详情（成员口/负载分担）</span>
+
+# LLDP 邻居发现（查对端是什么设备/哪个口）
+<span class="cmd">display lldp neighbor-information list</span>     <span class="cmt"># LLDP 邻居列表</span>
+<span class="cmd">display lldp neighbor-information interface GigabitEthernet1/0/31</span>
+
+# 环路检测
+<span class="cmd">display loopback-detection</span>                 <span class="cmt"># 环路检测结果</span></pre>
+</div>
+
+<!-- 诊断分析 -->
+<div class="h3c-card h3c-card--diag">
+<h3><span class="h3c-badge h3c-badge--warn">▲ 注意</span> 四、诊断与排障</h3>
+<div class="h3c-desc h3c-desc--warn">▲ 连通性测试、日志查看（安全）；<strong>debugging 命令大量消耗 CPU</strong>，生产环境勿用。</div>
+<pre># 连通性测试
+<span class="cmd">ping 10.0.0.16</span>                           <span class="cmt"># ping ws6 业务口</span>
+<span class="cmd">ping -c 10 10.0.0.11</span>                     <span class="cmt"># ping ws1（10 次）</span>
+<span class="cmd">tracert 10.0.0.16</span>                         <span class="cmt"># 路由追踪（二层交换机通常只一跳）</span>
+
+# 日志排查
+<span class="cmd">display logbuffer | include STP</span>           <span class="cmt"># STP 变化事件</span>
+<span class="cmd">display logbuffer | include down</span>         <span class="cmt"># 端口 down 事件</span>
+<span class="cmd">display logbuffer reverse | head -n 50</span>   <span class="cmt"># 最新 50 条</span>
+
+# 端口异常排查
+<span class="cmd">display interface | include errors</span>        <span class="cmt"># 所有口错误统计</span>
+<span class="cmd">display packet-drop interface</span>            <span class="cmt"># 丢包统计（需设备支持）</span>
+
+# 镜像抓包（辅助排查）
+<span class="cmt"># 把 GE1/0/10 的流量镜像到 GE1/0/48（接笔记本 Wireshark）</span>
+<span class="cmd">mirroring-group 1 local</span>
+<span class="cmd">mirroring-group 1 mirroring-port GigabitEthernet1/0/10 both</span>
+<span class="cmd">mirroring-group 1 monitor-port GigabitEthernet1/0/48</span>
+<span class="cmt"># 排障结束后务必删除：</span>
+<span class="warn">undo mirroring-group 1</span>                  <span class="cmt">### ⚠ 排障后必须删除 ###</span></pre>
+</div>
+
+<!-- VLAN 接口/路由 -->
+<div class="h3c-card h3c-card--vlan">
+<h3><span class="h3c-badge h3c-badge--edit">◆ 修改</span> 五、VLANIF 三层接口与路由</h3>
+<div class="h3c-desc h3c-desc--warn">▲ 配置 VLANIF 三层网关、静态路由。<strong>错误的默认路由将导致交换机无法远程管理</strong>。</div>
+<pre><span class="cmt"># ═══ 管理 VLANIF（交换机管理 IP）═══</span>
+<span class="cmd">interface Vlan-interface 100</span>                    <span class="cmt"># 管理 VLAN</span>
+<span class="cmd">ip address 192.168.10.2 255.255.255.0</span>          <span class="cmt"># C06 柜管理 IP</span>
+<span class="cmd">quit</span>
+
+<span class="cmt"># ═══ 创建其他 VLANIF（如需三层互通）═══</span>
+<span class="cmd">interface Vlan-interface 30</span>
+<span class="cmd">ip address 10.0.0.1 255.255.255.0</span>             <span class="cmt"># VLAN30 网关（通常由防火墙承担）</span>
+<span class="cmd">quit</span>
+
+<span class="cmt"># ═══ 静态路由 ═══</span>
+<span class="cmd">ip route-static 0.0.0.0 0.0.0.0 192.168.10.1</span>   <span class="cmt"># 默认路由（管理网段出网）</span>
+<span class="cmd">display ip routing-table</span>                         <span class="cmt"># 查看路由表</span>
+
+<span class="cmt"># ═══ 交换机 IP 信息 ═══</span>
+<span class="cmd">display ip interface brief</span>                       <span class="cmt"># 三层接口 IPv4 汇总</span>
+<span class="cmd">display ip interface Vlan-interface 100</span>          <span class="cmt"># 管理 VLANIF 详情</span></pre>
+</div>
+
+<!-- 端口安全/风暴控制 -->
+<div class="h3c-card h3c-card--nat">
+<h3><span class="h3c-badge h3c-badge--edit">◆ 修改</span> 六、端口安全与风暴控制</h3>
+<div class="h3c-desc h3c-desc--warn">▲ 风暴控制、端口安全。<strong>误设低阈值将导致正常流量被丢弃</strong>。</div>
+<pre><span class="cmt"># ═══ 广播风暴控制（推荐配置）═══</span>
+<span class="cmd">interface GigabitEthernet1/0/1</span>
+<span class="cmd">broadcast-suppression pps 1000</span>           <span class="cmt"># 广播限制 1000pps</span>
+<span class="cmd">multicast-suppression pps 2000</span>           <span class="cmt"># 组播限制</span>
+<span class="cmd">unicast-suppression pps 5000</span>             <span class="cmt"># 未知单播限制</span>
+<span class="cmd">quit</span>
+
+<span class="cmt"># ═══ 端口安全（MAC 绑定）═══</span>
+<span class="cmd">interface GigabitEthernet1/0/10</span>
+<span class="cmd">port-security enable</span>
+<span class="cmd">port-security max-mac-count 10</span>          <span class="cmt"># 最多学 10 个 MAC</span>
+<span class="cmd">quit</span>
+
+<span class="cmt"># ═══ 查看风暴控制状态 ═══</span>
+<span class="cmd">display storm-constrain</span>                   <span class="cmt"># 风暴控制配置</span>
+<span class="cmd">display port-security</span>                    <span class="cmt"># 端口安全状态</span>
+<span class="cmd">display packet-drop</span>                     <span class="cmt"># 丢包原因统计</span></pre>
+</div>
+
+</div>
+
+<!-- 割接专用脚本 -->
+<div class="h3c-card" style="margin-top:1rem;max-width:100%">
+<h3 style="background:linear-gradient(90deg,#1e3a8a,#2563eb);font-size:.95rem"><span class="h3c-badge h3c-badge--safe">● 安全</span> 七、割接专用 — 一键检查脚本</h3>
+<div class="h3c-desc h3c-desc--safe">● 割接前后对<strong>三台交换机</strong>执行的检查命令，<strong>全部 display + ping，只读不修改</strong>。</div>
+<pre># ═══════ 割接前 Pre-Check（三台都要跑）═══════
+<span class="cmd">display device</span>                         <span class="cmt"># 设备型号/版本/运行时间</span>
+<span class="cmd">display version</span>                        <span class="cmt"># 固件版本（与备件核对）</span>
+<span class="cmd">display cpu-usage</span>                      <span class="cmt"># CPU 基线</span>
+<span class="cmd">display memory-usage</span>                   <span class="cmt"># 内存基线</span>
+<span class="cmd">display interface brief | include UP</span>    <span class="cmt"># UP 端口列表 → 截图</span>
+<span class="cmd">display interface brief | include DOWN</span>  <span class="cmt"># DOWN 端口列表</span>
+<span class="cmd">display vlan all</span>                       <span class="cmt"># VLAN 与端口归属 → 截图</span>
+<span class="cmd">display port trunk</span>                     <span class="cmt"># Trunk 配置 → 截图</span>
+<span class="cmd">display mac-address count</span>             <span class="cmt"># MAC 总数基线</span>
+<span class="cmd">display stp brief</span>                      <span class="cmt"># STP 状态 → 截图</span>
+<span class="cmd">display logbuffer reverse | head -n 20</span> <span class="cmt"># 最新 20 条日志</span>
+
+# ═══════ 割接中（换线/改 VLAN 后）═══════
+<span class="cmd">display logbuffer reverse | head -n 10</span>  <span class="cmt"># 检查端口 up/down 事件</span>
+<span class="cmd">display stp brief | include 31</span>          <span class="cmt"># 确认级联口 STP 状态正常</span>
+<span class="cmd">display interface brief | include 1/0/31</span><span class="cmt"># 级联口是否 UP</span>
+<span class="cmd">display vlan 30</span>                        <span class="cmt"># 确认 VLAN30 端口正确</span>
+
+# ═══════ 割接后 Post-Check ═══════
+<span class="cmd">display cpu-usage</span>                      <span class="cmt"># CPU 对比基线</span>
+<span class="cmd">display memory-usage</span>                   <span class="cmt"># 内存对比基线</span>
+<span class="cmd">display mac-address count</span>             <span class="cmt"># MAC 数量对比（多了/少了？）</span>
+<span class="cmd">display stp brief</span>                      <span class="cmt"># STP 对比 → 无异常阻塞</span>
+<span class="cmd">display interface | include errors</span>      <span class="cmt"># 确认无新增错包/丢包</span>
+<span class="cmd">display counters rate inbound interface</span> <span class="cmt"># 流量是否正常</span>
+<span class="cmd">display logbuffer reverse | head -n 30</span> <span class="cmt"># 无异常事件</span>
+<span class="cmd">ping -c 3 192.168.10.2</span>                <span class="cmt"># C06 交换机</span>
+<span class="cmd">ping -c 3 192.168.10.3</span>                <span class="cmt"># D03 交换机</span>
+<span class="cmd">ping -c 3 192.168.10.4</span>                <span class="cmt"># D04 交换机</span></pre>
+</div>
+
+<!-- 常见故障处理 -->
+<div class="h3c-card" style="margin-top:1rem;max-width:100%">
+<h3 style="background:linear-gradient(90deg,#dc2626,#b91c1c);font-size:.95rem"><span class="h3c-badge h3c-badge--danger">⚠ 高危</span> 八、常见故障处理与回退</h3>
+<div class="h3c-desc h3c-desc--danger">⚠ 故障时执行的紧急操作。<strong>非故障情况严禁执行</strong>！操作前先截图当前状态。</div>
+<pre><span class="cmt"># ═══ 故障 1：Trunk 口不通（级联中断）═══</span>
+<span class="cmt"># 现象：跨柜服务器不通，STP 显示端口 DISCARDING</span>
+<span class="cmd">display interface GigabitEthernet1/0/31</span>      <span class="cmt"># 看物理状态+协商速率</span>
+<span class="cmd">display stp brief | include 1/0/31</span>           <span class="cmt"># 是否被 STP 阻塞</span>
+<span class="cmd">display port trunk | include 1/0/31</span>          <span class="cmt"># 允许的 VLAN 是否正确</span>
+# 修复：如 VLAN 遗漏 → 补齐 port trunk permit vlan 列表
+# 如物理 down → 换光模块/网线
+
+<span class="cmt"># ═══ 故障 2：广播风暴 ═══</span>
+<span class="cmt"># 现象：全网卡顿，交换机 CPU 100%</span>
+<span class="cmd">display cpu-usage</span>                             <span class="cmt"># 确认 CPU 100%</span>
+<span class="cmd">display counters rate inbound interface | sort -r | head 5</span>  <span class="cmt"># 找异常流量口</span>
+<span class="cmt"># 应急：临时 shutdown 异常端口</span>
+<span class="cmd">interface GigabitEthernet1/0/X</span>
+<span class="warn">shutdown</span>            <span class="cmt">### ⚠ 临时关闭异常端口 ###</span>
+# 排除风暴源后需要 undo shutdown 恢复
+
+<span class="cmt"># ═══ 故障 3：MAC 表溢出 ═══</span>
+<span class="cmd">display mac-address count</span>                     <span class="cmt"># 总 MAC 数 — 超过规格 50% 即异常</span>
+<span class="cmd">display mac-address | count by vlan</span>           <span class="cmt"># 按 VLAN 统计，定位异常 VLAN</span>
+
+<span class="cmt"># ═══ 回退：恢复配置到割接前 ═══</span>
+<span class="cmt">### 前提：WinSCP 已上传备份的 startup.cfg ###</span>
+<span class="warn">configuration replace file flash:/backup-startup.cfg</span>  <span class="cmt">### ⚠ 替换运行配置 ###</span>
+# 替换后检查关键口状态：
+<span class="cmd">display interface brief | include 1/0/31</span>
+<span class="cmd">display stp brief</span>
+<span class="cmd">display vlan 30</span></pre>
+</div>
+
+<p style="margin-top:1rem;font-size:.82rem;color:#64748b;line-height:1.7">
+<strong>使用建议：</strong>① 割接前把以上脚本复制到记事本，逐条执行并<strong>截图保存结果</strong>作为基线；② 三台交换机的 IP/端口号按实际环境替换；③ 每次 <code>display current-configuration</code> 后务必导出保存；④ 标 <span style="color:#dc2626;font-weight:700">⚠</span> 的命令仅限确认故障或回退时使用。
+</p>
+</section>
+
 <footer style="margin-top:3rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--muted);font-size:.85rem">
 <p>路径：d:/dev-works/nginx-logs/netdoc/机房网络网关迁移改造文档.html</p>
 </footer>
 </main>
 </div>
+
+<button id="back-to-top" title="返回顶部" aria-label="返回顶部">&#9650;</button>
+
+<script>
+(function(){
+  /* ── Scroll-spy: highlight current section in TOC ── */
+  var tocLinks = document.querySelectorAll('nav.toc .toc-list a');
+  var sections = [];
+  tocLinks.forEach(function(a){
+    var id = a.getAttribute('href');
+    if (id && id.startsWith('#')) {
+      var el = document.querySelector(id);
+      if (el) sections.push({el:el, a:a});
+    }
+  });
+
+  function updateTOC(){
+    var scrollTop = window.scrollY || document.documentElement.scrollTop;
+    var winH = window.innerHeight;
+    var active = null;
+    sections.forEach(function(s){
+      var rect = s.el.getBoundingClientRect();
+      if (rect.top <= winH * 0.35) active = s;
+    });
+    sections.forEach(function(s){
+      s.a.classList.remove('active','past');
+    });
+    if (active) {
+      active.a.classList.add('active');
+      sections.forEach(function(s){
+        if (s !== active && sections.indexOf(s) < sections.indexOf(active)) {
+          s.a.classList.add('past');
+        }
+      });
+    }
+  }
+
+  /* ── Back-to-top button ── */
+  var btn = document.getElementById('back-to-top');
+  function toggleBtn(){
+    var scrollTop = window.scrollY || document.documentElement.scrollTop;
+    if (scrollTop > 400) {
+      btn.classList.add('show');
+    } else {
+      btn.classList.remove('show');
+    }
+  }
+  btn.addEventListener('click', function(){
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+  /* ── Bind scroll (throttled) ── */
+  var ticking = false;
+  function onScroll(){
+    if (!ticking) {
+      requestAnimationFrame(function(){
+        updateTOC();
+        toggleBtn();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  updateTOC();
+  toggleBtn();
+})();
+</script>
+
 </body>
 </html>
